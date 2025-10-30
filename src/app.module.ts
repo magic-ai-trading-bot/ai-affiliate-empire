@@ -10,6 +10,7 @@ import { PublisherModule } from './modules/publisher/publisher.module';
 import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { OptimizerModule } from './modules/optimizer/optimizer.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { OptimizerModule } from './modules/optimizer/optimizer.module';
     OrchestratorModule,
     AnalyticsModule,
     OptimizerModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

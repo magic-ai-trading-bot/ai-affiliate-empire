@@ -1,0 +1,103 @@
+groups:
+  - name: ai_affiliate_alerts
+    interval: 30s
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }}% over the last 5 minutes"
+
+      # Workflow failures
+      - alert: WorkflowFailures
+        expr: temporal_workflow_failed_total > 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Multiple workflow failures detected"
+          description: "{{ $value }} workflows have failed in the last 5 minutes"
+
+      # Low conversion rate
+      - alert: LowConversionRate
+        expr: (affiliate_conversions_total / affiliate_clicks_total) < 0.01
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Conversion rate below threshold"
+          description: "Conversion rate is {{ $value }}% (target: >1%)"
+
+      # Database connection issues
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "Cannot connect to database"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 90%"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 80% for 10 minutes"
+
+      # Disk space low
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space running low"
+          description: "Less than 10% disk space remaining"
+
+      # API rate limit approaching
+      - alert: APIRateLimitApproaching
+        expr: api_rate_limit_remaining < 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API rate limit approaching"
+          description: "Only {{ $value }} API calls remaining"
+
+      # Revenue drop
+      - alert: RevenueDrop
+        expr: (affiliate_revenue_total - affiliate_revenue_total offset 24h) / affiliate_revenue_total offset 24h < -0.5
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Significant revenue drop detected"
+          description: "Revenue dropped by {{ $value }}% compared to yesterday"
+
+      # No videos published
+      - alert: NoVideosPublished
+        expr: increase(videos_published_total[6h]) == 0
+        for: 6h
+        labels:
+          severity: critical
+        annotations:
+          summary: "No videos published in 6 hours"
+          description: "Publishing pipeline may be stuck"
