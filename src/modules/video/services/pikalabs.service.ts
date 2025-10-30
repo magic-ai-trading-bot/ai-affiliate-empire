@@ -1,53 +1,63 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface GenerateVideoParams {
   prompt: string;
   duration: number;
   style?: string;
+  aspectRatio?: string;
+}
+
+interface VideoGeneration {
+  id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  videoUrl?: string;
+  error?: string;
 }
 
 @Injectable()
 export class PikaLabsService {
   private readonly apiKey: string;
   private readonly apiUrl: string;
+  private readonly mockMode: boolean;
+  private readonly storageDir: string;
 
   constructor(private readonly config: ConfigService) {
     this.apiKey = this.config.get('PIKALABS_API_KEY') || '';
     this.apiUrl = this.config.get('PIKALABS_API_URL') || 'https://api.pikalabs.com/v1';
+    this.mockMode = this.config.get('PIKALABS_MOCK_MODE') === 'true';
+    this.storageDir = this.config.get('STORAGE_DIR') || '/tmp/videos';
+
+    // Create storage directory if it doesn't exist
+    if (!fs.existsSync(this.storageDir)) {
+      fs.mkdirSync(this.storageDir, { recursive: true });
+    }
+
+    if (!this.apiKey || this.mockMode) {
+      console.warn('⚠️  Pika Labs running in MOCK MODE');
+    }
   }
 
-  /**
-   * Generate video using Pika Labs API
-   *
-   * Note: This is a placeholder implementation.
-   * Pika Labs API integration requires:
-   * 1. Sign up for Pika Labs API access
-   * 2. Obtain API credentials
-   * 3. Implement proper request/response handling
-   */
   async generateVideo(params: GenerateVideoParams): Promise<string> {
-    const { prompt, duration } = params;
+    const { prompt, duration, aspectRatio = '9:16' } = params;
 
-    console.log(`🎨 Pika Labs: Generating video (${duration}s)...`);
-    console.log(`Prompt: ${prompt.substring(0, 100)}...`);
+    console.log(`🎨 Generating video: ${duration}s, prompt: ${prompt.substring(0, 50)}...`);
 
-    if (!this.apiKey) {
-      console.warn('⚠️ Pika Labs API key not configured, returning mock URL');
+    if (!this.apiKey || this.mockMode) {
       return this.getMockVideoUrl();
     }
 
     try {
-      // TODO: Implement actual Pika Labs API call
-      // Example structure (adapt to actual API):
-      /*
+      // Initiate video generation
       const response = await axios.post(
         `${this.apiUrl}/generate`,
         {
           prompt,
           duration,
-          aspect_ratio: '9:16',
+          aspect_ratio: aspectRatio,
           quality: 'high',
         },
         {
@@ -58,56 +68,89 @@ export class PikaLabsService {
         },
       );
 
+      const generationId = response.data.id;
+      console.log(`📹 Video generation started: ${generationId}`);
+
       // Poll for completion
-      const videoId = response.data.id;
-      const videoUrl = await this.pollForCompletion(videoId);
+      const videoUrl = await this.pollForCompletion(generationId);
 
-      return videoUrl;
-      */
+      // Download and save video
+      const savedPath = await this.downloadVideo(videoUrl, generationId);
 
-      console.warn('⚠️ Pika Labs API integration pending, returning mock URL');
-      return this.getMockVideoUrl();
-    } catch (error) {
-      console.error('Error generating video with Pika Labs:', error);
-      throw error;
+      console.log(`✅ Video generated: ${savedPath}`);
+      return savedPath;
+    } catch (error: any) {
+      console.error('❌ Pika Labs API error:', error.response?.data || error.message);
+      throw new PikaLabsError('Failed to generate video', { cause: error });
     }
   }
 
-  /**
-   * Poll Pika Labs API for video completion
-   */
-  private async pollForCompletion(videoId: string, maxAttempts: number = 30): Promise<string> {
+  private async pollForCompletion(
+    generationId: string,
+    maxAttempts: number = 60,
+    pollInterval: number = 10000,
+  ): Promise<string> {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        const response = await axios.get(`${this.apiUrl}/status/${videoId}`, {
+        const response = await axios.get(`${this.apiUrl}/status/${generationId}`, {
           headers: {
             Authorization: `Bearer ${this.apiKey}`,
           },
         });
 
-        if (response.data.status === 'completed') {
-          return response.data.video_url;
+        const status: VideoGeneration = response.data;
+
+        if (status.status === 'completed' && status.videoUrl) {
+          return status.videoUrl;
         }
 
-        // Wait 10 seconds before next poll
-        await new Promise((resolve) => setTimeout(resolve, 10000));
-      } catch (error) {
-        console.error(`Polling attempt ${attempt + 1} failed:`, error);
+        if (status.status === 'failed') {
+          throw new Error(`Video generation failed: ${status.error}`);
+        }
+
+        console.log(`⏳ Video generation ${status.status} (${attempt + 1}/${maxAttempts})`);
+
+        // Wait before next poll
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          // Generation not found yet, continue polling
+          await new Promise((resolve) => setTimeout(resolve, pollInterval));
+          continue;
+        }
+        throw error;
       }
     }
 
-    throw new Error('Video generation timeout');
+    throw new Error('Video generation timeout - exceeded maximum wait time');
   }
 
-  /**
-   * Mock video URL for development/testing
-   */
+  private async downloadVideo(url: string, id: string): Promise<string> {
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+
+    const filename = `video-${id}.mp4`;
+    const filepath = path.join(this.storageDir, filename);
+    fs.writeFileSync(filepath, Buffer.from(response.data));
+
+    return filepath;
+  }
+
   private getMockVideoUrl(): string {
-    // Return a placeholder video URL
     return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
   }
 
   isConfigured(): boolean {
-    return !!this.apiKey;
+    return !!this.apiKey && !this.mockMode;
+  }
+}
+
+// Custom error class
+export class PikaLabsError extends Error {
+  constructor(
+    message: string,
+    public readonly context?: Record<string, any>,
+  ) {
+    super(message);
+    this.name = 'PikaLabsError';
   }
 }

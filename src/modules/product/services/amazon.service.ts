@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
-import * as crypto from 'crypto';
+import ProductAdvertisingAPIv1 from 'paapi5-nodejs-sdk';
 
 interface AmazonProduct {
   asin: string;
@@ -25,71 +24,134 @@ interface SearchProductsParams {
 
 @Injectable()
 export class AmazonService {
-  private readonly accessKey: string;
-  private readonly secretKey: string;
+  private readonly client: any;
   private readonly partnerTag: string;
-  private readonly region: string;
-  private readonly endpoint: string;
+  private readonly mockMode: boolean;
+  private lastRequestTime = 0;
+  private readonly RATE_LIMIT_MS = 1000; // 1 request per second
 
   constructor(private readonly config: ConfigService) {
-    this.accessKey = this.config.get('AMAZON_ACCESS_KEY') || '';
-    this.secretKey = this.config.get('AMAZON_SECRET_KEY') || '';
+    const accessKey = this.config.get('AMAZON_ACCESS_KEY');
+    const secretKey = this.config.get('AMAZON_SECRET_KEY');
     this.partnerTag = this.config.get('AMAZON_PARTNER_TAG') || '';
-    this.region = this.config.get('AMAZON_REGION') || 'us-east-1';
-    this.endpoint = `https://webservices.amazon.com/paapi5/searchitems`;
+    const region = this.config.get('AMAZON_REGION') || 'us-east-1';
+    this.mockMode = this.config.get('AMAZON_MOCK_MODE') === 'true';
+
+    if (accessKey && secretKey && this.partnerTag && !this.mockMode) {
+      const defaultClient = ProductAdvertisingAPIv1.ApiClient.instance;
+      defaultClient.accessKey = accessKey;
+      defaultClient.secretKey = secretKey;
+      defaultClient.host = `webservices.amazon.${region === 'us-east-1' ? 'com' : region}`;
+      defaultClient.region = region;
+
+      this.client = new ProductAdvertisingAPIv1.DefaultApi();
+      console.log('✅ Amazon PA-API configured');
+    } else {
+      this.client = null;
+      console.warn('⚠️  Amazon PA-API running in MOCK MODE');
+    }
   }
 
-  /**
-   * Search for products using Amazon Product Advertising API
-   *
-   * Note: This is a placeholder implementation. In production, you need to:
-   * 1. Sign up for Amazon Product Advertising API
-   * 2. Install @aws-sdk/client-product-advertising-api
-   * 3. Implement proper request signing
-   */
   async searchProducts(params: SearchProductsParams): Promise<AmazonProduct[]> {
+    if (!this.client || this.mockMode) {
+      return this.getMockProducts(params.limit || 10);
+    }
+
+    await this.enforceRateLimit();
+
     const { keywords = 'trending', category, limit = 10 } = params;
 
-    console.log(`🔍 Searching Amazon products: ${keywords}`);
-
-    // Check if credentials are configured
-    if (!this.accessKey || !this.secretKey || !this.partnerTag) {
-      console.warn('⚠️ Amazon PA-API credentials not configured, returning mock data');
-      return this.getMockProducts(limit);
-    }
-
     try {
-      // TODO: Implement actual Amazon PA-API v5 integration
-      // This requires proper request signing and API structure
-      // For now, returning mock data
+      const searchItemsRequest = new ProductAdvertisingAPIv1.SearchItemsRequest();
+      searchItemsRequest.PartnerTag = this.partnerTag;
+      searchItemsRequest.PartnerType = 'Associates';
+      searchItemsRequest.Keywords = keywords;
+      searchItemsRequest.SearchIndex = category || 'All';
+      searchItemsRequest.ItemCount = Math.min(limit, 10);
+      searchItemsRequest.Resources = [
+        'Images.Primary.Large',
+        'ItemInfo.Title',
+        'ItemInfo.Features',
+        'Offers.Listings.Price',
+        'ItemInfo.ByLineInfo',
+      ];
 
-      console.warn('⚠️ Amazon PA-API integration pending, returning mock data');
-      return this.getMockProducts(limit);
+      const response = await new Promise<any>((resolve, reject) => {
+        this.client.searchItems(searchItemsRequest, (error: any, data: any) => {
+          if (error) reject(error);
+          else resolve(data);
+        });
+      });
+
+      console.log(`✅ Amazon PA-API: Found ${response.SearchResult?.Items?.length || 0} products`);
+
+      return this.mapResponseToProducts(response.SearchResult?.Items || []);
     } catch (error) {
-      console.error('Error fetching products from Amazon:', error);
+      console.error('❌ Amazon PA-API error:', error);
+      // Fallback to mock on error
       return this.getMockProducts(limit);
     }
   }
 
-  /**
-   * Get product details by ASIN
-   */
   async getProductByAsin(asin: string): Promise<AmazonProduct | null> {
-    console.log(`🔍 Fetching Amazon product: ${asin}`);
-
-    if (!this.accessKey || !this.secretKey || !this.partnerTag) {
-      console.warn('⚠️ Amazon PA-API credentials not configured');
+    if (!this.client || this.mockMode) {
       return null;
     }
+
+    await this.enforceRateLimit();
 
     try {
-      // TODO: Implement actual Amazon PA-API v5 GetItems operation
-      console.warn('⚠️ Amazon PA-API integration pending');
-      return null;
+      const getItemsRequest = new ProductAdvertisingAPIv1.GetItemsRequest();
+      getItemsRequest.PartnerTag = this.partnerTag;
+      getItemsRequest.PartnerType = 'Associates';
+      getItemsRequest.ItemIds = [asin];
+      getItemsRequest.Resources = [
+        'Images.Primary.Large',
+        'ItemInfo.Title',
+        'ItemInfo.Features',
+        'Offers.Listings.Price',
+        'ItemInfo.ByLineInfo',
+      ];
+
+      const response = await new Promise<any>((resolve, reject) => {
+        this.client.getItems(getItemsRequest, (error: any, data: any) => {
+          if (error) reject(error);
+          else resolve(data);
+        });
+      });
+
+      const items = this.mapResponseToProducts(response.ItemsResult?.Items || []);
+      return items[0] || null;
     } catch (error) {
-      console.error(`Error fetching product ${asin} from Amazon:`, error);
+      console.error(`❌ Amazon PA-API error fetching ${asin}:`, error);
       return null;
     }
+  }
+
+  private async enforceRateLimit(): Promise<void> {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+
+    if (timeSinceLastRequest < this.RATE_LIMIT_MS) {
+      const delay = this.RATE_LIMIT_MS - timeSinceLastRequest;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+
+    this.lastRequestTime = Date.now();
+  }
+
+  private mapResponseToProducts(items: any[]): AmazonProduct[] {
+    return items.map((item) => ({
+      asin: item.ASIN,
+      title: item.ItemInfo?.Title?.DisplayValue || 'Unknown',
+      description: item.ItemInfo?.Features?.DisplayValues?.[0] || '',
+      price: parseFloat(item.Offers?.Listings?.[0]?.Price?.Amount || '0'),
+      commission: 4.0, // Default commission rate
+      affiliateUrl: this.generateAffiliateUrl(item.ASIN),
+      imageUrl: item.Images?.Primary?.Large?.URL || '',
+      category: item.ItemInfo?.Classifications?.ProductGroup?.DisplayValue || '',
+      brand: item.ItemInfo?.ByLineInfo?.Brand?.DisplayValue || '',
+    }));
   }
 
   /**
@@ -201,6 +263,6 @@ export class AmazonService {
    * Check if Amazon credentials are configured
    */
   isConfigured(): boolean {
-    return !!(this.accessKey && this.secretKey && this.partnerTag);
+    return !!this.client && !this.mockMode;
   }
 }

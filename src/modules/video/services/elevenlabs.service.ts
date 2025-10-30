@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface GenerateVoiceParams {
   text: string;
@@ -14,15 +16,25 @@ export class ElevenLabsService {
   private readonly apiKey: string;
   private readonly defaultVoiceId: string;
   private readonly baseUrl = 'https://api.elevenlabs.io/v1';
+  private readonly mockMode: boolean;
+  private readonly storageDir: string;
 
   constructor(private readonly config: ConfigService) {
     this.apiKey = this.config.get('ELEVENLABS_API_KEY') || '';
-    this.defaultVoiceId = this.config.get('ELEVENLABS_VOICE_ID') || 'default';
+    this.defaultVoiceId = this.config.get('ELEVENLABS_VOICE_ID') || 'EXAVITQu4vr4xnSDxMaL';
+    this.mockMode = this.config.get('ELEVENLABS_MOCK_MODE') === 'true';
+    this.storageDir = this.config.get('STORAGE_DIR') || '/tmp/audio';
+
+    // Create storage directory if it doesn't exist
+    if (!fs.existsSync(this.storageDir)) {
+      fs.mkdirSync(this.storageDir, { recursive: true });
+    }
+
+    if (!this.apiKey || this.mockMode) {
+      console.warn('⚠️  ElevenLabs running in MOCK MODE');
+    }
   }
 
-  /**
-   * Generate voice audio from text using ElevenLabs API
-   */
   async generateVoice(params: GenerateVoiceParams): Promise<string> {
     const {
       text,
@@ -31,17 +43,13 @@ export class ElevenLabsService {
       similarityBoost = 0.75,
     } = params;
 
-    console.log(`🎤 ElevenLabs: Generating voice (${text.split(' ').length} words)...`);
+    console.log(`🎤 Generating voice: ${text.split(' ').length} words`);
 
-    if (!this.apiKey) {
-      console.warn('⚠️ ElevenLabs API key not configured, returning mock URL');
+    if (!this.apiKey || this.mockMode) {
       return this.getMockAudioUrl();
     }
 
     try {
-      // TODO: Implement actual ElevenLabs API call
-      // Example structure:
-      /*
       const response = await axios.post(
         `${this.baseUrl}/text-to-speech/${voiceId}`,
         {
@@ -56,29 +64,29 @@ export class ElevenLabsService {
           headers: {
             'xi-api-key': this.apiKey,
             'Content-Type': 'application/json',
+            Accept: 'audio/mpeg',
           },
           responseType: 'arraybuffer',
         },
       );
 
-      // Save audio to storage and return URL
-      const audioUrl = await this.saveAudioToStorage(response.data);
-      return audioUrl;
-      */
+      // Save audio to storage
+      const filename = `voice-${Date.now()}.mp3`;
+      const filepath = path.join(this.storageDir, filename);
+      fs.writeFileSync(filepath, Buffer.from(response.data));
 
-      console.warn('⚠️ ElevenLabs API integration pending, returning mock URL');
-      return this.getMockAudioUrl();
-    } catch (error) {
-      console.error('Error generating voice with ElevenLabs:', error);
-      throw error;
+      console.log(`✅ Voice generated: ${filepath}`);
+
+      // Return file path or URL (in production, upload to CDN)
+      return filepath;
+    } catch (error: any) {
+      console.error('❌ ElevenLabs API error:', error.response?.data || error.message);
+      throw new ElevenLabsError('Failed to generate voice', { cause: error });
     }
   }
 
-  /**
-   * Get available voices
-   */
   async getVoices() {
-    if (!this.apiKey) {
+    if (!this.apiKey || this.mockMode) {
       return [];
     }
 
@@ -89,21 +97,30 @@ export class ElevenLabsService {
         },
       });
 
+      console.log(`✅ Found ${response.data.voices.length} voices`);
       return response.data.voices;
     } catch (error) {
-      console.error('Error fetching voices:', error);
+      console.error('❌ Error fetching voices:', error);
       return [];
     }
   }
 
-  /**
-   * Mock audio URL for development/testing
-   */
   private getMockAudioUrl(): string {
     return 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav';
   }
 
   isConfigured(): boolean {
-    return !!this.apiKey;
+    return !!this.apiKey && !this.mockMode;
+  }
+}
+
+// Custom error class
+export class ElevenLabsError extends Error {
+  constructor(
+    message: string,
+    public readonly context?: Record<string, any>,
+  ) {
+    super(message);
+    this.name = 'ElevenLabsError';
   }
 }
