@@ -1,0 +1,79 @@
+{
+  "dashboard": {
+    "title": "AI Affiliate Empire - System Overview",
+    "tags": ["overview", "system"],
+    "timezone": "browser",
+    "editable": true,
+    "panels": [
+      {
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [{
+          "expr": "sum(rate(http_requests_total[5m]))",
+          "legendFormat": "Request Rate"
+        }]
+      },
+      {
+        "title": "HTTP Error Rate",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+        "targets": [{
+          "expr": "sum(rate(http_request_errors_total[5m])) / sum(rate(http_requests_total[5m]))",
+          "legendFormat": "Error Rate"
+        }]
+      },
+      {
+        "title": "Products Synced (24h)",
+        "type": "singlestat",
+        "gridPos": {"x": 0, "y": 8, "w": 6, "h": 4},
+        "targets": [{
+          "expr": "sum(increase(affiliate_products_synced_total[24h]))"
+        }]
+      },
+      {
+        "title": "Videos Generated (24h)",
+        "type": "singlestat",
+        "gridPos": {"x": 6, "y": 8, "w": 6, "h": 4},
+        "targets": [{
+          "expr": "sum(increase(affiliate_videos_generated_total[24h]))"
+        }]
+      },
+      {
+        "title": "Current Revenue",
+        "type": "singlestat",
+        "gridPos": {"x": 12, "y": 8, "w": 6, "h": 4},
+        "targets": [{
+          "expr": "sum(affiliate_revenue_dollars)",
+          "format": "currency"
+        }]
+      },
+      {
+        "title": "Active Products",
+        "type": "singlestat",
+        "gridPos": {"x": 18, "y": 8, "w": 6, "h": 4},
+        "targets": [{
+          "expr": "sum(affiliate_active_products)"
+        }]
+      },
+      {
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+        "targets": [{
+          "expr": "nodejs_heap_used_bytes / 1024 / 1024",
+          "legendFormat": "Used MB"
+        }]
+      },
+      {
+        "title": "Response Time (p95)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+        "targets": [{
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        }]
+      }
+    ]
+  }
+}

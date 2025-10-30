@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SecretsManagerService } from '../../../common/secrets/secrets-manager.service';
 
 interface UploadVideoParams {
   videoUrl: string;
@@ -7,13 +8,28 @@ interface UploadVideoParams {
 }
 
 @Injectable()
-export class TiktokService {
-  private readonly clientKey: string;
-  private readonly clientSecret: string;
+export class TiktokService implements OnModuleInit {
+  private clientKey: string = '';
+  private clientSecret: string = '';
 
-  constructor(private readonly config: ConfigService) {
-    this.clientKey = this.config.get('TIKTOK_CLIENT_KEY') || '';
-    this.clientSecret = this.config.get('TIKTOK_CLIENT_SECRET') || '';
+  constructor(
+    private readonly config: ConfigService,
+    private readonly secretsManager: SecretsManagerService,
+  ) {}
+
+  async onModuleInit() {
+    // Retrieve TikTok credentials from Secrets Manager
+    const secrets = await this.secretsManager.getSecrets([
+      { secretName: 'tiktok-client-key', envVarName: 'TIKTOK_CLIENT_KEY' },
+      { secretName: 'tiktok-client-secret', envVarName: 'TIKTOK_CLIENT_SECRET' },
+    ]);
+
+    this.clientKey = secrets['tiktok-client-key'] || '';
+    this.clientSecret = secrets['tiktok-client-secret'] || '';
+
+    if (this.clientKey && this.clientSecret) {
+      console.log('✅ TikTok service initialized with credentials');
+    }
   }
 
   /**

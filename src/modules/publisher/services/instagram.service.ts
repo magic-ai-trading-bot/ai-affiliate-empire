@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SecretsManagerService } from '../../../common/secrets/secrets-manager.service';
 
 interface UploadReelParams {
   videoUrl: string;
@@ -7,13 +8,31 @@ interface UploadReelParams {
 }
 
 @Injectable()
-export class InstagramService {
-  private readonly accessToken: string;
-  private readonly businessAccountId: string;
+export class InstagramService implements OnModuleInit {
+  private accessToken: string = '';
+  private businessAccountId: string = '';
 
-  constructor(private readonly config: ConfigService) {
-    this.accessToken = this.config.get('INSTAGRAM_ACCESS_TOKEN') || '';
-    this.businessAccountId = this.config.get('INSTAGRAM_BUSINESS_ACCOUNT_ID') || '';
+  constructor(
+    private readonly config: ConfigService,
+    private readonly secretsManager: SecretsManagerService,
+  ) {}
+
+  async onModuleInit() {
+    // Retrieve Instagram credentials from Secrets Manager
+    const secrets = await this.secretsManager.getSecrets([
+      { secretName: 'instagram-access-token', envVarName: 'INSTAGRAM_ACCESS_TOKEN' },
+      {
+        secretName: 'instagram-business-account-id',
+        envVarName: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',
+      },
+    ]);
+
+    this.accessToken = secrets['instagram-access-token'] || '';
+    this.businessAccountId = secrets['instagram-business-account-id'] || '';
+
+    if (this.accessToken && this.businessAccountId) {
+      console.log('✅ Instagram service initialized with credentials');
+    }
   }
 
   /**

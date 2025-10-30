@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
+import { SecretsManagerService } from '../../../common/secrets/secrets-manager.service';
 
 interface GenerateTextOptions {
   temperature?: number;
@@ -17,21 +18,33 @@ interface GenerationCost {
 }
 
 @Injectable()
-export class ClaudeService {
-  private readonly client: Anthropic | null;
+export class ClaudeService implements OnModuleInit {
+  private client: Anthropic | null = null;
   private readonly model: string;
   private readonly mockMode: boolean;
 
-  constructor(private readonly config: ConfigService) {
-    const apiKey = this.config.get('ANTHROPIC_API_KEY');
+  constructor(
+    private readonly config: ConfigService,
+    private readonly secretsManager: SecretsManagerService,
+  ) {
     this.model = this.config.get('ANTHROPIC_MODEL') || 'claude-3-5-sonnet-20241022';
     this.mockMode = this.config.get('ANTHROPIC_MOCK_MODE') === 'true';
+  }
 
-    if (apiKey && !this.mockMode) {
-      this.client = new Anthropic({ apiKey });
-    } else {
-      this.client = null;
+  async onModuleInit() {
+    if (this.mockMode) {
       console.warn('⚠️  Claude running in MOCK MODE');
+      return;
+    }
+
+    // Retrieve API key from Secrets Manager with fallback to env var
+    const apiKey = await this.secretsManager.getSecret('anthropic-api-key', 'ANTHROPIC_API_KEY');
+
+    if (apiKey) {
+      this.client = new Anthropic({ apiKey });
+      console.log('✅ Claude service initialized with API key');
+    } else {
+      console.warn('⚠️  Claude API key not found, running in MOCK MODE');
     }
   }
 

@@ -1,0 +1,59 @@
+{
+  "dashboard": {
+    "title": "AI Affiliate Empire - Cost Tracking",
+    "tags": ["costs", "billing"],
+    "timezone": "browser",
+    "editable": true,
+    "panels": [
+      {
+        "title": "Total API Costs",
+        "type": "singlestat",
+        "gridPos": {"x": 0, "y": 0, "w": 8, "h": 6},
+        "targets": [{
+          "expr": "sum(affiliate_api_cost_dollars)"
+        }]
+      },
+      {
+        "title": "Cost by Service",
+        "type": "piechart",
+        "gridPos": {"x": 8, "y": 0, "w": 8, "h": 6},
+        "targets": [{
+          "expr": "sum by (service) (affiliate_api_cost_dollars)",
+          "legendFormat": "{{service}}"
+        }]
+      },
+      {
+        "title": "Daily Cost Trend",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 6, "w": 24, "h": 8},
+        "targets": [{
+          "expr": "sum(increase(affiliate_api_cost_dollars[1d]))",
+          "legendFormat": "Daily Cost"
+        }]
+      },
+      {
+        "title": "Cost per Video",
+        "type": "singlestat",
+        "gridPos": {"x": 0, "y": 14, "w": 8, "h": 6},
+        "targets": [{
+          "expr": "sum(affiliate_api_cost_dollars) / sum(affiliate_videos_generated_total)"
+        }]
+      },
+      {
+        "title": "Revenue vs Costs",
+        "type": "graph",
+        "gridPos": {"x": 8, "y": 14, "w": 16, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(affiliate_revenue_dollars)",
+            "legendFormat": "Revenue"
+          },
+          {
+            "expr": "sum(affiliate_api_cost_dollars)",
+            "legendFormat": "Costs"
+          }
+        ]
+      }
+    ]
+  }
+}

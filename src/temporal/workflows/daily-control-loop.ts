@@ -152,12 +152,13 @@ export async function dailyControlLoop(
 
     // Log failure
     const duration = Math.round((Date.now() - startTime) / 1000);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     await logWorkflowExecution({
       workflowId,
       workflowType: 'daily_control_loop',
       status: 'FAILED',
       duration,
-      errorMessage: error.message,
+      errorMessage,
     });
 
     console.error('❌ Daily Control Loop failed:', error);

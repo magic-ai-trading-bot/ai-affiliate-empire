@@ -130,7 +130,7 @@ export class ProductRanker {
   /**
    * Rank multiple products and return sorted by overall score
    */
-  async rankProducts(products: Product[]): Promise<Product[]> {
+  async rankProducts(products: Product[]): Promise<(Product & RankingScores)[]> {
     const scored = await Promise.all(
       products.map(async (product) => {
         const scores = await this.calculateScores(product);

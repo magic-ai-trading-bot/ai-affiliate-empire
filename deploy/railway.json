@@ -1,0 +1,114 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npm ci && npm run prisma:generate && npm run build"
+  },
+  "deploy": {
+    "startCommand": "./scripts/migrate-and-start.sh",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  },
+  "services": [
+    {
+      "name": "api",
+      "environment": {
+        "NODE_ENV": "production",
+        "PORT": "3000"
+      },
+      "healthcheck": {
+        "path": "/health",
+        "interval": 30,
+        "timeout": 10
+      },
+      "resources": {
+        "memory": 1024,
+        "cpu": 1
+      },
+      "scaling": {
+        "minReplicas": 1,
+        "maxReplicas": 5,
+        "targetCPU": 70,
+        "targetMemory": 80
+      }
+    },
+    {
+      "name": "postgres",
+      "image": "postgres:14-alpine",
+      "environment": {
+        "POSTGRES_USER": "${{POSTGRES_USER}}",
+        "POSTGRES_PASSWORD": "${{POSTGRES_PASSWORD}}",
+        "POSTGRES_DB": "${{POSTGRES_DB}}"
+      },
+      "volumes": [
+        {
+          "mountPath": "/var/lib/postgresql/data",
+          "name": "postgres-data"
+        }
+      ],
+      "resources": {
+        "memory": 512,
+        "cpu": 0.5
+      }
+    },
+    {
+      "name": "redis",
+      "image": "redis:7-alpine",
+      "volumes": [
+        {
+          "mountPath": "/data",
+          "name": "redis-data"
+        }
+      ],
+      "resources": {
+        "memory": 256,
+        "cpu": 0.5
+      }
+    }
+  ],
+  "envVars": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL connection string",
+      "required": true
+    },
+    "REDIS_URL": {
+      "description": "Redis connection string",
+      "required": false
+    },
+    "OPENAI_API_KEY": {
+      "description": "OpenAI API key for content generation",
+      "required": true
+    },
+    "ANTHROPIC_API_KEY": {
+      "description": "Anthropic Claude API key",
+      "required": true
+    },
+    "AWS_SECRETS_MANAGER_ENABLED": {
+      "description": "Enable AWS Secrets Manager",
+      "default": "false"
+    },
+    "AWS_REGION": {
+      "description": "AWS region for Secrets Manager",
+      "default": "us-east-1"
+    },
+    "SECRET_NAME_PREFIX": {
+      "description": "Prefix for secrets in AWS Secrets Manager",
+      "default": "ai-affiliate-empire"
+    }
+  },
+  "volumes": [
+    {
+      "name": "postgres-data",
+      "size": 10
+    },
+    {
+      "name": "redis-data",
+      "size": 1
+    }
+  ],
+  "networking": {
+    "serviceDomain": true
+  }
+}

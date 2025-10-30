@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-affiliate-empire
+  labels:
+    name: ai-affiliate-empire
+    environment: production

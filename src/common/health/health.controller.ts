@@ -1,77 +1,113 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpStatus, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { PrismaService } from '../database/prisma.service';
 import { LoggerService } from '../logging/logger.service';
+import { HealthCheckService } from './health-check.service';
+import {
+  ComponentStatus,
+  HealthCheckResponse,
+} from './dto/health-response.dto';
 
 @ApiTags('health')
 @Controller('health')
 export class HealthController {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly healthCheckService: HealthCheckService,
     private readonly logger: LoggerService,
   ) {
     this.logger.setContext('HealthController');
   }
 
   @Get()
-  @ApiOperation({ summary: 'Health check endpoint' })
+  @ApiOperation({ summary: 'Comprehensive health check endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   @ApiResponse({ status: 503, description: 'Service is unhealthy' })
-  async healthCheck() {
-    try {
-      // Check database connection
-      await this.prisma.$queryRaw`SELECT 1`;
+  async healthCheck(): Promise<HealthCheckResponse> {
+    const [database, temporal, externalApis] = await Promise.all([
+      this.healthCheckService.checkDatabase(),
+      this.healthCheckService.checkTemporal(),
+      this.healthCheckService.checkExternalApis(),
+    ]);
 
-      return {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV,
-        database: 'connected',
-        memory: {
-          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
-        },
-      };
-    } catch (error) {
-      this.logger.error('Health check failed', error.stack);
-      return {
-        status: 'error',
-        timestamp: new Date().toISOString(),
-        error: error.message,
-        database: 'disconnected',
-      };
+    // Determine overall status
+    let overallStatus: 'healthy' | 'unhealthy' | 'degraded' = 'healthy';
+
+    if (
+      database.status === ComponentStatus.UNHEALTHY ||
+      temporal.status === ComponentStatus.UNHEALTHY
+    ) {
+      overallStatus = 'unhealthy';
+    } else if (
+      database.status === ComponentStatus.DEGRADED ||
+      temporal.status === ComponentStatus.DEGRADED ||
+      externalApis.status === ComponentStatus.DEGRADED ||
+      externalApis.status === ComponentStatus.UNHEALTHY
+    ) {
+      overallStatus = 'degraded';
     }
+
+    const memoryUsage = process.memoryUsage();
+    const heapUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+    const heapTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
+
+    return {
+      status: overallStatus,
+      timestamp: new Date().toISOString(),
+      uptime: Math.round(process.uptime()),
+      environment: process.env.NODE_ENV || 'production',
+      components: {
+        database,
+        temporal,
+        externalApis,
+      },
+      memory: {
+        used: heapUsedMB,
+        total: heapTotalMB,
+        percentage: Math.round((heapUsedMB / heapTotalMB) * 100),
+      },
+    };
   }
 
   @Get('ready')
-  @ApiOperation({ summary: 'Readiness check endpoint' })
+  @ApiOperation({
+    summary: 'Readiness check - is service ready to serve requests',
+  })
+  @ApiResponse({ status: 200, description: 'Service is ready' })
+  @ApiResponse({ status: 503, description: 'Service is not ready' })
+  @HttpCode(HttpStatus.OK)
   async readinessCheck() {
-    try {
-      // Check if application is ready to serve requests
-      await this.prisma.$queryRaw`SELECT 1`;
+    const [database, temporal] = await Promise.all([
+      this.healthCheckService.checkDatabase(),
+      this.healthCheckService.checkTemporal(),
+    ]);
 
-      return {
-        ready: true,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error('Readiness check failed', error.stack);
-      return {
-        ready: false,
-        timestamp: new Date().toISOString(),
-        error: error.message,
-      };
+    const isReady =
+      database.status === ComponentStatus.HEALTHY &&
+      temporal.status === ComponentStatus.HEALTHY;
+
+    if (!isReady) {
+      this.logger.warn(
+        `Readiness check failed - database: ${database.status}, temporal: ${temporal.status}`,
+      );
     }
+
+    return {
+      ready: isReady,
+      timestamp: new Date().toISOString(),
+      components: {
+        database: database.status,
+        temporal: temporal.status,
+      },
+    };
   }
 
   @Get('live')
-  @ApiOperation({ summary: 'Liveness check endpoint' })
+  @ApiOperation({ summary: 'Liveness check - is service process running' })
+  @ApiResponse({ status: 200, description: 'Service is alive' })
   async livenessCheck() {
-    // Simple liveness check - just return OK if the process is running
     return {
       alive: true,
       timestamp: new Date().toISOString(),
+      uptime: Math.round(process.uptime()),
     };
   }
 }

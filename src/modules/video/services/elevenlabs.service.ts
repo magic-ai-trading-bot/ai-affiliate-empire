@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
+import { SecretsManagerService } from '../../../common/secrets/secrets-manager.service';
 
 interface GenerateVoiceParams {
   text: string;
@@ -12,15 +13,17 @@ interface GenerateVoiceParams {
 }
 
 @Injectable()
-export class ElevenLabsService {
-  private readonly apiKey: string;
+export class ElevenLabsService implements OnModuleInit {
+  private apiKey: string = '';
   private readonly defaultVoiceId: string;
   private readonly baseUrl = 'https://api.elevenlabs.io/v1';
   private readonly mockMode: boolean;
   private readonly storageDir: string;
 
-  constructor(private readonly config: ConfigService) {
-    this.apiKey = this.config.get('ELEVENLABS_API_KEY') || '';
+  constructor(
+    private readonly config: ConfigService,
+    private readonly secretsManager: SecretsManagerService,
+  ) {
     this.defaultVoiceId = this.config.get('ELEVENLABS_VOICE_ID') || 'EXAVITQu4vr4xnSDxMaL';
     this.mockMode = this.config.get('ELEVENLABS_MOCK_MODE') === 'true';
     this.storageDir = this.config.get('STORAGE_DIR') || '/tmp/audio';
@@ -29,9 +32,22 @@ export class ElevenLabsService {
     if (!fs.existsSync(this.storageDir)) {
       fs.mkdirSync(this.storageDir, { recursive: true });
     }
+  }
 
-    if (!this.apiKey || this.mockMode) {
+  async onModuleInit() {
+    if (this.mockMode) {
       console.warn('⚠️  ElevenLabs running in MOCK MODE');
+      return;
+    }
+
+    // Retrieve API key from Secrets Manager with fallback to env var
+    const apiKey = await this.secretsManager.getSecret('elevenlabs-api-key', 'ELEVENLABS_API_KEY');
+
+    if (apiKey) {
+      this.apiKey = apiKey;
+      console.log('✅ ElevenLabs service initialized with API key');
+    } else {
+      console.warn('⚠️  ElevenLabs API key not found, running in MOCK MODE');
     }
   }
 

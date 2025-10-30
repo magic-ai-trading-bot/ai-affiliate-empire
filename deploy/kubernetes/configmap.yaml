@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-affiliate-empire-config
+  namespace: ai-affiliate-empire
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  LOG_LEVEL: "info"
+  AWS_REGION: "us-east-1"
+  SECRET_NAME_PREFIX: "ai-affiliate-empire"
+  AWS_SECRETS_MANAGER_ENABLED: "true"

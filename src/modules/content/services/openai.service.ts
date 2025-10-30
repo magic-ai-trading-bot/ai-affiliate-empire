@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import { SecretsManagerService } from '../../../common/secrets/secrets-manager.service';
 
 interface GenerateTextOptions {
   temperature?: number;
@@ -17,21 +18,33 @@ interface GenerationCost {
 }
 
 @Injectable()
-export class OpenAIService {
-  private readonly client: OpenAI | null;
+export class OpenAIService implements OnModuleInit {
+  private client: OpenAI | null = null;
   private readonly model: string;
   private readonly mockMode: boolean;
 
-  constructor(private readonly config: ConfigService) {
-    const apiKey = this.config.get('OPENAI_API_KEY');
+  constructor(
+    private readonly config: ConfigService,
+    private readonly secretsManager: SecretsManagerService,
+  ) {
     this.model = this.config.get('OPENAI_MODEL') || 'gpt-4-turbo-preview';
     this.mockMode = this.config.get('OPENAI_MOCK_MODE') === 'true';
+  }
 
-    if (apiKey && !this.mockMode) {
-      this.client = new OpenAI({ apiKey });
-    } else {
-      this.client = null;
+  async onModuleInit() {
+    if (this.mockMode) {
       console.warn('⚠️  OpenAI running in MOCK MODE');
+      return;
+    }
+
+    // Retrieve API key from Secrets Manager with fallback to env var
+    const apiKey = await this.secretsManager.getSecret('openai-api-key', 'OPENAI_API_KEY');
+
+    if (apiKey) {
+      this.client = new OpenAI({ apiKey });
+      console.log('✅ OpenAI service initialized with API key');
+    } else {
+      console.warn('⚠️  OpenAI API key not found, running in MOCK MODE');
     }
   }
 

@@ -1,0 +1,64 @@
+{
+  "dashboard": {
+    "title": "AI Affiliate Empire - Performance",
+    "tags": ["performance", "metrics"],
+    "timezone": "browser",
+    "editable": true,
+    "panels": [
+      {
+        "title": "Workflow Duration (p50, p90, p99)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 24, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.5, sum(rate(affiliate_workflow_duration_seconds_bucket[5m])) by (le, workflow_name))",
+            "legendFormat": "p50 - {{workflow_name}}"
+          },
+          {
+            "expr": "histogram_quantile(0.9, sum(rate(affiliate_workflow_duration_seconds_bucket[5m])) by (le, workflow_name))",
+            "legendFormat": "p90 - {{workflow_name}}"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(affiliate_workflow_duration_seconds_bucket[5m])) by (le, workflow_name))",
+            "legendFormat": "p99 - {{workflow_name}}"
+          }
+        ]
+      },
+      {
+        "title": "HTTP Response Time by Endpoint",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [{
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route))",
+          "legendFormat": "{{route}}"
+        }]
+      },
+      {
+        "title": "Throughput by Endpoint",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+        "targets": [{
+          "expr": "sum(rate(http_requests_total[5m])) by (route)",
+          "legendFormat": "{{route}}"
+        }]
+      },
+      {
+        "title": "Workflow Success Rate",
+        "type": "gauge",
+        "gridPos": {"x": 0, "y": 16, "w": 12, "h": 6},
+        "targets": [{
+          "expr": "sum(rate(affiliate_workflow_duration_seconds_count{status=\"success\"}[5m])) / sum(rate(affiliate_workflow_duration_seconds_count[5m]))"
+        }]
+      },
+      {
+        "title": "Event Loop Lag",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 16, "w": 12, "h": 6},
+        "targets": [{
+          "expr": "nodejs_eventloop_lag_seconds",
+          "legendFormat": "Event Loop Lag"
+        }]
+      }
+    ]
+  }
+}

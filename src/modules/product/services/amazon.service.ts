@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import ProductAdvertisingAPIv1 from 'paapi5-nodejs-sdk';
+import { SecretsManagerService } from '../../../common/secrets/secrets-manager.service';
 
 interface AmazonProduct {
   asin: string;
@@ -23,21 +24,39 @@ interface SearchProductsParams {
 }
 
 @Injectable()
-export class AmazonService {
-  private readonly client: any;
-  private readonly partnerTag: string;
+export class AmazonService implements OnModuleInit {
+  private client: any = null;
+  private partnerTag: string = '';
   private readonly mockMode: boolean;
   private lastRequestTime = 0;
   private readonly RATE_LIMIT_MS = 1000; // 1 request per second
 
-  constructor(private readonly config: ConfigService) {
-    const accessKey = this.config.get('AMAZON_ACCESS_KEY');
-    const secretKey = this.config.get('AMAZON_SECRET_KEY');
-    this.partnerTag = this.config.get('AMAZON_PARTNER_TAG') || '';
-    const region = this.config.get('AMAZON_REGION') || 'us-east-1';
+  constructor(
+    private readonly config: ConfigService,
+    private readonly secretsManager: SecretsManagerService,
+  ) {
     this.mockMode = this.config.get('AMAZON_MOCK_MODE') === 'true';
+  }
 
-    if (accessKey && secretKey && this.partnerTag && !this.mockMode) {
+  async onModuleInit() {
+    if (this.mockMode) {
+      console.warn('⚠️  Amazon PA-API running in MOCK MODE');
+      return;
+    }
+
+    // Retrieve Amazon credentials from Secrets Manager
+    const secrets = await this.secretsManager.getSecrets([
+      { secretName: 'amazon-access-key', envVarName: 'AMAZON_ACCESS_KEY' },
+      { secretName: 'amazon-secret-key', envVarName: 'AMAZON_SECRET_KEY' },
+      { secretName: 'amazon-partner-tag', envVarName: 'AMAZON_PARTNER_TAG' },
+    ]);
+
+    const accessKey = secrets['amazon-access-key'];
+    const secretKey = secrets['amazon-secret-key'];
+    this.partnerTag = secrets['amazon-partner-tag'] || '';
+    const region = this.config.get('AMAZON_REGION') || 'us-east-1';
+
+    if (accessKey && secretKey && this.partnerTag) {
       const defaultClient = ProductAdvertisingAPIv1.ApiClient.instance;
       defaultClient.accessKey = accessKey;
       defaultClient.secretKey = secretKey;
@@ -45,10 +64,9 @@ export class AmazonService {
       defaultClient.region = region;
 
       this.client = new ProductAdvertisingAPIv1.DefaultApi();
-      console.log('✅ Amazon PA-API configured');
+      console.log('✅ Amazon PA-API configured with credentials from Secrets Manager');
     } else {
-      this.client = null;
-      console.warn('⚠️  Amazon PA-API running in MOCK MODE');
+      console.warn('⚠️  Amazon credentials not found, running in MOCK MODE');
     }
   }
 

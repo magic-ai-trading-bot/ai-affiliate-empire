@@ -236,7 +236,7 @@ describe('ProductRanker', () => {
 
       // Verify sorted in descending order
       for (let i = 0; i < ranked.length - 1; i++) {
-        expect(ranked[i].overallScore).toBeGreaterThanOrEqual(ranked[i + 1].overallScore);
+        expect((ranked[i] as any).overallScore).toBeGreaterThanOrEqual((ranked[i + 1] as any).overallScore);
       }
     });
 
@@ -247,10 +247,16 @@ describe('ProductRanker', () => {
 
       expect(ranked).toHaveLength(products.length);
 
-      ranked.forEach((product, idx) => {
-        expect(product.id).toBe(products[idx].id);
-        expect(product.title).toBe(products[idx].title);
-        expect(product.price).toBe(products[idx].price);
+      // Verify all original products are present (order may change due to ranking)
+      const originalIds = products.map((p) => p.id);
+      const rankedIds = ranked.map((p) => p.id);
+      expect(rankedIds.sort()).toEqual(originalIds.sort());
+
+      // Verify properties are preserved
+      ranked.forEach((product) => {
+        const original = products.find((p) => p.id === product.id);
+        expect(product.title).toBe(original.title);
+        expect(product.price).toBe(original.price);
       });
     });
 
@@ -259,7 +265,7 @@ describe('ProductRanker', () => {
 
       const ranked = await service.rankProducts(products);
 
-      ranked.forEach((product) => {
+      ranked.forEach((product: any) => {
         expect(product).toHaveProperty('trendScore');
         expect(product).toHaveProperty('profitScore');
         expect(product).toHaveProperty('viralityScore');

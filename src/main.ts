@@ -3,6 +3,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { LoggerService } from './common/logging/logger.service';
+import { SentryService } from './common/monitoring/sentry.service';
+import { SentryInterceptor } from './common/monitoring/sentry.interceptor';
+import { SentryExceptionFilter } from './common/monitoring/sentry.filter';
+import { MetricsInterceptor } from './common/monitoring/metrics.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -13,6 +17,19 @@ async function bootstrap() {
   const logger = app.get(LoggerService);
   app.useLogger(logger);
   logger.setContext('Bootstrap');
+
+  // Get monitoring services
+  const sentryService = app.get(SentryService);
+  const metricsService = app.get('MetricsService');
+
+  // Global interceptors
+  app.useGlobalInterceptors(
+    new SentryInterceptor(sentryService),
+    new MetricsInterceptor(metricsService),
+  );
+
+  // Global exception filter
+  app.useGlobalFilters(new SentryExceptionFilter(sentryService, logger));
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -62,23 +79,29 @@ async function bootstrap() {
   logger.log(`🚀 AI Affiliate Empire API running on: http://localhost:${port}`);
   logger.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
   logger.log(`🏥 Health check available at: http://localhost:${port}/health`);
+  logger.log(`📊 Metrics available at: http://localhost:${port}/metrics`);
   logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.log(`CORS origins: ${corsOrigins.join(', ')}`);
 
   // Graceful shutdown
-  process.on('SIGTERM', async () => {
-    logger.warn('SIGTERM received, shutting down gracefully...');
-    await app.close();
-    logger.log('Application closed');
-    process.exit(0);
-  });
+  const gracefulShutdown = async (signal: string) => {
+    logger.warn(`${signal} received, shutting down gracefully...`);
 
-  process.on('SIGINT', async () => {
-    logger.warn('SIGINT received, shutting down gracefully...');
+    // Flush Sentry events
+    try {
+      await sentryService.flush(2000);
+      logger.log('Sentry events flushed');
+    } catch (error) {
+      logger.error('Error flushing Sentry events', error);
+    }
+
     await app.close();
     logger.log('Application closed');
     process.exit(0);
-  });
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 bootstrap().catch((error) => {

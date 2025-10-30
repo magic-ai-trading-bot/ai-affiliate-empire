@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SecretsManagerService } from '../../../common/secrets/secrets-manager.service';
 
 interface UploadShortParams {
   videoUrl: string;
@@ -9,13 +10,28 @@ interface UploadShortParams {
 }
 
 @Injectable()
-export class YoutubeService {
-  private readonly clientId: string;
-  private readonly clientSecret: string;
+export class YoutubeService implements OnModuleInit {
+  private clientId: string = '';
+  private clientSecret: string = '';
 
-  constructor(private readonly config: ConfigService) {
-    this.clientId = this.config.get('YOUTUBE_CLIENT_ID') || '';
-    this.clientSecret = this.config.get('YOUTUBE_CLIENT_SECRET') || '';
+  constructor(
+    private readonly config: ConfigService,
+    private readonly secretsManager: SecretsManagerService,
+  ) {}
+
+  async onModuleInit() {
+    // Retrieve YouTube credentials from Secrets Manager
+    const secrets = await this.secretsManager.getSecrets([
+      { secretName: 'youtube-client-id', envVarName: 'YOUTUBE_CLIENT_ID' },
+      { secretName: 'youtube-client-secret', envVarName: 'YOUTUBE_CLIENT_SECRET' },
+    ]);
+
+    this.clientId = secrets['youtube-client-id'] || '';
+    this.clientSecret = secrets['youtube-client-secret'] || '';
+
+    if (this.clientId && this.clientSecret) {
+      console.log('✅ YouTube service initialized with credentials');
+    }
   }
 
   /**

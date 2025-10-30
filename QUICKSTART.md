@@ -224,6 +224,28 @@ docker-compose logs -f backend
 
 ## 🧪 Testing the System
 
+### Run Test Suite
+
+```bash
+# Run all tests
+npm test
+
+# Unit tests only
+npm run test:unit
+
+# Integration tests
+npm run test:integration
+
+# E2E tests
+npm run test:e2e
+
+# Watch mode (auto-rerun on changes)
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
+```
+
 ### Test Product Discovery
 ```bash
 curl -X POST http://localhost:3000/products/sync \
@@ -246,6 +268,12 @@ curl -X POST http://localhost:3000/content/scripts \
 ```bash
 curl http://localhost:3000/analytics/overview
 ```
+
+### Access Monitoring
+
+- **Grafana Dashboard**: http://localhost:3002 (admin/admin)
+- **Prometheus Metrics**: http://localhost:9090
+- **Temporal UI**: http://localhost:8233
 
 ---
 
@@ -288,6 +316,20 @@ kill -9 <PID>
 - Verify keys are correct in `.env`
 - Check API key has sufficient credits
 - System uses mocks if keys invalid (check logs)
+- Enable mock mode: Set `*_MOCK_MODE=true` in `.env`
+
+### Tests Failing
+```bash
+# Clean install dependencies
+rm -rf node_modules package-lock.json
+npm install
+
+# Regenerate Prisma client
+npm run prisma:generate
+
+# Reset test database
+DATABASE_URL="postgresql://user:pass@localhost:5432/test_db" npm run prisma:migrate:dev
+```
 
 ---
 

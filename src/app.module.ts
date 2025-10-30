@@ -8,7 +8,9 @@ import { DatabaseModule } from './common/database/database.module';
 import { LoggerModule } from './common/logging/logger.module';
 import { EncryptionModule } from './common/encryption/encryption.module';
 import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.module';
+import { MonitoringModule } from './common/monitoring/monitoring.module';
 import { HealthModule } from './common/health/health.module';
+import { SecretsManagerModule } from './common/secrets/secrets-manager.module';
 import { validationSchema } from './common/config/env.validation';
 import { ProductModule } from './modules/product/product.module';
 import { ContentModule } from './modules/content/content.module';
@@ -36,9 +38,11 @@ import { ReportsModule } from './modules/reports/reports.module';
       },
     ]),
     LoggerModule,
+    MonitoringModule,
     EncryptionModule,
     CircuitBreakerModule,
     HealthModule,
+    SecretsManagerModule,
     DatabaseModule,
     ProductModule,
     ContentModule,

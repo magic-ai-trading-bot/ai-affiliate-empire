@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
+import { SecretsManagerService } from '../../../common/secrets/secrets-manager.service';
 
 interface GenerateVideoParams {
   prompt: string;
@@ -19,14 +20,16 @@ interface VideoGeneration {
 }
 
 @Injectable()
-export class PikaLabsService {
-  private readonly apiKey: string;
+export class PikaLabsService implements OnModuleInit {
+  private apiKey: string = '';
   private readonly apiUrl: string;
   private readonly mockMode: boolean;
   private readonly storageDir: string;
 
-  constructor(private readonly config: ConfigService) {
-    this.apiKey = this.config.get('PIKALABS_API_KEY') || '';
+  constructor(
+    private readonly config: ConfigService,
+    private readonly secretsManager: SecretsManagerService,
+  ) {
     this.apiUrl = this.config.get('PIKALABS_API_URL') || 'https://api.pikalabs.com/v1';
     this.mockMode = this.config.get('PIKALABS_MOCK_MODE') === 'true';
     this.storageDir = this.config.get('STORAGE_DIR') || '/tmp/videos';
@@ -35,9 +38,22 @@ export class PikaLabsService {
     if (!fs.existsSync(this.storageDir)) {
       fs.mkdirSync(this.storageDir, { recursive: true });
     }
+  }
 
-    if (!this.apiKey || this.mockMode) {
+  async onModuleInit() {
+    if (this.mockMode) {
       console.warn('⚠️  Pika Labs running in MOCK MODE');
+      return;
+    }
+
+    // Retrieve API key from Secrets Manager with fallback to env var
+    const apiKey = await this.secretsManager.getSecret('pikalabs-api-key', 'PIKALABS_API_KEY');
+
+    if (apiKey) {
+      this.apiKey = apiKey;
+      console.log('✅ Pika Labs service initialized with API key');
+    } else {
+      console.warn('⚠️  Pika Labs API key not found, running in MOCK MODE');
     }
   }
 
