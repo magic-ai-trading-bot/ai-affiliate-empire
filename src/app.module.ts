@@ -7,6 +7,7 @@ import { ProductModule } from './modules/product/product.module';
 import { ContentModule } from './modules/content/content.module';
 import { VideoModule } from './modules/video/video.module';
 import { PublisherModule } from './modules/publisher/publisher.module';
+import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PublisherModule } from './modules/publisher/publisher.module';
     ContentModule,
     VideoModule,
     PublisherModule,
+    OrchestratorModule,
   ],
   controllers: [AppController],
   providers: [AppService],
