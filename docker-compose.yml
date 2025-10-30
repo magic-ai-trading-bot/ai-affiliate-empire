@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-affiliate-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-affiliate}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-affiliate123}
+      POSTGRES_DB: ${DB_NAME:-ai_affiliate_empire}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-affiliate}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: ai-affiliate-temporal
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=${DB_USER:-affiliate}
+      - POSTGRES_PWD=${DB_PASSWORD:-affiliate123}
+      - POSTGRES_SEEDS=postgres
+    ports:
+      - '7233:7233' # Temporal server
+      - '8233:8233' # Temporal UI
+    healthcheck:
+      test: ['CMD', 'tctl', 'cluster', 'health']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-affiliate-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${DB_USER:-affiliate}:${DB_PASSWORD:-affiliate123}@postgres:5432/${DB_NAME:-ai_affiliate_empire}?schema=public
+      TEMPORAL_ADDRESS: temporal:7233
+
+      # API Keys (set in .env)
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      AMAZON_ACCESS_KEY: ${AMAZON_ACCESS_KEY}
+      AMAZON_SECRET_KEY: ${AMAZON_SECRET_KEY}
+      AMAZON_PARTNER_TAG: ${AMAZON_PARTNER_TAG}
+      PIKALABS_API_KEY: ${PIKALABS_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      DALLE_API_KEY: ${DALLE_API_KEY}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
+      TIKTOK_API_KEY: ${TIKTOK_API_KEY}
+      INSTAGRAM_API_KEY: ${INSTAGRAM_API_KEY}
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: ai-affiliate-dashboard
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:3000
+    ports:
+      - '3001:3001'
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: ai-affiliate-network
