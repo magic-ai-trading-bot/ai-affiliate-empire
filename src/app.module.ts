@@ -8,6 +8,7 @@ import { ContentModule } from './modules/content/content.module';
 import { VideoModule } from './modules/video/video.module';
 import { PublisherModule } from './modules/publisher/publisher.module';
 import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
     VideoModule,
     PublisherModule,
     OrchestratorModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
