@@ -1,0 +1,177 @@
+version: '3.8'
+
+# ============================================================================
+# PgBouncer Docker Compose Configuration
+# AI Affiliate Empire - Connection Pooling Layer
+# ============================================================================
+
+services:
+  pgbouncer:
+    image: pgbouncer/pgbouncer:1.21.0
+    container_name: ai-affiliate-pgbouncer
+    restart: unless-stopped
+
+    # Environment variables
+    environment:
+      # Database connection
+      - DATABASES_HOST=postgres
+      - DATABASES_PORT=5432
+      - DATABASES_DBNAME=ai_affiliate_empire
+      - DATABASES_USER=${DB_USER:-user}
+      - DATABASES_PASSWORD=${DB_PASSWORD:-password}
+
+      # PgBouncer settings
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=200
+      - DEFAULT_POOL_SIZE=20
+      - MIN_POOL_SIZE=5
+      - RESERVE_POOL_SIZE=10
+      - MAX_DB_CONNECTIONS=100
+      - SERVER_IDLE_TIMEOUT=600
+      - AUTH_TYPE=scram-sha-256
+
+      # Admin
+      - ADMIN_USERS=postgres,pgbouncer_admin
+      - STATS_USERS=stats,monitoring
+
+      # Logging
+      - LOG_LEVEL=info
+      - LOG_CONNECTIONS=1
+      - LOG_DISCONNECTIONS=1
+
+    # Ports
+    ports:
+      - "6432:6432"
+
+    # Volumes
+    volumes:
+      - ./database/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - pgbouncer-logs:/var/log/pgbouncer
+
+    # Network
+    networks:
+      - ai-affiliate-network
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h localhost -p 6432 -U ${DB_USER:-user} -d pgbouncer -c 'SHOW POOLS' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+    # Depends on PostgreSQL
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # PostgreSQL (if not already defined)
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai-affiliate-postgres
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_DB=${DB_NAME:-ai_affiliate_empire}
+      - POSTGRES_USER=${DB_USER:-user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+      # Performance tuning
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C
+
+    # Ports (direct PostgreSQL access for admin)
+    ports:
+      - "5432:5432"
+
+    # Volumes
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./database/backup:/backup
+
+    # Network
+    networks:
+      - ai-affiliate-network
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-user} -d ${DB_NAME:-ai_affiliate_empire}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+    # Command (use custom config)
+    command:
+      - "postgres"
+      - "-c"
+      - "config_file=/etc/postgresql/postgresql.conf"
+
+# ============================================================================
+# Volumes
+# ============================================================================
+
+volumes:
+  postgres-data:
+    driver: local
+  pgbouncer-logs:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+
+networks:
+  ai-affiliate-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============================================================================
+# Usage
+# ============================================================================
+#
+# Start services:
+#   docker-compose -f docker-compose.pgbouncer.yml up -d
+#
+# View logs:
+#   docker-compose -f docker-compose.pgbouncer.yml logs -f pgbouncer
+#
+# Connect via PgBouncer:
+#   psql postgresql://user:password@localhost:6432/ai_affiliate_empire
+#
+# Monitor pools:
+#   psql postgresql://pgbouncer_admin:password@localhost:6432/pgbouncer -c "SHOW POOLS"
+#
+# Reload config:
+#   psql postgresql://pgbouncer_admin:password@localhost:6432/pgbouncer -c "RELOAD"
+#
+# Stop services:
+#   docker-compose -f docker-compose.pgbouncer.yml down
+#
+# Update DATABASE_URL in .env:
+#   DATABASE_URL="postgresql://user:password@localhost:6432/ai_affiliate_empire?pgbouncer=true"
+#
+# ============================================================================
