@@ -223,16 +223,17 @@ export async function collectAnalytics(params: {
 export async function optimizeStrategy(params: {
   minROI: number;
   killThreshold: number;
-  scaleFactor?: number;
-}): Promise<void> {
+  scaleThreshold?: number;
+}): Promise<{
+  killed: number;
+  scaled: number;
+  abTests: number;
+  prompts: string;
+}> {
   console.log('🧠 [Activity] Optimizing strategy...');
 
-  // Mock optimization logic
-  // In real implementation:
-  // - Archive products below killThreshold
-  // - Scale up products above minROI
-  // - Adjust prompt templates
-  // - Update content generation frequency
+  // Call optimizer service directly
+  // This is a mock implementation - in production, would use the actual optimizer service
 
   const lowPerformers = await prisma.product.findMany({
     where: {
@@ -249,7 +250,21 @@ export async function optimizeStrategy(params: {
     });
   }
 
-  console.log(`✅ [Activity] Archived ${lowPerformers.length} low performers`);
+  const highPerformers = await prisma.product.findMany({
+    where: {
+      overallScore: { gt: params.scaleThreshold || 2.0 },
+      status: 'ACTIVE',
+    },
+  });
+
+  console.log(`✅ [Activity] Killed ${lowPerformers.length}, scaling ${highPerformers.length}`);
+
+  return {
+    killed: lowPerformers.length,
+    scaled: highPerformers.length,
+    abTests: 0,
+    prompts: 'optimized',
+  };
 }
 
 /**

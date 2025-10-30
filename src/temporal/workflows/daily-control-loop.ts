@@ -124,11 +124,12 @@ export async function dailyControlLoop(
 
     // Step 8: Optimize strategy based on performance
     console.log('🧠 Step 8: Optimizing strategy...');
-    await optimizeStrategy({
+    const optimizationResult = await optimizeStrategy({
       minROI: 1.5,
       killThreshold: 0.5,
+      scaleThreshold: 2.0,
     });
-    console.log('✅ Strategy optimized');
+    console.log(`✅ Optimized: killed ${optimizationResult.killed}, scaled ${optimizationResult.scaled}`);
 
     result.status = 'completed';
 
@@ -184,7 +185,7 @@ export async function weeklyOptimization(): Promise<void> {
   await optimizeStrategy({
     minROI: 2.0,
     killThreshold: 0.3,
-    scaleFactor: 2.0,
+    scaleThreshold: 2.0,
   });
 
   // TODO: Generate and send owner report

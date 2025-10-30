@@ -9,6 +9,7 @@ import { VideoModule } from './modules/video/video.module';
 import { PublisherModule } from './modules/publisher/publisher.module';
 import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { OptimizerModule } from './modules/optimizer/optimizer.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     PublisherModule,
     OrchestratorModule,
     AnalyticsModule,
+    OptimizerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
