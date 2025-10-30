@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './common/database/database.module';
+import { LoggerModule } from './common/logging/logger.module';
+import { EncryptionModule } from './common/encryption/encryption.module';
+import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.module';
+import { HealthModule } from './common/health/health.module';
+import { validationSchema } from './common/config/env.validation';
 import { ProductModule } from './modules/product/product.module';
 import { ContentModule } from './modules/content/content.module';
 import { VideoModule } from './modules/video/video.module';
@@ -17,7 +24,21 @@ import { ReportsModule } from './modules/reports/reports.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      validationSchema,
+      validationOptions: {
+        abortEarly: false, // Show all validation errors
+      },
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: parseInt(process.env.RATE_LIMIT_TTL || '60', 10) * 1000,
+        limit: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
+      },
+    ]),
+    LoggerModule,
+    EncryptionModule,
+    CircuitBreakerModule,
+    HealthModule,
     DatabaseModule,
     ProductModule,
     ContentModule,
@@ -29,6 +50,12 @@ import { ReportsModule } from './modules/reports/reports.module';
     ReportsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

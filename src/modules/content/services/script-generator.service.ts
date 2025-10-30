@@ -40,11 +40,13 @@ export class ScriptGeneratorService {
     let scriptText: string;
 
     if (this.openai.isConfigured()) {
-      scriptText = await this.openai.generateText(userPrompt, {
+      const result = await this.openai.generateText(userPrompt, {
         systemPrompt,
         temperature: 0.8,
         maxTokens: 500,
       });
+      scriptText = result.text;
+      console.log(`💰 Script generation cost: $${result.cost.estimatedCost.toFixed(4)}`);
     } else {
       // Fallback to template-based generation
       scriptText = this.generateTemplateScript(params);
