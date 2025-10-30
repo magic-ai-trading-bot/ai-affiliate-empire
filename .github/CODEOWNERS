@@ -1,0 +1,41 @@
+# This file establishes code ownership and review requirements
+# See https://help.github.com/en/articles/about-code-owners
+
+# Global owners - can review any code
+@dungngo97
+
+# Core infrastructure and configuration
+/.github/ @dungngo97
+/.claude/ @dungngo97
+/docker* @dungngo97
+/.env* @dungngo97
+
+# Backend code (NestJS, TypeScript)
+/src/ @dungngo97
+/apps/ @dungngo97
+/libs/ @dungngo97
+
+# Frontend/Dashboard code
+/dashboard/ @dungngo97
+/frontend/ @dungngo97
+
+# Database and migrations
+/prisma/ @dungngo97
+/migrations/ @dungngo97
+
+# Configuration files
+package.json @dungngo97
+tsconfig.json @dungngo97
+*.config.* @dungngo97
+
+# Documentation
+*.md @dungngo97
+/docs/ @dungngo97
+
+# Testing
+__tests__/ @dungngo97
+*.test.ts @dungngo97
+*.spec.ts @dungngo97
+
+# CI/CD
+/.github/workflows/ @dungngo97

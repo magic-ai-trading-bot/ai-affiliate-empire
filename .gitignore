@@ -1,6 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# =============================================================================
+# Node.js and Dependencies
+# =============================================================================
 /node_modules
 /.pnp
 .pnp.*
@@ -10,63 +10,191 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# =============================================================================
+# Testing
+# =============================================================================
 /coverage
+.nyc_output
+*.lcov
 
-# next.js
+# =============================================================================
+# Build Artifacts
+# =============================================================================
 /.next/
 /out/
-
-# production
 /build
 /dist
+*.tsbuildinfo
+next-env.d.ts
 
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# package manager
+# =============================================================================
+# Package Manager
+# =============================================================================
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# semantic-release
-.nyc_output
-
-# env files (can opt-in for committing if needed)
-.env*
+# =============================================================================
+# Environment Files (NEVER COMMIT)
+# =============================================================================
+.env
+.env.local
+.env.production
+.env.production.local
+.env.staging
+.env.staging.local
+.env.test
+.env.test.local
+# Allow .env.example files for documentation
 !.env.example
+!.env*.example
 
-# vercel
+# =============================================================================
+# IDE and Editor Files
+# =============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.pem
+.project
+.classpath
+*.c9/
+*.sublime-workspace
+
+# =============================================================================
+# Debug Logs
+# =============================================================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+
+# =============================================================================
+# Database
+# =============================================================================
+/prisma/*.db
+/prisma/*.db-*
+.env.test
+
+# =============================================================================
+# Temporal Workflow Engine
+# =============================================================================
+/temporal/
+.temporal/
+
+# =============================================================================
+# Deployment
+# =============================================================================
 .vercel
+.netlify
+.env.production
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# =============================================================================
+# Media and Large Files (keep local, don't commit to repo)
+# =============================================================================
+/videos
+/thumbnails
+/temp
+/cache
+*.mp4
+*.mov
+*.avi
+*.mkv
 
-# flutter
-.dart_tool
-build
-GoogleService-Info.plist
-
+# =============================================================================
+# Project Specific
+# =============================================================================
 repomix-output.xml
 .serena/cache
-plans/**/*
-!plans/templates/*
-screenshots/*
-docs/screenshots/*
+/plans/**
+!plans/templates
+screenshots/
+docs/screenshots/
 docs/journals
 logs.txt
 test-ck
 /generated/prisma
 
-# Videos and media storage (local development)
-/videos
-/thumbnails
-/temp
+# =============================================================================
+# Flutter (if used)
+# =============================================================================
+.dart_tool/
+build/
+GoogleService-Info.plist
+
+# =============================================================================
+# AWS and Cloud
+# =============================================================================
+.aws/credentials
+.aws/config
+*.pem
+*.key
+*.p12
+*.pfx
+
+# =============================================================================
+# Secrets and Credentials (Extra Protection)
+# =============================================================================
+**/.env*
+**/secrets.json
+**/config/*.json
+!**/config/*.example.json
+**/*-credentials.json
+**/*-token.*
+**/*-secret.*
+
+# =============================================================================
+# Temporary Files
+# =============================================================================
+.tmp
+tmp/
+temp/
+.cache/
+dist-cache/
+
+# =============================================================================
+# Lock Files (use npm ci in CI/CD)
+# =============================================================================
+# Uncomment if managing lock files separately
+# package-lock.json
+# yarn.lock
+
+# =============================================================================
+# System Files
+# =============================================================================
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+
+# =============================================================================
+# Docker
+# =============================================================================
+.dockerignore
+docker-compose.override.yml
+
+# =============================================================================
+# Performance and Monitoring
+# =============================================================================
+.lighthouse/
+*.heap
+profile-*.json
+
+# =============================================================================
+# Large binary files (enable Git LFS for these)
+# =============================================================================
+# Uncomment to use Git LFS for large files
+# *.mp4
+# *.mov
+# *.bin
+# *.zip
+# *.tar.gz

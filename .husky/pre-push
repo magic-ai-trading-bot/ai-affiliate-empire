@@ -1,0 +1,41 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Skip hooks in CI environment
+if [ "$CI" = "true" ]; then
+  exit 0
+fi
+
+echo "Running pre-push validation..."
+
+# 1. Run tests before push
+echo "Running tests..."
+npm run test:unit >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "ERROR: Tests failed. Fix tests before pushing."
+  exit 1
+fi
+
+# 2. Check TypeScript compilation
+echo "Checking TypeScript compilation..."
+npx tsc --noEmit >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "ERROR: TypeScript compilation failed. Fix type errors before pushing."
+  exit 1
+fi
+
+# 3. Run linter
+echo "Checking code style..."
+npm run lint >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "ERROR: Linting failed. Run 'npm run lint:fix' to auto-fix issues."
+  exit 1
+fi
+
+# 4. Check for debug code
+echo "Checking for debug code..."
+if git diff HEAD --cached | grep -E "debugger|console\.(log|debug|warn)" | grep -v "test\|spec"; then
+  echo "WARNING: Debug statements detected. Consider removing them."
+fi
+
+echo "✓ Pre-push checks passed"

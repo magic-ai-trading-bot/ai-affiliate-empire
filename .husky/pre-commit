@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Skip hooks in CI environment
+if [ "$CI" = "true" ]; then
+  exit 0
+fi
+
+echo "Running pre-commit checks..."
+
+# 1. Check for secrets using truffleHog patterns
+echo "Checking for potential secrets..."
+FILES=$(git diff --cached --name-only)
+for file in $FILES; do
+  if grep -E "(password|secret|token|api[_-]?key|private[_-]?key|aws[_-]?secret)" "$file" 2>/dev/null | grep -v "example\|template\|\.example\|\.sample"; then
+    echo "ERROR: Potential secret found in $file"
+    echo "Please remove or move to .env.example"
+    exit 1
+  fi
+done
+
+# 2. Lint staged files
+echo "Linting staged files..."
+npx lint-staged --allow-empty
+
+# 3. Check for large files (>5MB)
+echo "Checking file sizes..."
+git diff --cached --name-only | while read file; do
+  if [ -f "$file" ]; then
+    size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null)
+    if [ "$size" -gt 5242880 ]; then
+      echo "WARNING: Large file detected: $file ($(numfmt --to=iec-i --suffix=B $size 2>/dev/null || echo "$size bytes"))"
+      echo "Consider using Git LFS for this file"
+    fi
+  fi
+done
+
+echo "✓ Pre-commit checks passed"
