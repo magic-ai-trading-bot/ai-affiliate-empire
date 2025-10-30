@@ -1,0 +1,318 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Affiliate Networks (Amazon Associates, ShareASale, CJ, etc.)
+model AffiliateNetwork {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  apiUrl          String?
+  apiKey          String?  // Encrypted
+  secretKey       String?  // Encrypted
+  commissionRate  Decimal  @default(0) @db.Decimal(5, 2)
+  status          NetworkStatus @default(ACTIVE)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  products        Product[]
+  analytics       NetworkAnalytics[]
+
+  @@index([status])
+}
+
+enum NetworkStatus {
+  ACTIVE
+  PAUSED
+  DISABLED
+}
+
+// Products from affiliate networks
+model Product {
+  id              String   @id @default(cuid())
+  asin            String?  @unique // Amazon ASIN
+  externalId      String?  // ID from other networks
+  title           String
+  description     String?  @db.Text
+  price           Decimal  @db.Decimal(10, 2)
+  currency        String   @default("USD")
+  commission      Decimal  @db.Decimal(5, 2)
+  commissionType  String   @default("percentage") // percentage or fixed
+
+  affiliateUrl    String
+  imageUrl        String?
+  category        String?
+  brand           String?
+
+  network         AffiliateNetwork @relation(fields: [networkId], references: [id])
+  networkId       String
+
+  // AI Scoring
+  trendScore      Float    @default(0)
+  profitScore     Float    @default(0)
+  viralityScore   Float    @default(0)
+  overallScore    Float    @default(0)
+
+  status          ProductStatus @default(ACTIVE)
+  lastRankedAt    DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  videos          Video[]
+  blogs           Blog[]
+  analytics       ProductAnalytics[]
+
+  @@index([status, overallScore])
+  @@index([networkId, status])
+  @@index([category, status])
+}
+
+enum ProductStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+  OUT_OF_STOCK
+}
+
+// Generated videos
+model Video {
+  id              String   @id @default(cuid())
+
+  product         Product  @relation(fields: [productId], references: [id])
+  productId       String
+
+  title           String
+  description     String?  @db.Text
+  script          String   @db.Text
+  duration        Int      // seconds
+
+  // File locations
+  videoUrl        String?
+  thumbnailUrl    String?
+  voiceUrl        String?
+
+  // Generation metadata
+  voiceProvider   String?  // elevenlabs, openai
+  videoProvider   String   @default("pikalabs") // pikalabs, runway
+  language        String   @default("en")
+
+  // Publishing status
+  status          VideoStatus @default(PENDING)
+  generatedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  publications    Publication[]
+
+  @@index([productId, status])
+  @@index([status, createdAt])
+}
+
+enum VideoStatus {
+  PENDING
+  GENERATING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+// Multi-platform publications
+model Publication {
+  id              String   @id @default(cuid())
+
+  video           Video    @relation(fields: [videoId], references: [id])
+  videoId         String
+
+  platform        Platform
+  platformPostId  String?  // YouTube video ID, TikTok ID, etc.
+  url             String?
+
+  title           String?
+  caption         String?  @db.Text
+  hashtags        String?
+
+  status          PublicationStatus @default(PENDING)
+  publishedAt     DateTime?
+  errorMessage    String?
+  retryCount      Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  analytics       PlatformAnalytics[]
+
+  @@index([videoId, platform])
+  @@index([platform, status])
+  @@index([publishedAt])
+}
+
+enum Platform {
+  YOUTUBE
+  TIKTOK
+  INSTAGRAM
+  FACEBOOK
+  BLOG
+}
+
+enum PublicationStatus {
+  PENDING
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+// Blog posts
+model Blog {
+  id              String   @id @default(cuid())
+
+  product         Product  @relation(fields: [productId], references: [id])
+  productId       String
+
+  title           String
+  slug            String   @unique
+  content         String   @db.Text
+  excerpt         String?
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+
+  language        String   @default("en")
+  status          BlogStatus @default(DRAFT)
+
+  publishedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([productId, status])
+  @@index([status, publishedAt])
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Analytics for products
+model ProductAnalytics {
+  id              String   @id @default(cuid())
+
+  product         Product  @relation(fields: [productId], references: [id])
+  productId       String
+
+  date            DateTime @db.Date
+
+  // Performance metrics
+  views           Int      @default(0)
+  clicks          Int      @default(0)
+  conversions     Int      @default(0)
+  revenue         Decimal  @default(0) @db.Decimal(10, 2)
+
+  // Calculated metrics
+  ctr             Float    @default(0) // Click-through rate
+  conversionRate  Float    @default(0)
+  roi             Float    @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([productId, date])
+  @@index([date])
+  @@index([productId, date])
+}
+
+// Analytics per platform
+model PlatformAnalytics {
+  id              String   @id @default(cuid())
+
+  publication     Publication @relation(fields: [publicationId], references: [id])
+  publicationId   String
+
+  date            DateTime @db.Date
+
+  views           Int      @default(0)
+  likes           Int      @default(0)
+  comments        Int      @default(0)
+  shares          Int      @default(0)
+  clicks          Int      @default(0)
+
+  watchTime       Int      @default(0) // seconds
+  engagement      Float    @default(0) // engagement rate
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([publicationId, date])
+  @@index([publicationId, date])
+}
+
+// Analytics per network
+model NetworkAnalytics {
+  id              String   @id @default(cuid())
+
+  network         AffiliateNetwork @relation(fields: [networkId], references: [id])
+  networkId       String
+
+  date            DateTime @db.Date
+
+  totalClicks     Int      @default(0)
+  totalConversions Int     @default(0)
+  totalRevenue    Decimal  @default(0) @db.Decimal(10, 2)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([networkId, date])
+  @@index([networkId, date])
+}
+
+// System configuration
+model SystemConfig {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String   @db.Text
+  description     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Workflow execution logs
+model WorkflowLog {
+  id              String   @id @default(cuid())
+  workflowId      String
+  workflowType    String   // daily_control_loop, weekly_optimization, etc.
+
+  status          WorkflowStatus
+  startedAt       DateTime
+  completedAt     DateTime?
+  duration        Int?     // seconds
+
+  result          String?  @db.Text
+  errorMessage    String?  @db.Text
+
+  createdAt       DateTime @default(now())
+
+  @@index([workflowType, startedAt])
+  @@index([status, startedAt])
+}
+
+enum WorkflowStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}

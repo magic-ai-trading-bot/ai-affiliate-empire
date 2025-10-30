@@ -19,6 +19,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -63,3 +64,9 @@ docs/screenshots/*
 docs/journals
 logs.txt
 test-ck
+/generated/prisma
+
+# Videos and media storage (local development)
+/videos
+/thumbnails
+/temp

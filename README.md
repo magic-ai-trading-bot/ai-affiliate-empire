@@ -1,60 +1,87 @@
-# Claude Code Boilerplate
+# AI Affiliate Empire
 
-A comprehensive boilerplate template for building professional software projects with **CLI Coding Agents** (**Claude Code** and **Open Code**). This template provides a complete development environment with AI-powered agent orchestration, automated workflows, and intelligent project management.
+**Fully autonomous AI-powered affiliate marketing system** that discovers products, generates video + written content, publishes across multiple platforms, tracks conversions, and self-optimizes—all without human intervention.
 
-## What is Claude Code?
+Built with **Claude Code** and **Open Code** AI agent orchestration for rapid development and autonomous operations.
 
-**Claude Code** is Anthropic's official CLI tool that brings AI-powered development assistance directly to your terminal. It enables natural language interaction with your codebase and provides intelligent automation for common development tasks.
+**Target**: $10,000+/month in affiliate revenue across multiple niches and platforms.
 
-- [Claude Code](https://claude.com/product/claude-code)
-- [Docs](https://docs.claude.com/en/docs/claude-code/overview)
+## System Overview
 
-**Open Code CLI Coding Agents** extend Claude Code with specialized AI agents that handle specific aspects of software development - from planning and research to testing and documentation. This creates a collaborative AI development team that works alongside human developers.
+### Core Innovation: 24-Hour Autonomous Control Loop
 
-- [Open Code](https://opencode.ai/)
-- [Docs](https://opencode.ai/docs)
+```
+DISCOVER PRODUCTS → RANK BY ROI → GENERATE CONTENT → PUBLISH MULTI-PLATFORM →
+TRACK ANALYTICS → OPTIMIZE STRATEGY → SCALE WINNERS → REPEAT DAILY
+```
 
-## Related Projects & Directories
+### What It Does
 
-- `claudekit` - Website of ClaudeKit
-  - Directory: `../claudekit`
-  - Repo: https://github.com/claudekit/claudekit
-- `claudekit-marketing` - Marketing Kit repository
-  - Directory: `../claudekit-marketing`
-  - Repo: https://github.com/claudekit/claudekit-marketing
-- `claudekit-cli` - CLI tool for quick project setup
-  - Directory: `../claudekit-cli`
-  - Repo: https://github.com/mrgoonie/claudekit-cli
-- `claudekit-docs` - Public documentation repository: https://docs.claudekit.cc
-  - Directory: `../claudekit-docs`
-  - Repo: https://github.com/claudekit/claudekit-docs
+1. **Discovers** affiliate networks and products automatically
+2. **Ranks** products by profit potential using AI + social trends
+3. **Generates** video scripts, voiceovers, videos, thumbnails, blog posts
+4. **Publishes** to YouTube Shorts, TikTok, Instagram Reels, blog
+5. **Tracks** views, clicks, conversions, revenue across platforms
+6. **Learns** from performance data to improve content and strategy
+7. **Scales** winners, kills losers, adjusts allocation autonomously
 
-## Key Benefits
+### Technology Stack
 
-### 🚀 Accelerated Development
-- **AI-Powered Planning**: Automated technical planning and architecture design
-- **Intelligent Code Generation**: Context-aware code creation and modification
-- **Automated Testing**: Comprehensive test generation and execution
-- **Smart Documentation**: Synchronized docs that evolve with your code
+- **Backend**: Node.js + Nest.js (unified TypeScript)
+- **Orchestration**: Temporal (durable workflows)
+- **Database**: PostgreSQL + Prisma
+- **Video**: Pika Labs ($28/month for 2000 videos)
+- **AI**: GPT-5 (scripts), Claude 3.5 (blogs), ElevenLabs (voice), DALL-E 3 (thumbnails)
+- **Platforms**: YouTube, TikTok, Instagram, Next.js blog
+- **Hosting**: Fly.io + Cloudflare R2
 
-### 🎯 Enhanced Quality
-- **Multi-Agent Code Review**: Specialized agents for security, performance, and standards
-- **Automated Quality Assurance**: Continuous testing and validation
-- **Best Practices Enforcement**: Built-in adherence to coding standards
-- **Security-First Development**: Proactive security analysis and recommendations
+## Key Features
 
-### 🏗️ Structured Workflow
-- **Agent Orchestration**: Coordinated AI agents working in parallel and sequential workflows
-- **Task Management**: Automated project tracking and progress monitoring
-- **Documentation Sync**: Always up-to-date technical documentation
-- **Clean Git Workflow**: Professional commit messages and branch management
+### 🤖 Full Autonomy
+- **Zero Human Intervention**: Runs 24/7 after initial setup
+- **Self-Healing**: Auto-retry on failures, workflow durability
+- **Self-Optimizing**: A/B tests prompts, kills losers, scales winners
+- **Auto-Scaling**: Spawns/kills niche agents based on ROI
+
+### 💰 Revenue Optimization
+- **AI Product Selection**: Ranks by commission % + trend score + social virality
+- **Multi-Network Support**: Amazon Associates, ShareASale, CJ Affiliate
+- **ROI Tracking**: Real-time revenue per product/platform/niche
+- **Cost Efficiency**: $0.27 per content piece, $6+ target revenue
+
+### 🎬 Content Generation
+- **Video Pipeline**: Script → Voice → Visuals → Rendered video (all automated)
+- **Blog Posts**: SEO-optimized articles with AI
+- **Multi-Language**: English, Vietnamese, Spanish support
+- **Brand Consistency**: Automated thumbnails, captions, CTAs
+
+### 📱 Multi-Platform Publishing
+- **YouTube Shorts**: 6-20 videos/day per account
+- **TikTok**: 30 videos/day per account
+- **Instagram Reels**: 25 videos/day per account
+- **Blog**: Unlimited posts
+- **Smart Scheduling**: Optimal posting times per platform/region
+
+## Economics
+
+### Operating Costs: $412/month
+- **Fixed**: $177 (Pika Labs, ElevenLabs, Fly.io)
+- **Variable**: $235 (OpenAI, Claude, DALL-E)
+
+### Revenue Targets
+- **Break-even**: $412/month (Week 2-3)
+- **Phase 1**: $2,000/month (485% ROI)
+- **Phase 2**: $10,000/month (2,426% ROI)
+- **Scale**: $100,000+/month (24,271% ROI)
 
 ## Quick Start
 
 ### Prerequisites
-- [Claude Code](https://claude.ai/code) installed and configured
-- Git for version control
-- Node.js 18+ (or your preferred runtime)
+- Node.js 18+
+- PostgreSQL 14+
+- Redis 7+
+- Docker & Docker Compose
+- API Keys: OpenAI, Anthropic, Amazon Associates, Pika Labs, ElevenLabs
 
 ## Release Information
 
