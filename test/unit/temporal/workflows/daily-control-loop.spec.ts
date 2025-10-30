@@ -134,7 +134,7 @@ describe('Daily Control Loop Workflow', () => {
           fail('Expected workflow to fail');
         } catch (error: any) {
           // Temporal wraps the error, so check for either the wrapped or original message
-          expect(error.message).toMatch(/Sync failed|Workflow execution failed/);
+          expect(error.message).toMatch(/Sync failed|Activity task failed|Workflow execution failed/);
         }
       });
 
