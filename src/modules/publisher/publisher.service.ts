@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Platform } from '@prisma/client';
 import { PrismaService } from '@/common/database/prisma.service';
 import { YoutubeService } from './services/youtube.service';
 import { TiktokService } from './services/tiktok.service';
@@ -51,7 +52,7 @@ export class PublisherService {
         const failedPublication = await this.prisma.publication.create({
           data: {
             videoId: video.id,
-            platform,
+            platform: platform as Platform,
             caption,
             hashtags,
             status: 'FAILED',
@@ -81,7 +82,7 @@ export class PublisherService {
     const publication = await this.prisma.publication.create({
       data: {
         videoId: video.id,
-        platform,
+        platform: platform as Platform,
         caption,
         hashtags,
         status: 'PUBLISHING',

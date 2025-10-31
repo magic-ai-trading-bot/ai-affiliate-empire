@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/database/prisma.service';
 
-interface WeeklyReport {
+export interface WeeklyReport {
   period: {
     start: string;
     end: string;

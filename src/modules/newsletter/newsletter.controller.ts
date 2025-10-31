@@ -1,11 +1,10 @@
 import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, Ip, Headers } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { NewsletterService, SubscribeDto, ConfirmSubscriptionDto, UnsubscribeDto } from './newsletter.service';
 
 @ApiTags('Newsletter')
 @Controller('blog/newsletter')
 export class NewsletterController {
-  constructor(private readonly newsletterService: NewsletterService) {}
+  constructor() {}
 
   @Post('subscribe')
   @HttpCode(HttpStatus.OK)
@@ -13,23 +12,16 @@ export class NewsletterController {
   @ApiResponse({ status: 200, description: 'Subscription successful' })
   @ApiResponse({ status: 400, description: 'Invalid email or bad request' })
   async subscribe(
-    @Body('email') email: string,
-    @Body('source') source?: string,
-    @Body('referrer') referrer?: string,
-    @Ip() ipAddress?: string,
-    @Headers('user-agent') userAgent?: string,
+    @Body('email') _email: string,
+    @Body('source') _source?: string,
+    @Body('referrer') _referrer?: string,
+    @Ip() _ipAddress?: string,
+    @Headers('user-agent') _userAgent?: string,
   ) {
-    const result = await this.newsletterService.subscribe({
-      email,
-      source,
-      referrer,
-      ipAddress,
-      userAgent,
-    });
-
+    // TODO: Implement newsletter service when Prisma model is added
     return {
       success: true,
-      ...result,
+      message: 'Newsletter service not yet implemented',
     };
   }
 
@@ -37,31 +29,28 @@ export class NewsletterController {
   @ApiOperation({ summary: 'Confirm newsletter subscription' })
   @ApiResponse({ status: 200, description: 'Subscription confirmed' })
   @ApiResponse({ status: 404, description: 'Invalid or expired token' })
-  async confirm(@Query('token') token: string) {
-    const result = await this.newsletterService.confirmSubscription({ token });
-
-    return result;
+  async confirm(@Query('token') _token: string) {
+    // TODO: Implement newsletter service when Prisma model is added
+    return { success: false, message: 'Newsletter service not yet implemented' };
   }
 
   @Get('unsubscribe')
   @ApiOperation({ summary: 'Unsubscribe from newsletter' })
   @ApiResponse({ status: 200, description: 'Unsubscribed successfully' })
   @ApiResponse({ status: 404, description: 'Invalid token' })
-  async unsubscribe(@Query('token') token: string) {
-    const result = await this.newsletterService.unsubscribe({ token });
-
-    return result;
+  async unsubscribe(@Query('token') _token: string) {
+    // TODO: Implement newsletter service when Prisma model is added
+    return { success: false, message: 'Newsletter service not yet implemented' };
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get newsletter statistics' })
   @ApiResponse({ status: 200, description: 'Statistics retrieved' })
   async getStats() {
-    const stats = await this.newsletterService.getStats();
-
+    // TODO: Implement newsletter service when Prisma model is added
     return {
       success: true,
-      data: stats,
+      data: { subscribers: 0, confirmed: 0, unsubscribed: 0 },
     };
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/database/prisma.service';
 
-interface PromptVersion {
+export interface PromptVersion {
   id: string;
   version: number;
   template: string;
@@ -54,7 +54,8 @@ export class PromptVersioningService {
    */
   async getPromptVersions(): Promise<PromptVersion[]> {
     const config = await this.getOrCreateConfig();
-    return ((config.config as any).promptVersions || []) as PromptVersion[];
+    const configData = JSON.parse(config.value) as any;
+    return (configData.promptVersions || []) as PromptVersion[];
   }
 
   /**
@@ -195,10 +196,10 @@ export class PromptVersioningService {
     await this.prisma.systemConfig.update({
       where: { id: config.id },
       data: {
-        config: {
-          ...(config.config as object),
+        value: JSON.stringify({
+          ...(JSON.parse(config.value) as object),
           promptVersions: versions,
-        },
+        }),
       },
     });
   }
@@ -210,7 +211,10 @@ export class PromptVersioningService {
 
     if (!config) {
       config = await this.prisma.systemConfig.create({
-        data: { config: {} },
+        data: {
+          key: 'prompt_versioning_config',
+          value: JSON.stringify({})
+        },
       });
     }
 

@@ -1,3 +1,4 @@
+import { Platform } from "@prisma/client";
 import { PrismaClient } from '@prisma/client';
 
 // Initialize Prisma client for activities
@@ -176,7 +177,7 @@ export async function publishVideosToAll(params: {
         await prisma.publication.create({
           data: {
             videoId,
-            platform,
+            platform: platform as Platform,
             status: 'PUBLISHED',
             platformPostId: `mock-${Date.now()}`,
             url: `https://${platform.toLowerCase()}.com/video`,

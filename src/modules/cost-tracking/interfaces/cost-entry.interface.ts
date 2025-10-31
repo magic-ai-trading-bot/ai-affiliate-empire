@@ -67,7 +67,7 @@ export interface BudgetStatus {
 
 export interface AlertContext {
   currentSpend: number;
-  monthlyLimit: number;
+  monthlyLimit?: number;
   budgetLimit: number;
   dailyLimit?: number;
   percentUsed: number;

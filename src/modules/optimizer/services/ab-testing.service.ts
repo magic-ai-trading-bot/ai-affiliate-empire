@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/database/prisma.service';
 
-interface ABTest {
+export interface ABTest {
   id: string;
   name: string;
   variantA: any;
@@ -33,7 +33,8 @@ export class ABTestingService {
 
     // Store in system config
     const config = await this.getOrCreateConfig();
-    const tests = (config.config as any).abTests || [];
+    const configData = JSON.parse(config.value) as any;
+    const tests = configData.abTests || [];
 
     const newTest: ABTest = {
       id: `test_${Date.now()}`,
@@ -49,10 +50,10 @@ export class ABTestingService {
     await this.prisma.systemConfig.update({
       where: { id: config.id },
       data: {
-        config: {
-          ...(config.config as object),
+        value: JSON.stringify({
+          ...(JSON.parse(config.value) as object),
           abTests: tests,
-        },
+        }),
       },
     });
 
@@ -66,7 +67,8 @@ export class ABTestingService {
     console.log('🔬 Analyzing A/B tests...');
 
     const config = await this.getOrCreateConfig();
-    const tests = ((config.config as any).abTests || []) as ABTest[];
+    const configData = JSON.parse(config.value) as any;
+    const tests = (configData.abTests || []) as ABTest[];
 
     const results = [];
 
@@ -87,10 +89,10 @@ export class ABTestingService {
     await this.prisma.systemConfig.update({
       where: { id: config.id },
       data: {
-        config: {
-          ...(config.config as object),
+        value: JSON.stringify({
+          ...(JSON.parse(config.value) as object),
           abTests: tests,
-        },
+        }),
       },
     });
 
@@ -134,7 +136,8 @@ export class ABTestingService {
    */
   async getResults() {
     const config = await this.getOrCreateConfig();
-    const tests = ((config.config as any).abTests || []) as ABTest[];
+    const configData = JSON.parse(config.value) as any;
+    const tests = (configData.abTests || []) as ABTest[];
 
     return {
       total: tests.length,
@@ -199,7 +202,10 @@ export class ABTestingService {
 
     if (!config) {
       config = await this.prisma.systemConfig.create({
-        data: { config: {} },
+        data: {
+          key: 'ab_testing_config',
+          value: JSON.stringify({})
+        },
       });
     }
 

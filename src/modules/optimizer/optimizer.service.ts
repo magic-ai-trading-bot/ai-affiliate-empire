@@ -127,16 +127,17 @@ export class OptimizerService {
       await this.prisma.systemConfig.update({
         where: { id: existing.id },
         data: {
-          config: {
-            ...(existing.config as object),
+          value: JSON.stringify({
+            ...(JSON.parse(existing.value) as object),
             ...config,
-          },
+          }),
         },
       });
     } else {
       await this.prisma.systemConfig.create({
         data: {
-          config: config,
+          key: 'optimizer_config',
+          value: JSON.stringify(config),
         },
       });
     }

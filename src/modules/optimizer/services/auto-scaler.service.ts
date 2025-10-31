@@ -90,7 +90,8 @@ export class AutoScalerService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const productConfigs = (systemConfig?.config as any)?.products || {};
+    const configData = systemConfig ? (JSON.parse(systemConfig.value) as any) : {};
+    const productConfigs = configData?.products || {};
     productConfigs[productId] = {
       ...productConfigs[productId],
       ...config,
@@ -101,18 +102,19 @@ export class AutoScalerService {
       await this.prisma.systemConfig.update({
         where: { id: systemConfig.id },
         data: {
-          config: {
-            ...(systemConfig.config as object),
+          value: JSON.stringify({
+            ...(JSON.parse(systemConfig.value) as object),
             products: productConfigs,
-          },
+          }),
         },
       });
     } else {
       await this.prisma.systemConfig.create({
         data: {
-          config: {
+          key: 'auto_scaler_config',
+          value: JSON.stringify({
             products: productConfigs,
-          },
+          }),
         },
       });
     }

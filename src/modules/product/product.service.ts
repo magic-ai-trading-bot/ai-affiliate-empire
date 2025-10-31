@@ -4,6 +4,7 @@ import { ProductRanker } from './services/product-ranker.service';
 import { AmazonService } from './services/amazon.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { GetProductsDto } from './dto/get-products.dto';
+import { ProductStatus } from '@prisma/client';
 
 @Injectable()
 export class ProductService {
@@ -18,7 +19,7 @@ export class ProductService {
 
     const products = await this.prisma.product.findMany({
       where: {
-        status,
+        status: status as ProductStatus,
         ...(category && { category }),
       },
       include: {
@@ -62,7 +63,10 @@ export class ProductService {
 
   async create(dto: CreateProductDto) {
     const product = await this.prisma.product.create({
-      data: dto,
+      data: {
+        ...dto,
+        status: dto.status ? (dto.status as ProductStatus) : 'ACTIVE',
+      },
       include: {
         network: true,
       },
@@ -145,7 +149,13 @@ export class ProductService {
       const updates = [];
       for (const product of createdProducts) {
         try {
-          const scores = await this.ranker.calculateScores(product);
+          const scores = await this.ranker.calculateScores({
+            ...product,
+            price: Number(product.price),
+            commission: Number(product.commission),
+            category: product.category ?? undefined,
+            brand: product.brand ?? undefined
+          });
           updates.push({
             where: { id: product.id },
             data: {
@@ -185,7 +195,13 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${productId} not found`);
     }
 
-    const scores = await this.ranker.calculateScores(product);
+    const scores = await this.ranker.calculateScores({
+      ...product,
+      price: Number(product.price),
+      commission: Number(product.commission),
+      category: product.category ?? undefined,
+      brand: product.brand ?? undefined
+    });
 
     const updated = await this.prisma.product.update({
       where: { id: productId },
@@ -212,7 +228,13 @@ export class ProductService {
     const updates = [];
     for (const product of products) {
       try {
-        const scores = await this.ranker.calculateScores(product);
+        const scores = await this.ranker.calculateScores({
+          ...product,
+          price: Number(product.price),
+          commission: Number(product.commission),
+          category: product.category ?? undefined,
+          brand: product.brand ?? undefined
+        });
         updates.push({
           where: { id: product.id },
           data: {
