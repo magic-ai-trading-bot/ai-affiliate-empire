@@ -4,8 +4,10 @@ import { PublisherService } from './publisher.service';
 import { YoutubeService } from './services/youtube.service';
 import { TiktokService } from './services/tiktok.service';
 import { InstagramService } from './services/instagram.service';
+import { ComplianceModule } from '@/common/compliance/compliance.module';
 
 @Module({
+  imports: [ComplianceModule],
   controllers: [PublisherController],
   providers: [
     PublisherService,

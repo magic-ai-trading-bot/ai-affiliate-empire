@@ -5,6 +5,7 @@ import { YoutubeService } from './services/youtube.service';
 import { TiktokService } from './services/tiktok.service';
 import { InstagramService } from './services/instagram.service';
 import { PublishVideoDto } from './dto/publish-video.dto';
+import { FtcDisclosureValidatorService } from '@/common/compliance/ftc-disclosure-validator.service';
 
 @Injectable()
 export class PublisherService {
@@ -13,6 +14,7 @@ export class PublisherService {
     private readonly youtube: YoutubeService,
     private readonly tiktok: TiktokService,
     private readonly instagram: InstagramService,
+    private readonly ftcValidator: FtcDisclosureValidatorService,
   ) {}
 
   async publishVideo(dto: PublishVideoDto) {
@@ -37,11 +39,32 @@ export class PublisherService {
 
     for (const platform of platforms) {
       try {
+        // Generate caption and hashtags if not provided
+        let finalCaption = caption || this.generateCaption(video);
+        const finalHashtags = hashtags || this.generateHashtags(video);
+
+        // Validate FTC compliance for social media platforms
+        if (['TIKTOK', 'INSTAGRAM'].includes(platform)) {
+          const platformType = platform.toLowerCase() as 'tiktok' | 'instagram';
+          const validation = this.ftcValidator.validateSocialCaption(
+            `${finalCaption} ${finalHashtags}`,
+            platformType
+          );
+
+          if (!validation.isValid) {
+            console.warn(`⚠️ Caption for ${platform} missing FTC disclosure, adding automatically...`);
+            finalCaption = this.ftcValidator.ensureDisclosure(finalCaption, platformType);
+            console.log(`✅ FTC disclosure added to ${platform} caption`);
+          } else {
+            console.log(`✅ Caption passes FTC compliance for ${platform}`);
+          }
+        }
+
         const publication = await this.publishToPlatform({
           video,
           platform,
-          caption: caption || this.generateCaption(video),
-          hashtags: hashtags || this.generateHashtags(video),
+          caption: finalCaption,
+          hashtags: finalHashtags,
         });
 
         publications.push(publication);

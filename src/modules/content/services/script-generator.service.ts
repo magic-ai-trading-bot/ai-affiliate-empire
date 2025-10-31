@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAIService } from './openai.service';
+import { FtcDisclosureValidatorService } from '../../../common/compliance/ftc-disclosure-validator.service';
 
 interface GenerateScriptParams {
   productTitle: string;
@@ -20,7 +21,10 @@ interface ScriptOutput {
 
 @Injectable()
 export class ScriptGeneratorService {
-  constructor(private readonly openai: OpenAIService) {}
+  constructor(
+    private readonly openai: OpenAIService,
+    private readonly ftcValidator: FtcDisclosureValidatorService,
+  ) {}
 
   async generate(params: GenerateScriptParams): Promise<ScriptOutput> {
     const {
@@ -50,6 +54,18 @@ export class ScriptGeneratorService {
     } else {
       // Fallback to template-based generation
       scriptText = this.generateTemplateScript(params);
+    }
+
+    // Validate FTC compliance
+    const validation = this.ftcValidator.validateVideoScript(scriptText);
+
+    // If disclosure is missing or invalid, add it automatically
+    if (!validation.isValid) {
+      console.warn('⚠️ Script missing proper FTC disclosure, adding automatically...');
+      scriptText = this.ftcValidator.ensureDisclosure(scriptText, 'youtube');
+      console.log('✅ FTC disclosure added to script');
+    } else {
+      console.log('✅ Script passes FTC compliance validation');
     }
 
     // Parse script components
