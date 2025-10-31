@@ -11,13 +11,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { ApiKeyService } from './api-key.service';
 import { RegisterDto } from './dto/register.dto';
@@ -125,10 +119,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get API key by ID' })
   @ApiResponse({ status: 200, description: 'API key retrieved' })
   @ApiResponse({ status: 404, description: 'API key not found' })
-  async getApiKeyById(
-    @Param('id') id: string,
-    @CurrentUser('userId') userId: string,
-  ) {
+  async getApiKeyById(@Param('id') id: string, @CurrentUser('userId') userId: string) {
     return this.apiKeyService.getApiKeyById(id, userId);
   }
 
@@ -154,10 +145,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Delete API key' })
   @ApiResponse({ status: 200, description: 'API key deleted' })
   @ApiResponse({ status: 404, description: 'API key not found' })
-  async deleteApiKey(
-    @Param('id') id: string,
-    @CurrentUser('userId') userId: string,
-  ) {
+  async deleteApiKey(@Param('id') id: string, @CurrentUser('userId') userId: string) {
     return this.apiKeyService.deleteApiKey(id, userId);
   }
 
@@ -168,10 +156,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Revoke API key' })
   @ApiResponse({ status: 200, description: 'API key revoked' })
   @ApiResponse({ status: 404, description: 'API key not found' })
-  async revokeApiKey(
-    @Param('id') id: string,
-    @CurrentUser('userId') userId: string,
-  ) {
+  async revokeApiKey(@Param('id') id: string, @CurrentUser('userId') userId: string) {
     return this.apiKeyService.revokeApiKey(id, userId);
   }
 }

@@ -1,0 +1,165 @@
+/* Article Typography Styles */
+.article {
+  max-width: 720px;
+  margin: 0 auto;
+  font-size: 19px;
+  line-height: 1.7;
+  color: hsl(var(--foreground));
+}
+
+@media (max-width: 767px) {
+  .article {
+    font-size: 18px;
+  }
+}
+
+.article h2 {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  color: hsl(var(--foreground));
+}
+
+.article h3 {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  color: hsl(var(--foreground));
+}
+
+.article h4 {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  color: hsl(var(--foreground));
+}
+
+.article p {
+  margin-bottom: 24px;
+}
+
+.article a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  transition: all 150ms ease;
+}
+
+.article a:hover {
+  text-decoration: underline;
+}
+
+.article ul,
+.article ol {
+  margin-bottom: 24px;
+  padding-left: 24px;
+}
+
+.article li {
+  margin-bottom: 8px;
+}
+
+.article ul li::marker {
+  color: hsl(var(--primary));
+}
+
+.article ol li::marker {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.article blockquote {
+  font-size: 21px;
+  font-style: italic;
+  padding: 16px 24px;
+  margin: 24px 0;
+  border-left: 4px solid hsl(var(--primary));
+  background-color: hsl(var(--background-secondary));
+  border-radius: 4px;
+}
+
+.article img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 32px 0;
+}
+
+.article code {
+  font-family: 'Fira Code', 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+  font-size: 0.9em;
+  padding: 2px 6px;
+  background-color: hsl(var(--background-secondary));
+  border-radius: 4px;
+  border: 1px solid hsl(var(--border));
+}
+
+.article pre {
+  margin: 24px 0;
+  padding: 24px;
+  background-color: hsl(var(--background-secondary));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  overflow-x: auto;
+  position: relative;
+}
+
+.article pre code {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.article hr {
+  margin: 48px 0;
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.article strong {
+  font-weight: 600;
+}
+
+.article em {
+  font-style: italic;
+}
+
+/* Table styles */
+.article table {
+  width: 100%;
+  margin: 24px 0;
+  border-collapse: collapse;
+}
+
+.article th,
+.article td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.article th {
+  font-weight: 600;
+  background-color: hsl(var(--background-secondary));
+}
+
+.article tr:hover {
+  background-color: hsl(var(--background-secondary));
+}
+
+/* First paragraph drop cap (optional) */
+.article.drop-cap > p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.5em;
+  line-height: 0.9;
+  margin: 0.1em 0.1em 0 0;
+  font-weight: 700;
+  color: hsl(var(--primary));
+}

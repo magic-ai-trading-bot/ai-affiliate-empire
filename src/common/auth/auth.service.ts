@@ -15,8 +15,8 @@ import { LoggerService } from '../logging/logger.service';
 @Injectable()
 export class AuthService {
   private readonly SALT_ROUNDS = 10;
-  private readonly ACCESS_TOKEN_EXPIRY = '15m';
-  private readonly REFRESH_TOKEN_EXPIRY = '7d';
+  private readonly ACCESS_TOKEN_EXPIRY: string;
+  private readonly REFRESH_TOKEN_EXPIRY: string;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -25,6 +25,8 @@ export class AuthService {
     private readonly logger: LoggerService,
   ) {
     this.logger.setContext(AuthService.name);
+    this.ACCESS_TOKEN_EXPIRY = this.configService.get<string>('JWT_EXPIRES_IN', '15m');
+    this.REFRESH_TOKEN_EXPIRY = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d');
   }
 
   async register(registerDto: RegisterDto) {
@@ -171,7 +173,9 @@ export class AuthService {
   async refreshTokens(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET') || 'your-refresh-secret-change-in-production',
+        secret:
+          this.configService.get<string>('JWT_REFRESH_SECRET') ||
+          'your-refresh-secret-change-in-production',
       });
 
       const user = await this.prisma.user.findUnique({
@@ -191,10 +195,7 @@ export class AuthService {
       }
 
       // Verify stored refresh token matches
-      const isRefreshTokenValid = await bcrypt.compare(
-        refreshToken,
-        user.refreshToken || '',
-      );
+      const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.refreshToken || '');
 
       if (!isRefreshTokenValid) {
         throw new UnauthorizedException('Invalid refresh token');
@@ -239,12 +240,15 @@ export class AuthService {
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_SECRET') || 'your-secret-key-change-in-production',
-        expiresIn: this.ACCESS_TOKEN_EXPIRY,
+        secret:
+          this.configService.get<string>('JWT_SECRET') || 'your-secret-key-change-in-production',
+        expiresIn: this.ACCESS_TOKEN_EXPIRY as any,
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET') || 'your-refresh-secret-change-in-production',
-        expiresIn: this.REFRESH_TOKEN_EXPIRY,
+        secret:
+          this.configService.get<string>('JWT_REFRESH_SECRET') ||
+          'your-refresh-secret-change-in-production',
+        expiresIn: this.REFRESH_TOKEN_EXPIRY as any,
       }),
     ]);
 

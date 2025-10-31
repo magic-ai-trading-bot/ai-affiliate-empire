@@ -4,6 +4,7 @@ import { ContentService } from './content.service';
 import { ScriptGeneratorService } from './services/script-generator.service';
 import { OpenAIService } from './services/openai.service';
 import { ClaudeService } from './services/claude.service';
+import { BlogSearchService } from './services/blog-search.service';
 import { ComplianceModule } from '@/common/compliance/compliance.module';
 
 @Module({
@@ -14,7 +15,8 @@ import { ComplianceModule } from '@/common/compliance/compliance.module';
     ScriptGeneratorService,
     OpenAIService,
     ClaudeService,
+    BlogSearchService,
   ],
-  exports: [ContentService],
+  exports: [ContentService, BlogSearchService],
 })
 export class ContentModule {}

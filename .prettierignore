@@ -1,0 +1,9 @@
+dist
+node_modules
+coverage
+*.md
+*.mdx
+.next
+.turbo
+apps/
+dashboard/public/

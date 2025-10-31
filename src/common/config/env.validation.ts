@@ -68,6 +68,9 @@ export const validationSchema = Joi.object({
 
   // Security
   JWT_SECRET: Joi.string().min(32).required(),
+  JWT_REFRESH_SECRET: Joi.string().min(32).optional(),
+  JWT_EXPIRES_IN: Joi.string().default('15m'),
+  JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
   ENCRYPTION_KEY: Joi.string().min(32).required(),
 
   // Rate Limiting

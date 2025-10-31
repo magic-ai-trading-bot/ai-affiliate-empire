@@ -25,6 +25,7 @@ import { OptimizerModule } from './modules/optimizer/optimizer.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { GdprModule } from './modules/gdpr/gdpr.module';
 import { CostTrackingModule } from './modules/cost-tracking/cost-tracking.module';
+import { NewsletterModule } from './modules/newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { CostTrackingModule } from './modules/cost-tracking/cost-tracking.module
     ReportsModule,
     GdprModule,
     CostTrackingModule,
+    NewsletterModule,
   ],
   controllers: [AppController],
   providers: [

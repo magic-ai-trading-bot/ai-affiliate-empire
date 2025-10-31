@@ -34,19 +34,23 @@ afterAll(async () => {
  */
 async function cleanDatabase() {
   // Delete in reverse order of dependencies
+  await prisma.platformAnalytics.deleteMany({});
   await prisma.publication.deleteMany({});
   await prisma.productAnalytics.deleteMany({});
   await prisma.networkAnalytics.deleteMany({});
   await prisma.workflowLog.deleteMany({});
-  await prisma.optimizationLog.deleteMany({});
-  await prisma.promptVersion.deleteMany({});
-  await prisma.abTest.deleteMany({});
+  await prisma.costOptimization.deleteMany({});
+  await prisma.budgetAlert.deleteMany({});
+  await prisma.dailyCostSummary.deleteMany({});
+  await prisma.costEntry.deleteMany({});
   await prisma.video.deleteMany({});
   await prisma.blog.deleteMany({});
-  await prisma.content.deleteMany({});
   await prisma.product.deleteMany({});
   await prisma.affiliateNetwork.deleteMany({});
   await prisma.systemConfig.deleteMany({});
+  await prisma.auditLog.deleteMany({});
+  await prisma.apiKey.deleteMany({});
+  await prisma.user.deleteMany({});
 }
 
 // Make prisma available globally for tests

@@ -14,7 +14,6 @@ import {
   createTestAffiliateNetwork,
   createTestProducts,
   createTestVideo,
-  createTestContent,
   createTestBlog,
   createTestPublication,
   createTestAnalytics,
@@ -122,7 +121,6 @@ describe('Database Integration', () => {
               publications: true,
             },
           },
-          content: true,
           blogs: true,
           analytics: true,
         },
@@ -132,7 +130,7 @@ describe('Database Integration', () => {
       expect(completeProduct?.network).toBeTruthy();
       expect(completeProduct?.videos.length).toBeGreaterThan(0);
       expect(completeProduct?.videos[0].publications.length).toBe(3);
-      expect(completeProduct?.content.length).toBeGreaterThan(0);
+      expect(completeProduct?.blogs.length).toBeGreaterThan(0);
       expect(completeProduct?.analytics.length).toBeGreaterThan(0);
     });
   });
@@ -144,26 +142,28 @@ describe('Database Integration', () => {
       const result = await prisma.$transaction(async (tx) => {
         const product1 = await tx.product.create({
           data: {
-            networkId: network.id,
+            network: { connect: { id: network.id } },
             asin: 'TX001',
             title: 'Transaction Test 1',
             price: 99.99,
             currency: 'USD',
             commission: 10,
-            commissionType: 'PERCENTAGE',
+            commissionType: 'percentage',
+            affiliateUrl: 'https://amazon.com/dp/TX001?tag=test-20',
             status: 'ACTIVE',
           },
         });
 
         const product2 = await tx.product.create({
           data: {
-            networkId: network.id,
+            network: { connect: { id: network.id } },
             asin: 'TX002',
             title: 'Transaction Test 2',
             price: 149.99,
             currency: 'USD',
             commission: 12,
-            commissionType: 'PERCENTAGE',
+            commissionType: 'percentage',
+            affiliateUrl: 'https://amazon.com/dp/TX002?tag=test-20',
             status: 'ACTIVE',
           },
         });
@@ -187,13 +187,14 @@ describe('Database Integration', () => {
         await prisma.$transaction(async (tx) => {
           await tx.product.create({
             data: {
-              networkId: network.id,
+              network: { connect: { id: network.id } },
               asin: 'ROLLBACK001',
               title: 'Rollback Test',
               price: 99.99,
               currency: 'USD',
               commission: 10,
-              commissionType: 'PERCENTAGE',
+              commissionType: 'percentage',
+              affiliateUrl: 'https://amazon.com/dp/ROLLBACK001?tag=test-20',
               status: 'ACTIVE',
             },
           });
@@ -221,13 +222,14 @@ describe('Database Integration', () => {
           prisma.$transaction(async (tx) => {
             return await tx.product.create({
               data: {
-                networkId: network.id,
+                network: { connect: { id: network.id } },
                 asin: `CONCURRENT${index.toString().padStart(3, '0')}`,
                 title: `Concurrent Test ${index}`,
                 price: 99.99,
                 currency: 'USD',
                 commission: 10,
-                commissionType: 'PERCENTAGE',
+                commissionType: 'percentage',
+                affiliateUrl: `https://amazon.com/dp/CONCURRENT${index.toString().padStart(3, '0')}?tag=test-20`,
                 status: 'ACTIVE',
               },
             });
@@ -303,7 +305,6 @@ describe('Database Integration', () => {
           clicks: true,
           conversions: true,
           revenue: true,
-          cost: true,
         },
         _avg: {
           roi: true,
@@ -327,13 +328,14 @@ describe('Database Integration', () => {
 
       await prisma.product.create({
         data: {
-          networkId: network.id,
+          network: { connect: { id: network.id } },
           asin: 'UNIQUE001',
           title: 'Unique Test',
           price: 99.99,
           currency: 'USD',
           commission: 10,
-          commissionType: 'PERCENTAGE',
+          commissionType: 'percentage',
+          affiliateUrl: 'https://amazon.com/dp/UNIQUE001?tag=test-20',
           status: 'ACTIVE',
         },
       });
@@ -342,13 +344,14 @@ describe('Database Integration', () => {
       await expect(
         prisma.product.create({
           data: {
-            networkId: network.id,
+            network: { connect: { id: network.id } },
             asin: 'UNIQUE001', // Same ASIN
             title: 'Duplicate Test',
             price: 99.99,
             currency: 'USD',
             commission: 10,
-            commissionType: 'PERCENTAGE',
+            commissionType: 'percentage',
+            affiliateUrl: 'https://amazon.com/dp/UNIQUE001?tag=test-20',
             status: 'ACTIVE',
           },
         })
@@ -360,13 +363,14 @@ describe('Database Integration', () => {
       await expect(
         prisma.product.create({
           data: {
-            networkId: 'non-existent-id',
+            network: { connect: { id: 'non-existent-id' } },
             asin: 'FK001',
             title: 'FK Test',
             price: 99.99,
             currency: 'USD',
             commission: 10,
-            commissionType: 'PERCENTAGE',
+            commissionType: 'percentage',
+            affiliateUrl: 'https://amazon.com/dp/FK001?tag=test-20',
             status: 'ACTIVE',
           },
         })
@@ -380,13 +384,14 @@ describe('Database Integration', () => {
       await expect(
         prisma.product.create({
           data: {
-            networkId: network.id,
+            network: { connect: { id: network.id } },
             asin: 'ENUM001',
             title: 'Enum Test',
             price: 99.99,
             currency: 'USD',
             commission: 10,
-            commissionType: 'PERCENTAGE',
+            commissionType: 'percentage',
+            affiliateUrl: 'https://amazon.com/dp/ENUM001?tag=test-20',
             status: 'INVALID_STATUS' as any,
           },
         })
@@ -447,28 +452,25 @@ describe('Database Integration', () => {
             clicks: 50,
             conversions: 5,
             revenue: 49.95,
-            cost: 2.5,
+            ctr: 5.0,
+            conversionRate: 10.0,
             roi: (49.95 - 2.5) / 2.5,
-            platform: 'YOUTUBE',
           },
         });
       }
 
-      const analytics = await prisma.productAnalytics.groupBy({
-        by: ['platform'],
+      const analytics = await prisma.productAnalytics.aggregate({
         _sum: {
           views: true,
           revenue: true,
-          cost: true,
         },
         _avg: {
           roi: true,
         },
       });
 
-      expect(analytics.length).toBeGreaterThan(0);
-      expect(analytics[0]._sum.views).toBe(5000);
-      expect(analytics[0]._avg.roi).toBeGreaterThan(0);
+      expect(analytics._sum.views).toBe(5000);
+      expect(analytics._avg.roi).toBeGreaterThan(0);
     });
   });
 
@@ -478,19 +480,22 @@ describe('Database Integration', () => {
 
       const startTime = Date.now();
 
+      const bulkProducts = Array(100)
+        .fill(null)
+        .map((_, index) => ({
+          networkId: network.id,
+          asin: `BULK${index.toString().padStart(5, '0')}`,
+          title: `Bulk Product ${index}`,
+          price: 99.99,
+          currency: 'USD',
+          commission: 10,
+          commissionType: 'percentage',
+          affiliateUrl: `https://amazon.com/dp/BULK${index.toString().padStart(5, '0')}?tag=test-20`,
+          status: 'ACTIVE' as any,
+        }));
+
       await prisma.product.createMany({
-        data: Array(100)
-          .fill(null)
-          .map((_, index) => ({
-            networkId: network.id,
-            asin: `BULK${index.toString().padStart(5, '0')}`,
-            title: `Bulk Product ${index}`,
-            price: 99.99,
-            currency: 'USD',
-            commission: 10,
-            commissionType: 'PERCENTAGE' as any,
-            status: 'ACTIVE' as any,
-          })),
+        data: bulkProducts,
       });
 
       const duration = Date.now() - startTime;

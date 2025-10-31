@@ -117,6 +117,51 @@ export class ContentService {
     return videos;
   }
 
+  async listBlogs(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [blogs, total] = await Promise.all([
+      this.prisma.blog.findMany({
+        where: { status: 'PUBLISHED' },
+        include: {
+          product: {
+            select: {
+              id: true,
+              title: true,
+              category: true,
+              imageUrl: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.blog.count({ where: { status: 'PUBLISHED' } }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: blogs.map((blog) => ({
+        id: blog.id,
+        title: blog.title,
+        slug: blog.slug,
+        excerpt: blog.excerpt,
+        createdAt: blog.createdAt,
+        product: blog.product,
+      })),
+      meta: {
+        currentPage: page,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limit,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
+
   private generateSlug(title: string): string {
     return title
       .toLowerCase()

@@ -13,17 +13,11 @@ export async function createTestAffiliateNetwork() {
   return await prisma.affiliateNetwork.create({
     data: {
       name: 'Amazon Associates',
-      type: 'AMAZON',
+      apiUrl: 'https://api.amazon.com',
+      apiKey: 'test-api-key',
+      secretKey: 'test-secret-key',
+      commissionRate: 5.0,
       status: 'ACTIVE',
-      credentials: JSON.stringify({
-        accessKey: 'test-access-key',
-        secretKey: 'test-secret-key',
-        partnerTag: 'test-tag-20',
-      }),
-      config: JSON.stringify({
-        region: 'US',
-        marketplace: 'www.amazon.com',
-      }),
     },
   });
 }
@@ -44,11 +38,9 @@ export async function createTestProducts(networkId: string, count: number = 5) {
         price: 99.99 + i * 50,
         currency: 'USD',
         commission: 5 + i * 2,
-        commissionType: 'PERCENTAGE',
+        commissionType: 'percentage',
         category: i % 2 === 0 ? 'Electronics' : 'Home & Kitchen',
         brand: `Brand ${i % 3}`,
-        rating: 4.0 + (i % 5) * 0.2,
-        reviewCount: 100 + i * 50,
         imageUrl: `https://example.com/image${i}.jpg`,
         affiliateUrl: `https://amazon.com/dp/TEST${i.toString().padStart(7, '0')}?tag=test-20`,
         status: 'ACTIVE',
@@ -89,28 +81,6 @@ Scene 3: CTA
 }
 
 /**
- * Create test content for product
- */
-export async function createTestContent(productId: string) {
-  return await prisma.content.create({
-    data: {
-      productId,
-      type: 'VIDEO_SCRIPT',
-      language: 'en',
-      content: 'Test video script content',
-      metadata: JSON.stringify({
-        tone: 'exciting',
-        length: 'short',
-      }),
-      status: 'GENERATED',
-      generatedBy: 'openai',
-      generationCost: 0.001,
-      generatedAt: new Date(),
-    },
-  });
-}
-
-/**
  * Create test blog post
  */
 export async function createTestBlog(productId: string) {
@@ -124,11 +94,9 @@ export async function createTestBlog(productId: string) {
       language: 'en',
       status: 'PUBLISHED',
       publishedAt: new Date(),
-      seoMetadata: JSON.stringify({
-        metaTitle: 'Product Review',
-        metaDescription: 'A comprehensive review',
-        keywords: ['product', 'review'],
-      }),
+      metaTitle: 'Product Review',
+      metaDescription: 'A comprehensive review',
+      keywords: 'product, review',
     },
   });
 }
@@ -161,9 +129,9 @@ export async function createTestAnalytics(productId: string) {
       clicks: 50,
       conversions: 5,
       revenue: 49.95,
-      cost: 2.5,
+      ctr: 5.0,
+      conversionRate: 10.0,
       roi: 18.98,
-      platform: 'YOUTUBE',
     },
   });
 }
@@ -204,9 +172,9 @@ export async function createCompleteTestWorkflowData() {
     products.map((product) => createTestVideo(product.id))
   );
 
-  // Create content for each product
-  const contents = await Promise.all(
-    products.map((product) => createTestContent(product.id))
+  // Create blogs for each product
+  const blogs = await Promise.all(
+    products.map((product) => createTestBlog(product.id))
   );
 
   // Create publications for each video
@@ -226,7 +194,7 @@ export async function createCompleteTestWorkflowData() {
     network,
     products,
     videos,
-    contents,
+    blogs,
     publications,
     analytics,
   };
@@ -236,14 +204,13 @@ export async function createCompleteTestWorkflowData() {
  * Clean all test data
  */
 export async function cleanTestData() {
+  await prisma.platformAnalytics.deleteMany({});
   await prisma.publication.deleteMany({});
   await prisma.productAnalytics.deleteMany({});
   await prisma.networkAnalytics.deleteMany({});
   await prisma.workflowLog.deleteMany({});
-  await prisma.optimizationLog.deleteMany({});
   await prisma.video.deleteMany({});
   await prisma.blog.deleteMany({});
-  await prisma.content.deleteMany({});
   await prisma.product.deleteMany({});
   await prisma.affiliateNetwork.deleteMany({});
 }

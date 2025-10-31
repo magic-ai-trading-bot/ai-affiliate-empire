@@ -693,8 +693,122 @@ body { font-size: 16px; }
 - [Tailwind CSS Docs](https://tailwindcss.com/docs)
 - [Recharts Documentation](https://recharts.org/)
 - [Radix UI Primitives](https://www.radix-ui.com/)
+- [Next.js Image Optimization](https://nextjs.org/docs/api-reference/next/image)
+- [Framer Motion](https://www.framer.com/motion/)
+
+---
+
+## Blog Design Patterns
+
+### Article Cards
+
+**Structure:**
+- Featured image (16:9 aspect ratio)
+- Category badge (overlay on image)
+- Title (H3, 24px, bold)
+- Excerpt (2-line clamp)
+- Author info (avatar + name)
+- Meta data (date, read time)
+
+**Variants:**
+- Featured: Horizontal layout on desktop, full image
+- Standard: Vertical layout, 16:9 image
+- Minimal: Text-focused, small thumbnail
+
+**Hover Effects:**
+```css
+Card: translateY(-4px) + shadow-lg
+Image: scale(1.1) within overflow-hidden
+Title: color -> primary
+```
+
+**Responsive:**
+- Mobile: Full width, vertical stack
+- Tablet: 2 columns
+- Desktop: 3 columns
+
+### Category Cards
+
+**Structure:**
+- Icon circle (64px, accent bg)
+- Category name (H3, bold)
+- Article count (small, muted)
+- Active indicator (bottom border)
+
+**States:**
+- Default: border-border, bg-card
+- Hover: border-primary/50, shadow
+- Active: border-primary, bg-primary/5
+
+**Layout:**
+- Mobile: Horizontal scroll (snap)
+- Tablet: 3 columns grid
+- Desktop: 5 columns grid
+
+### Newsletter Section
+
+**Structure:**
+- Icon (16x16, primary bg)
+- Headline (H2, 36px)
+- Description (lg, muted)
+- Benefits list (3 items, CheckCircle icons)
+- Form (email + button)
+- Privacy note (xs, muted, link)
+
+**States:**
+- Default: Form visible
+- Loading: Button disabled, spinner
+- Success: Green message (scale-in animation)
+
+**Background:**
+- Gradient (primary/10 to accent/5)
+- Floating decorations (blur-3xl)
+
+### Hero Section (Blog)
+
+**Structure:**
+- Animated background (3 floating blobs)
+- Badge (category/feature tag)
+- Display headline (72px/48px mobile)
+- Subheadline (20px/18px mobile)
+- CTA buttons (primary + outline)
+- Stats grid (3 columns, centered)
+- Scroll indicator (animated bounce)
+
+**Animations:**
+- Staggered entry (200ms intervals)
+- Background floats (6s loop)
+- Scroll indicator bounces
+
+**Height:**
+- Desktop: 90vh
+- Mobile: min-height 70vh (auto)
+
+### Design Token Extensions
+
+**Blog-Specific Colors:**
+```css
+--primary: 262.1 83.3% 57.8%  /* AI Purple */
+--accent: 210 40% 96.1%       /* Light Gray */
+--success: 142.1 76.2% 36.3%  /* Newsletter success */
+```
+
+**Blog-Specific Spacing:**
+- Section padding: 64px vertical
+- Container max-width: 1400px
+- Card gap: 32px (desktop), 24px (mobile)
+- Hero stats gap: 32px
+
+**Blog-Specific Typography:**
+```css
+Display: 72px / 900 / -0.02em  /* Hero headline */
+Display SM: 48px / 900 / -0.02em  /* Mobile hero */
+Article Title: 24px / 600 / normal
+Category Name: 16px / 600 / normal
+```
 
 ---
 
 **Version History**
 - 1.0.0 (2025-10-31): Initial design system documentation
+- 1.1.0 (2025-10-31): Added blog design patterns (Hero, ArticleCard, CategoryCard, Newsletter)
