@@ -82,58 +82,89 @@ export class ProductService {
       category,
     });
 
-    const createdProducts = [];
+    // Get or create Amazon network once
+    let network = await this.prisma.affiliateNetwork.findUnique({
+      where: { name: 'Amazon Associates' },
+    });
 
-    for (const amazonProduct of amazonProducts) {
-      try {
-        // Check if product already exists
-        const existing = await this.prisma.product.findUnique({
-          where: { asin: amazonProduct.asin },
-        });
+    if (!network) {
+      network = await this.prisma.affiliateNetwork.create({
+        data: {
+          name: 'Amazon Associates',
+          commissionRate: 3.0,
+          status: 'ACTIVE',
+        },
+      });
+    }
 
-        if (existing) {
-          console.log(`Product ${amazonProduct.asin} already exists, skipping`);
-          continue;
-        }
+    // Batch check existing products
+    const asins = amazonProducts.map((p) => p.asin).filter(Boolean);
+    const existingProducts = await this.prisma.product.findMany({
+      where: { asin: { in: asins } },
+      select: { asin: true },
+    });
+    const existingAsins = new Set(existingProducts.map((p: { asin: string | null }) => p.asin));
 
-        // Get Amazon network
-        let network = await this.prisma.affiliateNetwork.findUnique({
-          where: { name: 'Amazon Associates' },
-        });
+    // Filter out existing products
+    const newProducts = amazonProducts.filter(
+      (p) => !existingAsins.has(p.asin)
+    );
 
-        if (!network) {
-          network = await this.prisma.affiliateNetwork.create({
+    if (newProducts.length === 0) {
+      console.log('No new products to sync');
+      return { synced: 0, products: [] };
+    }
+
+    // Bulk insert new products using createMany
+    const productsData = newProducts.map((amazonProduct) => ({
+      asin: amazonProduct.asin,
+      title: amazonProduct.title,
+      description: amazonProduct.description,
+      price: amazonProduct.price,
+      commission: amazonProduct.commission || 3.0,
+      affiliateUrl: amazonProduct.affiliateUrl,
+      imageUrl: amazonProduct.imageUrl,
+      category: amazonProduct.category,
+      brand: amazonProduct.brand,
+      networkId: network.id,
+      status: 'ACTIVE' as const,
+    }));
+
+    await this.prisma.product.createMany({
+      data: productsData,
+      skipDuplicates: true,
+    });
+
+    // Fetch created products for ranking
+    const createdProducts = await this.prisma.product.findMany({
+      where: { asin: { in: newProducts.map((p) => p.asin) } },
+    });
+
+    // Rank all new products using optimized bulk ranking
+    if (createdProducts.length > 0) {
+      const updates = [];
+      for (const product of createdProducts) {
+        try {
+          const scores = await this.ranker.calculateScores(product);
+          updates.push({
+            where: { id: product.id },
             data: {
-              name: 'Amazon Associates',
-              commissionRate: 3.0,
-              status: 'ACTIVE',
+              trendScore: scores.trendScore,
+              profitScore: scores.profitScore,
+              viralityScore: scores.viralityScore,
+              overallScore: scores.overallScore,
+              lastRankedAt: new Date(),
             },
           });
+        } catch (error) {
+          console.error(`Error ranking product ${product.id}:`, error);
         }
+      }
 
-        // Create product
-        const product = await this.prisma.product.create({
-          data: {
-            asin: amazonProduct.asin,
-            title: amazonProduct.title,
-            description: amazonProduct.description,
-            price: amazonProduct.price,
-            commission: amazonProduct.commission || 3.0,
-            affiliateUrl: amazonProduct.affiliateUrl,
-            imageUrl: amazonProduct.imageUrl,
-            category: amazonProduct.category,
-            brand: amazonProduct.brand,
-            networkId: network.id,
-            status: 'ACTIVE',
-          },
-        });
-
-        // Rank product
-        await this.rankProduct(product.id);
-
-        createdProducts.push(product);
-      } catch (error) {
-        console.error(`Error creating product ${amazonProduct.asin}:`, error);
+      if (updates.length > 0) {
+        await this.prisma.$transaction(
+          updates.map((update) => this.prisma.product.update(update))
+        );
       }
     }
 
@@ -177,12 +208,31 @@ export class ProductService {
 
     console.log(`🎯 Ranking ${products.length} products...`);
 
+    // Calculate scores for all products in memory
+    const updates = [];
     for (const product of products) {
       try {
-        await this.rankProduct(product.id);
+        const scores = await this.ranker.calculateScores(product);
+        updates.push({
+          where: { id: product.id },
+          data: {
+            trendScore: scores.trendScore,
+            profitScore: scores.profitScore,
+            viralityScore: scores.viralityScore,
+            overallScore: scores.overallScore,
+            lastRankedAt: new Date(),
+          },
+        });
       } catch (error) {
         console.error(`Error ranking product ${product.id}:`, error);
       }
+    }
+
+    // Bulk update using transaction - 1 query instead of N queries
+    if (updates.length > 0) {
+      await this.prisma.$transaction(
+        updates.map((update) => this.prisma.product.update(update))
+      );
     }
 
     console.log('✅ All products ranked');

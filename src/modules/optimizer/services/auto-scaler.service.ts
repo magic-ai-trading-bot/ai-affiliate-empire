@@ -79,7 +79,7 @@ export class AutoScalerService {
 
     if (cost === 0) return 0;
 
-    return ((totalRevenue - cost) / cost) * 100;
+    return (totalRevenue - cost) / cost;
   }
 
   /**

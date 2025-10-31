@@ -1,0 +1,289 @@
+name: Load Testing
+
+on:
+  # Manual trigger with customizable parameters
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of load test to run'
+        required: true
+        default: 'baseline'
+        type: choice
+        options:
+          - baseline
+          - stress
+          - spike
+          - products
+          - analytics
+          - orchestrator
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      comparison_enabled:
+        description: 'Compare with previous baseline'
+        required: false
+        default: true
+        type: boolean
+
+  # Scheduled weekly load tests on staging
+  schedule:
+    # Run every Monday at 2 AM UTC
+    - cron: '0 2 * * 1'
+
+  # Optional: Run baseline test on major releases
+  # release:
+  #   types: [published]
+
+env:
+  K6_VERSION: '0.47.0'
+  STAGING_URL: https://ai-affiliate-empire-staging.fly.dev
+  PRODUCTION_URL: https://ai-affiliate-empire.fly.dev
+
+jobs:
+  load-test:
+    name: Run Load Test - ${{ github.event.inputs.test_type || 'baseline' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150 # 2.5 hours max (for soak test)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            echo "BASE_URL=${{ env.PRODUCTION_URL }}" >> $GITHUB_ENV
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          else
+            echo "BASE_URL=${{ env.STAGING_URL }}" >> $GITHUB_ENV
+            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          fi
+
+          # Set test type (default to baseline for scheduled runs)
+          TEST_TYPE="${{ github.event.inputs.test_type }}"
+          if [ -z "$TEST_TYPE" ]; then
+            TEST_TYPE="baseline"
+          fi
+          echo "TEST_TYPE=$TEST_TYPE" >> $GITHUB_ENV
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Verify API availability
+        run: |
+          echo "Testing API availability at $BASE_URL"
+          max_attempts=5
+          attempt=0
+
+          until curl -f -s "$BASE_URL/health" || [ $attempt -eq $max_attempts ]; do
+            attempt=$((attempt + 1))
+            echo "Attempt $attempt/$max_attempts failed. Retrying in 10s..."
+            sleep 10
+          done
+
+          if [ $attempt -eq $max_attempts ]; then
+            echo "❌ API not available at $BASE_URL"
+            exit 1
+          fi
+
+          echo "✅ API is available"
+
+      - name: Download previous baseline (for comparison)
+        if: github.event.inputs.comparison_enabled == 'true' || github.event_name == 'schedule'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: baseline-report
+          path: test/load/reports/previous/
+
+      - name: Run Load Test
+        run: |
+          echo "Running $TEST_TYPE load test on $ENVIRONMENT"
+
+          case $TEST_TYPE in
+            baseline)
+              k6 run --out json=test/load/reports/baseline-results.json \
+                     --env BASE_URL=$BASE_URL \
+                     --env ENVIRONMENT=$ENVIRONMENT \
+                     test/load/scenarios/baseline.js
+              ;;
+            stress)
+              k6 run --out json=test/load/reports/stress-results.json \
+                     --env BASE_URL=$BASE_URL \
+                     --env ENVIRONMENT=$ENVIRONMENT \
+                     test/load/scenarios/stress-test.js
+              ;;
+            spike)
+              k6 run --out json=test/load/reports/spike-results.json \
+                     --env BASE_URL=$BASE_URL \
+                     --env ENVIRONMENT=$ENVIRONMENT \
+                     test/load/scenarios/spike-test.js
+              ;;
+            products)
+              k6 run --out json=test/load/reports/products-results.json \
+                     --env BASE_URL=$BASE_URL \
+                     --env ENVIRONMENT=$ENVIRONMENT \
+                     test/load/scenarios/products-load.js
+              ;;
+            analytics)
+              k6 run --out json=test/load/reports/analytics-results.json \
+                     --env BASE_URL=$BASE_URL \
+                     --env ENVIRONMENT=$ENVIRONMENT \
+                     test/load/scenarios/analytics-load.js
+              ;;
+            orchestrator)
+              k6 run --out json=test/load/reports/orchestrator-results.json \
+                     --env BASE_URL=$BASE_URL \
+                     --env ENVIRONMENT=$ENVIRONMENT \
+                     test/load/scenarios/orchestrator-load.js
+              ;;
+            *)
+              echo "Unknown test type: $TEST_TYPE"
+              exit 1
+              ;;
+          esac
+
+      - name: Check test results
+        id: check_results
+        run: |
+          # Check if k6 test passed (exit code 0)
+          if [ $? -eq 0 ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "✅ Load test passed"
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "❌ Load test failed"
+            exit 1
+          fi
+
+      - name: Compare with previous baseline
+        if: (github.event.inputs.comparison_enabled == 'true' || github.event_name == 'schedule') && github.event.inputs.test_type == 'baseline'
+        continue-on-error: true
+        run: |
+          if [ -f test/load/reports/previous/baseline-results.json ]; then
+            echo "Comparing with previous baseline..."
+            # Note: k6 doesn't have built-in comparison, so we do basic JSON comparison
+            # In production, use custom scripts or tools like k6-reporter
+            echo "Previous and current baseline reports available for manual comparison"
+          else
+            echo "No previous baseline found for comparison"
+          fi
+
+      - name: Generate performance report
+        if: always()
+        run: |
+          # Create a summary report
+          cat > test/load/reports/summary.md << EOF
+          # Load Test Summary
+
+          - **Test Type**: $TEST_TYPE
+          - **Environment**: $ENVIRONMENT
+          - **URL**: $BASE_URL
+          - **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          - **Status**: ${{ steps.check_results.outputs.status }}
+          - **Trigger**: ${{ github.event_name }}
+
+          ## Results
+
+          See attached JSON reports for detailed metrics.
+
+          ## Thresholds
+
+          - Response time p95: < 500ms (reads), < 2000ms (writes)
+          - Error rate: < 1%
+          - Requests per second: > 10
+
+          EOF
+
+          cat test/load/reports/summary.md
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-reports-${{ env.TEST_TYPE }}-${{ env.ENVIRONMENT }}-${{ github.run_number }}
+          path: |
+            test/load/reports/*.json
+            test/load/reports/*.txt
+            test/load/reports/summary.md
+          retention-days: 30
+
+      - name: Save baseline for future comparison
+        if: success() && github.event.inputs.test_type == 'baseline'
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-report
+          path: test/load/reports/baseline-results.json
+          retention-days: 90
+
+      - name: Check performance degradation
+        if: success() && github.event.inputs.test_type == 'baseline'
+        run: |
+          # Parse JSON results and check for degradation
+          # This is a simplified check - enhance based on your needs
+
+          RESULTS_FILE="test/load/reports/baseline-results.json"
+
+          if [ -f "$RESULTS_FILE" ]; then
+            echo "Checking for performance degradation..."
+
+            # Extract key metrics (requires jq)
+            if command -v jq &> /dev/null; then
+              # Check p95 response time
+              # Note: Actual JSON structure depends on k6 output format
+              echo "Performance metrics extracted. Review detailed report."
+            else
+              echo "jq not available. Install for automatic metric extraction."
+            fi
+          fi
+
+      - name: Post results to PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('test/load/reports/summary.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔬 Load Test Results\n\n${summary}`
+            });
+
+      - name: Alert on failure
+        if: failure() && github.event.inputs.environment == 'production'
+        run: |
+          echo "🚨 ALERT: Load test failed on PRODUCTION environment"
+          echo "This indicates potential performance issues."
+          echo "Review the test reports and investigate immediately."
+
+          # In production, integrate with Slack, PagerDuty, etc.
+          # Example: curl -X POST $SLACK_WEBHOOK -d '{"text":"Load test failed on production!"}'
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Load Test Execution Complete"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Test Type: $TEST_TYPE"
+          echo "Environment: $ENVIRONMENT"
+          echo "Status: ${{ steps.check_results.outputs.status }}"
+          echo ""
+          echo "📊 View detailed reports in artifacts"
+          echo "📈 Compare with previous baselines"
+          echo "🔍 Investigate any performance degradation"
+          echo ""

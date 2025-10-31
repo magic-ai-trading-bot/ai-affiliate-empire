@@ -35,6 +35,7 @@ export class StrategyOptimizerService {
           orderBy: { date: 'desc' },
           take: 30,
         },
+        videos: true,
       },
     });
 
@@ -42,9 +43,11 @@ export class StrategyOptimizerService {
 
     for (const product of products) {
       const roi = this.calculateROI(product);
+      const videoCount = product.videos?.length || 0;
 
       // Kill if ROI is below threshold and has enough data
-      if (roi < threshold && product.analytics.length >= 7) {
+      // Don't kill products with no videos (insufficient data for ROI calculation)
+      if (roi < threshold && product.analytics.length >= 7 && videoCount > 0) {
         await this.prisma.product.update({
           where: { id: product.id },
           data: { status: 'ARCHIVED' },
@@ -134,7 +137,7 @@ export class StrategyOptimizerService {
 
     if (cost === 0) return 0;
 
-    return ((totalRevenue - cost) / cost) * 100;
+    return (totalRevenue - cost) / cost;
   }
 
   /**

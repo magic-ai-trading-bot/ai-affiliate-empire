@@ -65,6 +65,12 @@ export const mockPrismaService = {
     findMany: jest.fn(),
     findFirst: jest.fn(),
   },
+  systemConfig: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+  },
   $transaction: jest.fn(),
   $executeRawUnsafe: jest.fn(),
   $disconnect: jest.fn(),
@@ -81,6 +87,7 @@ export class MockPrismaService {
   workflowExecution = mockPrismaService.workflowExecution;
   optimizationLog = mockPrismaService.optimizationLog;
   promptVersion = mockPrismaService.promptVersion;
+  systemConfig = mockPrismaService.systemConfig;
   $transaction = mockPrismaService.$transaction;
   $executeRawUnsafe = mockPrismaService.$executeRawUnsafe;
   $disconnect = mockPrismaService.$disconnect;

@@ -8,6 +8,10 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+
+  // Connection pooling configuration for optimal performance
+  // Limits: connectionLimit (max connections), poolTimeout (seconds)
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 // Affiliate Networks (Amazon Associates, ShareASale, CJ, etc.)

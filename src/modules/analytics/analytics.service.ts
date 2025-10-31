@@ -92,50 +92,77 @@ export class AnalyticsService {
    * Get top performing products
    */
   async getTopProducts(limit: number) {
+    // Query 1: Get top products with minimal fields
     const products = await this.prisma.product.findMany({
       where: { status: 'ACTIVE' },
-      include: {
-        analytics: {
-          orderBy: { date: 'desc' },
-          take: 30,
-        },
+      select: {
+        id: true,
+        title: true,
+        overallScore: true,
+        price: true,
+        commission: true,
       },
       orderBy: { overallScore: 'desc' },
       take: limit,
     });
 
-    return products.map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      score: p.overallScore,
-      revenue: p.analytics.reduce((sum: number, a: any): number => sum + parseFloat(a.revenue.toString()), 0),
-      clicks: p.analytics.reduce((sum: number, a: any): number => sum + a.clicks, 0),
-      conversions: p.analytics.reduce((sum: number, a: any): number => sum + a.conversions, 0),
-      roi: this.roiCalculator.calculateProductROI(p),
-    }));
+    if (products.length === 0) {
+      return [];
+    }
+
+    // Query 2: Get aggregated analytics for selected products
+    const productIds = products.map((p: { id: string }) => p.id);
+    const analytics = await this.prisma.productAnalytics.groupBy({
+      by: ['productId'],
+      where: {
+        productId: { in: productIds },
+        date: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // Last 30 days
+      },
+      _sum: {
+        revenue: true,
+        clicks: true,
+        conversions: true,
+      },
+    });
+
+    // Create analytics map for fast lookup
+    type StatsType = { revenue: number; clicks: number; conversions: number };
+    const analyticsMap = new Map<string, StatsType>(
+      analytics.map((a: any) => [
+        a.productId,
+        {
+          revenue: parseFloat(a._sum.revenue?.toString() || '0'),
+          clicks: a._sum.clicks || 0,
+          conversions: a._sum.conversions || 0,
+        },
+      ])
+    );
+
+    // Combine results
+    return products.map((p: any) => {
+      const defaultStats: StatsType = { revenue: 0, clicks: 0, conversions: 0 };
+      const stats: StatsType = analyticsMap.get(p.id) ?? defaultStats;
+      return {
+        id: p.id,
+        title: p.title,
+        score: p.overallScore,
+        revenue: stats.revenue,
+        clicks: stats.clicks,
+        conversions: stats.conversions,
+        roi: this.roiCalculator.calculateProductROI(p),
+      };
+    });
   }
 
   /**
    * Get product performance details
    */
   async getProductPerformance(productId: string) {
+    // Query 1: Get product with network only
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       include: {
         network: true,
-        videos: {
-          include: {
-            publications: {
-              include: {
-                analytics: true,
-              },
-            },
-          },
-        },
-        analytics: {
-          orderBy: { date: 'desc' },
-          take: 30,
-        },
       },
     });
 
@@ -143,7 +170,57 @@ export class AnalyticsService {
       throw new Error('Product not found');
     }
 
-    return this.performanceAnalyzer.analyzeProduct(product);
+    // Query 2: Get product analytics separately
+    const analytics = await this.prisma.productAnalytics.findMany({
+      where: { productId },
+      orderBy: { date: 'desc' },
+      take: 30,
+    });
+
+    // Query 3: Get videos with publication count (no nested analytics)
+    const videos = await this.prisma.video.findMany({
+      where: { productId },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        createdAt: true,
+        _count: {
+          select: { publications: true },
+        },
+      },
+    });
+
+    // Query 4: Get publication analytics aggregated by video
+    const videoIds = videos.map((v: any) => v.id);
+    const publicationAnalytics = await this.prisma.platformAnalytics.groupBy({
+      by: ['publicationId'],
+      where: {
+        publication: {
+          videoId: { in: videoIds },
+        },
+      },
+      _sum: {
+        views: true,
+        likes: true,
+        comments: true,
+        shares: true,
+        clicks: true,
+      },
+    });
+
+    // Reconstruct the data structure for the analyzer
+    const productWithData = {
+      ...product,
+      analytics,
+      videos: videos.map((v: any) => ({
+        ...v,
+        publications: [], // Not needed for performance analysis
+      })),
+      publicationAnalytics, // Pass aggregated analytics separately
+    };
+
+    return this.performanceAnalyzer.analyzeProduct(productWithData);
   }
 
   /**
@@ -151,34 +228,56 @@ export class AnalyticsService {
    */
   async getPlatformComparison() {
     const platforms = ['YOUTUBE', 'TIKTOK', 'INSTAGRAM'];
-    const comparison = [];
 
-    for (const platform of platforms) {
+    // Execute platform queries in parallel using Promise.all
+    const comparisonPromises = platforms.map(async (platform) => {
+      // Query 1: Get publication IDs and count
       const publications = await this.prisma.publication.findMany({
         where: { platform, status: 'PUBLISHED' },
-        include: {
-          analytics: true,
+        select: { id: true },
+      });
+
+      if (publications.length === 0) {
+        return {
+          platform,
+          publications: 0,
+          views: 0,
+          engagement: 0,
+          avgEngagementRate: 0,
+        };
+      }
+
+      // Query 2: Aggregate analytics for this platform
+      const publicationIds = publications.map((p: { id: string }) => p.id);
+      const analytics = await this.prisma.platformAnalytics.aggregate({
+        where: {
+          publicationId: { in: publicationIds },
+        },
+        _sum: {
+          views: true,
+          likes: true,
+          comments: true,
+          shares: true,
         },
       });
 
-      const totalViews = publications.reduce(
-        (sum: number, p: any): number => sum + p.analytics.reduce((s: number, a: any): number => s + a.views, 0),
-        0,
-      );
+      const totalViews = analytics._sum.views || 0;
+      const totalEngagement =
+        (analytics._sum.likes || 0) +
+        (analytics._sum.comments || 0) +
+        (analytics._sum.shares || 0);
 
-      const totalEngagement = publications.reduce(
-        (sum: number, p: any): number => sum + p.analytics.reduce((s: number, a: any): number => s + a.likes + a.comments + a.shares, 0),
-        0,
-      );
-
-      comparison.push({
+      return {
         platform,
         publications: publications.length,
         views: totalViews,
         engagement: totalEngagement,
         avgEngagementRate: totalViews > 0 ? (totalEngagement / totalViews) * 100 : 0,
-      });
-    }
+      };
+    });
+
+    // Wait for all platform queries to complete
+    const comparison = await Promise.all(comparisonPromises);
 
     return {
       platforms: comparison,

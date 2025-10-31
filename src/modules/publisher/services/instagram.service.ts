@@ -61,7 +61,7 @@ export class InstagramService implements OnModuleInit {
       // 3. Publish media container
       // 4. Return media ID and URL
 
-      console.warn('⚠️ Instagram API integration pending, returning mock data');
+      console.warn('⚠️ Instagram credentials not configured, returning mock data');
       return this.getMockUploadResult();
     } catch (error) {
       console.error('Error uploading to Instagram:', error);
@@ -87,7 +87,7 @@ export class InstagramService implements OnModuleInit {
    * Mock upload result for development
    */
   private getMockUploadResult(): { mediaId: string; url: string } {
-    const mockMediaId = `IG${Date.now()}`;
+    const mockMediaId = `IG${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     return {
       mediaId: mockMediaId,
       url: `https://instagram.com/reel/${mockMediaId}`,

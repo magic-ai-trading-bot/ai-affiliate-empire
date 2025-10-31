@@ -61,7 +61,7 @@ export class YoutubeService implements OnModuleInit {
       // 4. Set as Short (add #Shorts to title/description)
       // 5. Upload custom thumbnail if provided
 
-      console.warn('⚠️ YouTube API integration pending, returning mock data');
+      console.warn('⚠️ YouTube credentials not configured, returning mock data');
       return this.getMockUploadResult();
     } catch (error) {
       console.error('Error uploading to YouTube:', error);

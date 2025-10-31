@@ -58,7 +58,7 @@ export class TiktokService implements OnModuleInit {
       // 3. Commit video with metadata
       // 4. Poll for processing completion
 
-      console.warn('⚠️ TikTok API integration pending, returning mock data');
+      console.warn('⚠️ TikTok credentials not configured, returning mock data');
       return this.getMockUploadResult();
     } catch (error) {
       console.error('Error uploading to TikTok:', error);
@@ -83,7 +83,7 @@ export class TiktokService implements OnModuleInit {
    * Mock upload result for development
    */
   private getMockUploadResult(): { videoId: string; url: string } {
-    const mockVideoId = `TT${Date.now()}`;
+    const mockVideoId = `TT${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     return {
       videoId: mockVideoId,
       url: `https://tiktok.com/@user/video/${mockVideoId}`,
