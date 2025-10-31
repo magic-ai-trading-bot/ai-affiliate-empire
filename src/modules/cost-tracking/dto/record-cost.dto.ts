@@ -15,6 +15,7 @@ export class RecordCostDto {
   @IsNumber()
   @Min(0)
   amount: number;
+  currency?: string;
 
   @ApiProperty({ description: 'Provider name', example: 'openai' })
   @IsString()

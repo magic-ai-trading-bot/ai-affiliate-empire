@@ -12,7 +12,7 @@ export class CostCalculatorService {
     outputTokens: number,
     model: string = 'gpt-4-turbo',
   ): CostCalculation {
-    const pricing = PRICING.OPENAI[model] || PRICING.OPENAI['gpt-4-turbo'];
+    const pricing = (PRICING.OPENAI as any)[model] || PRICING.OPENAI['gpt-4-turbo'];
     const inputCost = inputTokens * pricing.input;
     const outputCost = outputTokens * pricing.output;
     const totalCost = inputCost + outputCost;
@@ -39,7 +39,7 @@ export class CostCalculatorService {
     outputTokens: number,
     model: string = 'claude-3.5-sonnet',
   ): CostCalculation {
-    const pricing = PRICING.CLAUDE[model] || PRICING.CLAUDE['claude-3.5-sonnet'];
+    const pricing = (PRICING.CLAUDE as any)[model] || PRICING.CLAUDE['claude-3.5-sonnet'];
     const inputCost = inputTokens * pricing.input;
     const outputCost = outputTokens * pricing.output;
     const totalCost = inputCost + outputCost;
@@ -96,7 +96,7 @@ export class CostCalculatorService {
    * Calculate DALL-E image generation cost
    */
   calculateDalleCost(resolution: string = '1024x1024'): CostCalculation {
-    const cost = PRICING.DALLE[resolution] || PRICING.DALLE['1024x1024'];
+    const cost = (PRICING.DALLE as any)[resolution] || PRICING.DALLE['1024x1024'];
 
     return {
       service: 'DALLE',

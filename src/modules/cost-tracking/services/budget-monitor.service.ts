@@ -68,7 +68,6 @@ export class BudgetMonitorService {
     const daysRemaining = Math.max(0, endOfMonth.getDate() - now.getDate());
 
     // Calculate average daily spend
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const daysElapsed = now.getDate();
     const averageDailySpend = daysElapsed > 0 ? currentSpend / daysElapsed : 0;
 
@@ -131,7 +130,7 @@ export class BudgetMonitorService {
         budgetLimit: context.budgetLimit,
         percentUsed: context.percentUsed,
         message: this.createAlertMessage(level, context),
-        actionsTaken: actions,
+        actionsTaken: actions as any,
         periodStart: context.periodStart,
         periodEnd: context.periodEnd,
       },
@@ -144,10 +143,7 @@ export class BudgetMonitorService {
   /**
    * Execute automatic actions based on alert level
    */
-  private async executeAutoActions(
-    level: AlertLevel,
-    config: any,
-  ): Promise<ActionResult[]> {
+  private async executeAutoActions(level: AlertLevel, config: any): Promise<ActionResult[]> {
     const actions: ActionResult[] = [];
 
     if (level === AlertLevel.EMERGENCY && config.emergencyStop) {

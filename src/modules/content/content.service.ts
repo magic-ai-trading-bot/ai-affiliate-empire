@@ -31,7 +31,7 @@ export class ContentService {
     const scriptContent = await this.scriptGenerator.generate({
       productTitle: product.title,
       productDescription: product.description || '',
-      price: product.price,
+      price: Number(product.price),
       category: product.category || 'General',
       affiliateUrl: product.affiliateUrl,
       language,
@@ -39,11 +39,10 @@ export class ContentService {
     });
 
     // Add FTC disclosure to script
-    const scriptWithDisclosure = this.ftcDisclosure.addDisclosure(
-      scriptContent.script,
-      'video',
-      { enabled: true, position: 'bottom' },
-    );
+    const scriptWithDisclosure = this.ftcDisclosure.addDisclosure(scriptContent.script, 'video', {
+      enabled: true,
+      position: 'bottom',
+    });
 
     // Create video record with script
     const video = await this.prisma.video.create({
@@ -87,11 +86,10 @@ export class ContentService {
     };
 
     // Add FTC disclosure to blog content
-    const contentWithDisclosure = this.ftcDisclosure.addDisclosure(
-      blogContent.content,
-      'blog',
-      { enabled: true, position: 'bottom' },
-    );
+    const contentWithDisclosure = this.ftcDisclosure.addDisclosure(blogContent.content, 'blog', {
+      enabled: true,
+      position: 'bottom',
+    });
 
     const blog = await this.prisma.blog.create({
       data: {

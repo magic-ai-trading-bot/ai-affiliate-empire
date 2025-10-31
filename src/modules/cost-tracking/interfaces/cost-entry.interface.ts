@@ -18,6 +18,17 @@ export interface CostEntryData {
   model?: string;
 }
 
+export interface CostEntryDetails {
+  tokens?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  duration?: number;
+  storageBytes?: bigint;
+  computeMinutes?: number;
+  model?: string;
+  provider: string;
+}
+
 export interface ServiceCostBreakdown {
   service: CostService;
   serviceName: string;
@@ -52,6 +63,17 @@ export interface BudgetStatus {
   projectedMonthEnd: number;
   isOverBudget: boolean;
   alertLevel: 'NORMAL' | 'WARNING' | 'CRITICAL' | 'EMERGENCY';
+}
+
+export interface AlertContext {
+  currentSpend: number;
+  monthlyLimit: number;
+  budgetLimit: number;
+  dailyLimit?: number;
+  percentUsed: number;
+  threshold: number;
+  periodStart: Date;
+  periodEnd: Date;
 }
 
 export interface DashboardData {

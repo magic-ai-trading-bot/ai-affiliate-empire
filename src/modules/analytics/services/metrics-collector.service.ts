@@ -1,3 +1,4 @@
+import { Platform } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/database/prisma.service';
 
@@ -32,7 +33,7 @@ export class MetricsCollectorService {
 
     const publications = await this.prisma.publication.findMany({
       where: {
-        platform,
+        platform: platform as Platform,
         status: 'PUBLISHED',
         publishedAt: { not: null },
       },
@@ -71,7 +72,9 @@ export class MetricsCollectorService {
         });
 
         // Update product analytics
-        await this.updateProductAnalytics(pub.video.productId, metrics, today);
+        if (pub.video) {
+          await this.updateProductAnalytics(pub.video.productId, metrics, today);
+        }
 
         collected++;
       } catch (error) {
@@ -87,11 +90,7 @@ export class MetricsCollectorService {
   /**
    * Update product analytics with platform metrics
    */
-  private async updateProductAnalytics(
-    productId: string,
-    metrics: any,
-    date: Date,
-  ): Promise<void> {
+  private async updateProductAnalytics(productId: string, metrics: any, date: Date): Promise<void> {
     const existing = await this.prisma.productAnalytics.findUnique({
       where: {
         productId_date: {

@@ -21,6 +21,7 @@ export interface CostCalculation {
     outputTokens?: number;
     duration?: number;
     storageBytes?: bigint;
+    computeMinutes?: number;
     model?: string;
     provider?: string;
   };

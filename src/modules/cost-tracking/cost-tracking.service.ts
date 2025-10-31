@@ -104,7 +104,9 @@ export class CostTrackingService {
   // ============================================================================
 
   async getServiceBreakdown(dateRange: DateRangeDto) {
-    const startDate = dateRange.startDate ? new Date(dateRange.startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const startDate = dateRange.startDate
+      ? new Date(dateRange.startDate)
+      : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const endDate = dateRange.endDate ? new Date(dateRange.endDate) : new Date();
 
     return this.aggregator.getServiceBreakdown(startDate, endDate);
@@ -196,14 +198,14 @@ export class CostTrackingService {
     const summary = await this.getMonthlySummary(now.getFullYear(), now.getMonth() + 1);
 
     return {
-      year: now.getFullYear(),
-      month: now.getMonth() + 1,
       ...summary,
     };
   }
 
   async exportReport(options: ExportOptionsDto) {
-    const startDate = options.startDate ? new Date(options.startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const startDate = options.startDate
+      ? new Date(options.startDate)
+      : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const endDate = options.endDate ? new Date(options.endDate) : new Date();
 
     const entries = await this.prisma.costEntry.findMany({

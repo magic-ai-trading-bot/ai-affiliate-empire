@@ -1,3 +1,4 @@
+import { Platform } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/database/prisma.service';
 import { MetricsCollectorService } from './services/metrics-collector.service';
@@ -36,7 +37,10 @@ export class AnalyticsService {
     return {
       revenue: {
         total: totalRevenue,
-        lastWeek: recentAnalytics.reduce((sum: number, a: any): number => sum + parseFloat(a.revenue.toString()), 0),
+        lastWeek: recentAnalytics.reduce(
+          (sum: number, a: any): number => sum + parseFloat(a.revenue.toString()),
+          0,
+        ),
         growth: this.calculateGrowth(recentAnalytics),
       },
       products: {
@@ -66,16 +70,19 @@ export class AnalyticsService {
     });
 
     // Group by date
-    const revenueByDate = analytics.reduce((acc: Record<string, any>, a: any) => {
-      const dateStr = a.date.toISOString().split('T')[0];
-      if (!acc[dateStr]) {
-        acc[dateStr] = { date: dateStr, revenue: 0, clicks: 0, conversions: 0 };
-      }
-      acc[dateStr].revenue += parseFloat(a.revenue.toString());
-      acc[dateStr].clicks += a.clicks;
-      acc[dateStr].conversions += a.conversions;
-      return acc;
-    }, {} as Record<string, any>);
+    const revenueByDate = analytics.reduce(
+      (acc: Record<string, any>, a: any) => {
+        const dateStr = a.date.toISOString().split('T')[0];
+        if (!acc[dateStr]) {
+          acc[dateStr] = { date: dateStr, revenue: 0, clicks: 0, conversions: 0 };
+        }
+        acc[dateStr].revenue += parseFloat(a.revenue.toString());
+        acc[dateStr].clicks += a.clicks;
+        acc[dateStr].conversions += a.conversions;
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
 
     return {
       period: { days, startDate, endDate: new Date() },
@@ -83,7 +90,10 @@ export class AnalyticsService {
       totals: {
         revenue: Object.values(revenueByDate).reduce((sum: number, d: any) => sum + d.revenue, 0),
         clicks: Object.values(revenueByDate).reduce((sum: number, d: any) => sum + d.clicks, 0),
-        conversions: Object.values(revenueByDate).reduce((sum: number, d: any) => sum + d.conversions, 0),
+        conversions: Object.values(revenueByDate).reduce(
+          (sum: number, d: any) => sum + d.conversions,
+          0,
+        ),
       },
     };
   }
@@ -135,7 +145,7 @@ export class AnalyticsService {
           clicks: a._sum.clicks || 0,
           conversions: a._sum.conversions || 0,
         },
-      ])
+      ]),
     );
 
     // Combine results
@@ -233,7 +243,7 @@ export class AnalyticsService {
     const comparisonPromises = platforms.map(async (platform) => {
       // Query 1: Get publication IDs and count
       const publications = await this.prisma.publication.findMany({
-        where: { platform, status: 'PUBLISHED' },
+        where: { platform: platform as Platform, status: 'PUBLISHED' },
         select: { id: true },
       });
 
@@ -263,9 +273,7 @@ export class AnalyticsService {
 
       const totalViews = analytics._sum.views || 0;
       const totalEngagement =
-        (analytics._sum.likes || 0) +
-        (analytics._sum.comments || 0) +
-        (analytics._sum.shares || 0);
+        (analytics._sum.likes || 0) + (analytics._sum.comments || 0) + (analytics._sum.shares || 0);
 
       return {
         platform,
@@ -329,8 +337,14 @@ export class AnalyticsService {
     const recent = analytics.slice(0, Math.floor(analytics.length / 2));
     const previous = analytics.slice(Math.floor(analytics.length / 2));
 
-    const recentSum = recent.reduce((sum: number, a: any): number => sum + parseFloat(a.revenue.toString()), 0);
-    const previousSum = previous.reduce((sum: number, a: any): number => sum + parseFloat(a.revenue.toString()), 0);
+    const recentSum = recent.reduce(
+      (sum: number, a: any): number => sum + parseFloat(a.revenue.toString()),
+      0,
+    );
+    const previousSum = previous.reduce(
+      (sum: number, a: any): number => sum + parseFloat(a.revenue.toString()),
+      0,
+    );
 
     if (previousSum === 0) return 100;
 
