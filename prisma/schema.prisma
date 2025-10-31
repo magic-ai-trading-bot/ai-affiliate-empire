@@ -320,3 +320,320 @@ enum WorkflowStatus {
   FAILED
   CANCELLED
 }
+
+// User authentication
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  username        String   @unique
+  passwordHash    String
+
+  firstName       String?
+  lastName        String?
+
+  role            UserRole @default(USER)
+  status          UserStatus @default(ACTIVE)
+
+  // Token management
+  refreshToken    String?  @db.Text
+  resetToken      String?
+  resetTokenExpiry DateTime?
+
+  lastLoginAt     DateTime?
+  emailVerifiedAt DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  apiKeys         ApiKey[]
+  auditLogs       AuditLog[]
+
+  @@index([email])
+  @@index([username])
+  @@index([status, role])
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  READONLY
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+// API Keys for programmatic access
+model ApiKey {
+  id              String   @id @default(cuid())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+
+  name            String   // Description/name for the key
+  keyHash         String   @unique // Hashed API key
+  keyPrefix       String   // First 8 chars for identification
+
+  permissions     String[] // Array of permission strings
+
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+
+  status          ApiKeyStatus @default(ACTIVE)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([keyHash])
+  @@index([status, expiresAt])
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+// Audit logging for security
+model AuditLog {
+  id              String   @id @default(cuid())
+
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId          String?
+
+  action          String   // login, logout, api_call, etc.
+  resource        String?  // Resource being accessed
+  method          String?  // HTTP method or operation
+
+  ipAddress       String?
+  userAgent       String?  @db.Text
+
+  status          String   // success, failure
+  errorMessage    String?  @db.Text
+
+  metadata        String?  @db.Text // JSON string for additional data
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@index([status, createdAt])
+}
+
+// ============================================================================
+// COST TRACKING & BUDGET MANAGEMENT
+// ============================================================================
+
+// Cost tracking entry - granular record of each cost-incurring operation
+model CostEntry {
+  id              String   @id @default(cuid())
+
+  // Cost details
+  service         CostService  // OPENAI, CLAUDE, ELEVENLABS, PIKA, DALLE, S3, DATABASE, COMPUTE
+  operation       String       // e.g., "gpt-4-completion", "elevenlabs-tts", "s3-storage"
+  amount          Decimal  @db.Decimal(10, 4)  // Cost in USD
+  currency        String   @default("USD")
+
+  // Usage metrics
+  tokens          Int?         // For AI APIs (input + output tokens)
+  inputTokens     Int?         // Input tokens (for AI APIs)
+  outputTokens    Int?         // Output tokens (for AI APIs)
+  duration        Int?         // Duration in seconds (for voice, video)
+  storageBytes    BigInt?      // Storage size (for S3, DB)
+  computeMinutes  Int?         // Compute time (for Fly.io, Temporal)
+
+  // Context
+  resourceId      String?      // Video ID, Product ID, etc.
+  resourceType    String?      // VIDEO, BLOG, PRODUCT
+  metadata        Json?        // Additional context
+
+  // Provider details
+  provider        String       // openai, anthropic, elevenlabs, etc.
+  model           String?      // gpt-4, claude-3.5-sonnet, etc.
+
+  // Timestamps
+  timestamp       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([service, timestamp])
+  @@index([timestamp])
+  @@index([resourceId, resourceType])
+  @@index([provider, model])
+}
+
+enum CostService {
+  OPENAI
+  CLAUDE
+  ELEVENLABS
+  PIKA
+  DALLE
+  S3
+  DATABASE
+  COMPUTE
+  OTHER
+}
+
+// Aggregated daily costs
+model DailyCostSummary {
+  id              String   @id @default(cuid())
+
+  date            DateTime @db.Date
+
+  // Service breakdowns
+  openaiCost      Decimal  @default(0) @db.Decimal(10, 2)
+  claudeCost      Decimal  @default(0) @db.Decimal(10, 2)
+  elevenlabsCost  Decimal  @default(0) @db.Decimal(10, 2)
+  pikaCost        Decimal  @default(0) @db.Decimal(10, 2)
+  dalleCost       Decimal  @default(0) @db.Decimal(10, 2)
+  storageCost     Decimal  @default(0) @db.Decimal(10, 2)
+  databaseCost    Decimal  @default(0) @db.Decimal(10, 2)
+  computeCost     Decimal  @default(0) @db.Decimal(10, 2)
+  otherCost       Decimal  @default(0) @db.Decimal(10, 2)
+
+  totalCost       Decimal  @default(0) @db.Decimal(10, 2)
+
+  // Usage metrics
+  totalTokens     Int      @default(0)
+  totalDuration   Int      @default(0)
+  totalStorage    BigInt   @default(0)
+  totalCompute    Int      @default(0)
+
+  // Content metrics
+  videosGenerated Int      @default(0)
+  blogsGenerated  Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([date])
+  @@index([date])
+}
+
+// Budget configuration
+model BudgetConfig {
+  id              String   @id @default(cuid())
+
+  // Budget limits
+  monthlyLimit    Decimal  @db.Decimal(10, 2)  // $412
+  dailyLimit      Decimal  @db.Decimal(10, 2)  // ~$14
+
+  // Alert thresholds (percentage)
+  warningThreshold   Int   @default(80)   // 80%
+  criticalThreshold  Int   @default(100)  // 100%
+  emergencyThreshold Int   @default(150)  // 150%
+
+  // Alert channels
+  emailAlerts     Boolean  @default(true)
+  slackAlerts     Boolean  @default(false)
+  emailRecipients String[] // Array of email addresses
+
+  // Slack configuration
+  slackWebhookUrl String?  @db.Text
+
+  // Auto-actions
+  autoScaleDown   Boolean  @default(true)   // Reduce content generation
+  emergencyStop   Boolean  @default(true)   // Kill workflows at 150%
+
+  // Current period
+  periodStart     DateTime
+  periodEnd       DateTime
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+// Budget alert log
+model BudgetAlert {
+  id              String   @id @default(cuid())
+
+  level           AlertLevel   // WARNING, CRITICAL, EMERGENCY
+  threshold       Int          // Percentage threshold hit
+  currentSpend    Decimal  @db.Decimal(10, 2)
+  budgetLimit     Decimal  @db.Decimal(10, 2)
+  percentUsed     Int          // 0-200+
+
+  message         String   @db.Text
+
+  // Actions taken
+  actionsTaken    Json?        // Array of actions executed
+
+  // Notification status
+  emailSent       Boolean  @default(false)
+  slackSent       Boolean  @default(false)
+  notificationError String?  @db.Text
+
+  // Context
+  periodStart     DateTime
+  periodEnd       DateTime
+
+  createdAt       DateTime @default(now())
+
+  @@index([level, createdAt])
+  @@index([createdAt])
+}
+
+enum AlertLevel {
+  WARNING
+  CRITICAL
+  EMERGENCY
+}
+
+// Cost optimization recommendations
+model CostOptimization {
+  id              String   @id @default(cuid())
+
+  type            OptimizationType
+  priority        Priority             // HIGH, MEDIUM, LOW
+
+  title           String
+  description     String   @db.Text
+
+  // Impact estimation
+  currentCost     Decimal  @db.Decimal(10, 2)
+  estimatedSavings Decimal @db.Decimal(10, 2)
+  savingsPercent  Int                  // 0-100
+
+  // Recommendation
+  recommendation  String   @db.Text
+  implementation  String?  @db.Text     // Steps to implement
+
+  // Status
+  status          OptimizationStatus   // PENDING, APPLIED, REJECTED, EXPIRED
+  appliedAt       DateTime?
+  appliedBy       String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status, priority])
+  @@index([createdAt])
+}
+
+enum OptimizationType {
+  MODEL_SELECTION      // Use cheaper AI models
+  BATCH_PROCESSING     // Batch requests to reduce overhead
+  CACHE_OPTIMIZATION   // Increase caching to reduce API calls
+  RATE_LIMITING        // Reduce generation rate
+  RESOURCE_CLEANUP     // Delete unused resources
+  PROVIDER_SWITCH      // Switch to cheaper provider
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum OptimizationStatus {
+  PENDING
+  APPLIED
+  REJECTED
+  EXPIRED
+}

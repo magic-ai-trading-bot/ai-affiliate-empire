@@ -211,7 +211,7 @@ describe('StrategyOptimizerService', () => {
           ...Array(3).fill({ revenue: 0.05, conversions: 0, date: new Date() }),
           ...Array(3).fill({ revenue: 0.5, conversions: 1, date: new Date(Date.now() - 86400000) }),
         ],
-        videos: [{ id: 'v1' }, { id: 'v2' }],
+        videos: [{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }, { id: 'v4' }],
       };
 
       const result = await service.analyzeProduct(product);
@@ -480,7 +480,7 @@ describe('StrategyOptimizerService', () => {
           ...Array(3).fill({ revenue: 0.05, conversions: 0, date: new Date() }),
           ...Array(3).fill({ revenue: 0.5, conversions: 1, date: new Date(Date.now() - 86400000) }),
         ],
-        videos: [{ id: 'v1' }, { id: 'v2' }],
+        videos: [{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }, { id: 'v4' }],
       };
 
       const result = await service.analyzeProduct(product);

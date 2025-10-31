@@ -1,9 +1,11 @@
 import { Controller, Get, Header } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator';
 import { MetricsService } from './metrics.service';
 
 @ApiTags('monitoring')
 @Controller('metrics')
+@Public()
 export class MetricsController {
   constructor(private readonly metricsService: MetricsService) {}
 

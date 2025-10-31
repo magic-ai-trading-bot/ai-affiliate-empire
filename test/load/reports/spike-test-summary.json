@@ -1,0 +1,399 @@
+{
+  "state": {
+    "isStdOutTTY": false,
+    "isStdErrTTY": false,
+    "testRunDurationMs": 591398.238
+  },
+  "metrics": {
+    "spike_recovery_time": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "avg": 57906.15492957747,
+        "min": 80,
+        "med": 56557.5,
+        "max": 130008,
+        "p(90)": 114898.2,
+        "p(95)": 122911.54999999999
+      },
+      "thresholds": {
+        "p(95)<120000": {
+          "ok": false
+        }
+      }
+    },
+    "http_req_receiving": {
+      "contains": "time",
+      "values": {
+        "avg": 0.034869925312429884,
+        "min": 0.007,
+        "med": 0.025,
+        "max": 10.424,
+        "p(90)": 0.044,
+        "p(95)": 0.053
+      },
+      "type": "trend"
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 4.317,
+        "med": 79.066,
+        "max": 210.419,
+        "p(90)": 158.9846,
+        "p(95)": 178.6553,
+        "avg": 81.30046461583939
+      },
+      "thresholds": {
+        "p(95)<1000": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_connecting": {
+      "values": {
+        "min": 0,
+        "med": 0,
+        "max": 1.332,
+        "p(90)": 0,
+        "p(95)": 0.191,
+        "avg": 0.014993270723951785
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 3345,
+        "rate": 5.656087193144462
+      }
+    },
+    "success": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 10035,
+        "fails": 0
+      }
+    },
+    "vus": {
+      "values": {
+        "min": 1,
+        "max": 100,
+        "value": 1
+      },
+      "type": "gauge",
+      "contains": "default"
+    },
+    "data_sent": {
+      "contains": "data",
+      "values": {
+        "count": 1939134,
+        "rate": 3278.8971549150947
+      },
+      "type": "counter"
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 0,
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0,
+        "p(90)": 0
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 178.5909,
+        "avg": 81.25109657620361,
+        "min": 4.284,
+        "med": 79.013,
+        "max": 209.361,
+        "p(90)": 158.9322
+      }
+    },
+    "http_reqs": {
+      "contains": "default",
+      "values": {
+        "count": 13523,
+        "rate": 22.866148613719744
+      },
+      "type": "counter"
+    },
+    "http_req_sending": {
+      "values": {
+        "avg": 0.01449811432374448,
+        "min": 0.002,
+        "med": 0.009,
+        "max": 2.586,
+        "p(90)": 0.017,
+        "p(95)": 0.024
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "errors": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 10035
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "contains": "time",
+      "values": {
+        "avg": 81.30046461583939,
+        "min": 4.317,
+        "med": 79.066,
+        "max": 210.419,
+        "p(90)": 158.9846,
+        "p(95)": 178.6553
+      },
+      "type": "trend"
+    },
+    "data_received": {
+      "values": {
+        "count": 24637112,
+        "rate": 41659.08928528123
+      },
+      "type": "counter",
+      "contains": "data"
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.024018191229755403,
+        "min": 0.001,
+        "med": 0.003,
+        "max": 8.172,
+        "p(90)": 0.011,
+        "p(95)": 0.232
+      }
+    },
+    "checks": {
+      "contains": "default",
+      "values": {
+        "passes": 50459,
+        "fails": 0,
+        "rate": 1
+      },
+      "type": "rate"
+    },
+    "vus_max": {
+      "values": {
+        "value": 100,
+        "min": 100,
+        "max": 100
+      },
+      "type": "gauge",
+      "contains": "default"
+    },
+    "iteration_duration": {
+      "contains": "time",
+      "values": {
+        "p(90)": 11403.6480162,
+        "p(95)": 11692.915557999999,
+        "avg": 10332.485052944403,
+        "min": 7565.146917,
+        "med": 10339.071625,
+        "max": 12777.570542
+      },
+      "type": "trend"
+    },
+    "http_req_failed": {
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 13523
+      },
+      "thresholds": {
+        "rate<0.05": {
+          "ok": true
+        }
+      },
+      "type": "rate",
+      "contains": "default"
+    },
+    "group_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 600.5246317911949,
+        "min": 4.467291,
+        "med": 146.89025,
+        "max": 2223.170541,
+        "p(90)": 1854.5384664,
+        "p(95)": 2008.8547917999997
+      }
+    }
+  },
+  "setup_data": {
+    "baseUrl": "http://localhost:3000",
+    "recoveryStartTime": null,
+    "spikeDetected": false,
+    "spikeStartTime": null,
+    "startTime": 1761891319367
+  },
+  "root_group": {
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [
+      {
+        "name": "Health & Availability",
+        "path": "::Health & Availability",
+        "id": "3639398ff5b2374ef800989e5e0a1a7f",
+        "groups": [],
+        "checks": [
+            {
+              "fails": 0,
+              "name": "status is 200",
+              "path": "::Health & Availability::status is 200",
+              "id": "b57f7fe0a3ffd3b90f7122e1fac2a514",
+              "passes": 3345
+            },
+            {
+              "name": "response time < 500ms",
+              "path": "::Health & Availability::response time < 500ms",
+              "id": "cdbad362c75557f2139e600fe3523b0c",
+              "passes": 3345,
+              "fails": 0
+            },
+            {
+              "passes": 3345,
+              "fails": 0,
+              "name": "response has body",
+              "path": "::Health & Availability::response has body",
+              "id": "a978665d29cc3b7faa53486378f89a74"
+            },
+            {
+              "name": "system available",
+              "path": "::Health & Availability::system available",
+              "id": "ff5a461df440d3254f7651a3b3185c92",
+              "passes": 3345,
+              "fails": 0
+            },
+            {
+              "id": "de715e2fc4a09bea2eb1ed9c2ded59d3",
+              "passes": 3345,
+              "fails": 0,
+              "name": "response time monitored",
+              "path": "::Health & Availability::response time monitored"
+            }
+          ]
+      },
+      {
+        "name": "Product Endpoints During Spike",
+        "path": "::Product Endpoints During Spike",
+        "id": "fc52482b4aced6df018be21b00b9af34",
+        "groups": [],
+        "checks": [
+            {
+              "name": "status is 200",
+              "path": "::Product Endpoints During Spike::status is 200",
+              "id": "4880a61b404751c5e97143575ab35b80",
+              "passes": 6690,
+              "fails": 0
+            },
+            {
+              "name": "response time < 500ms",
+              "path": "::Product Endpoints During Spike::response time < 500ms",
+              "id": "69b62dd1bf02c2947ca0c78ffe80f6b8",
+              "passes": 6690,
+              "fails": 0
+            },
+            {
+              "name": "response has body",
+              "path": "::Product Endpoints During Spike::response has body",
+              "id": "4a2aa9e7e2c63d3abaca56d440f7abfd",
+              "passes": 6690,
+              "fails": 0
+            },
+            {
+              "name": "returns data",
+              "path": "::Product Endpoints During Spike::returns data",
+              "id": "b51df59b8edd4391170417c500c4957a",
+              "passes": 3345,
+              "fails": 0
+            },
+            {
+              "id": "ad7bca7d8f8b104886b686859f5a58dc",
+              "passes": 3345,
+              "fails": 0,
+              "name": "acceptable response time",
+              "path": "::Product Endpoints During Spike::acceptable response time"
+            },
+            {
+              "fails": 0,
+              "name": "available during spike",
+              "path": "::Product Endpoints During Spike::available during spike",
+              "id": "d25ccaf2a9076b9ddfa374bb7f40ee78",
+              "passes": 3345
+            }
+          ]
+      },
+      {
+        "name": "Analytics During Spike",
+        "path": "::Analytics During Spike",
+        "id": "14db4f9f1384dd4ed5c23d5aefb080cb",
+        "groups": [],
+        "checks": [
+            {
+              "name": "analytics available or gracefully degraded",
+              "path": "::Analytics During Spike::analytics available or gracefully degraded",
+              "id": "b640dd12ed20920def3d1fa075b1c5b3",
+              "passes": 3345,
+              "fails": 0
+            }
+          ]
+      },
+      {
+        "name": "Recovery Monitoring",
+        "path": "::Recovery Monitoring",
+        "id": "3bfaf65cb6ad746e76af133a25a64986",
+        "groups": [],
+        "checks": [
+            {
+              "name": "system recovered",
+              "path": "::Recovery Monitoring::system recovered",
+              "id": "c223cf9a98198d02b18b27669d1fe171",
+              "passes": 142,
+              "fails": 0
+            },
+            {
+              "id": "3281e704006926dd7f81721e51f3c763",
+              "passes": 142,
+              "fails": 0,
+              "name": "response time normalized",
+              "path": "::Recovery Monitoring::response time normalized"
+            }
+          ]
+      }
+    ],
+    "checks": [],
+    "name": "",
+    "path": ""
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  }
+}

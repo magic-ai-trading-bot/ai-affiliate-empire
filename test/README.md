@@ -12,16 +12,21 @@ npm install
 npm test
 
 # Run specific test suites
-npm run test:unit           # Unit tests only
-npm run test:integration    # Integration tests
-npm run test:e2e           # End-to-end API tests
+npm run test:unit                    # Unit tests only
+npm run test:integration             # Integration tests 🆕
+npm run test:integration:workflows   # Workflow integration tests 🆕
+npm run test:integration:pipelines   # Pipeline integration tests 🆕
+npm run test:integration:database    # Database integration tests 🆕
+npm run test:e2e                     # End-to-end API tests
 
 # Development
-npm run test:watch         # Watch mode
-npm run test:coverage      # Generate coverage report
+npm run test:watch                   # Watch mode
+npm run test:integration:watch       # Integration watch mode 🆕
+npm run test:coverage                # Generate coverage report
+npm run test:integration:coverage    # Integration coverage 🆕
 
 # Debugging
-npm run test:debug         # Debug mode with inspector
+npm run test:debug                   # Debug mode with inspector
 ```
 
 ## Directory Structure
@@ -33,7 +38,14 @@ test/
 │   ├── analytics/         # ROI, metrics, performance
 │   └── temporal/          # Workflow tests
 │       └── workflows/
-├── integration/           # Integration tests (pending)
+├── integration/           # Integration tests ✅ NEW
+│   ├── workflows/         # End-to-end workflow tests
+│   ├── pipelines/         # Content & publishing pipelines
+│   ├── database.integration.spec.ts
+│   ├── helpers/           # API mocks & test data
+│   ├── setup.ts           # Integration test setup
+│   ├── jest.config.js     # Integration Jest config
+│   └── README.md          # Integration test docs
 ├── e2e/                   # End-to-end API tests
 │   └── product.e2e-spec.ts
 ├── fixtures/              # Test data factories
@@ -50,21 +62,26 @@ test/
 
 ## Test Coverage
 
-### ✅ Implemented (51 tests)
+### ✅ Unit Tests (51 tests)
 - **ProductRanker Service**: 18 tests - Ranking algorithms, scoring logic
 - **ROICalculator Service**: 15 tests - ROI calculations, cost analysis
 - **Temporal Workflows**: 6 tests - Daily control loop, optimization
 - **Product API Endpoints**: 12 tests - CRUD operations, validation
 
-### ⚠️ Pending (High Priority)
-- Content Generation (OpenAI, Claude, Script Generator)
-- Video Services (PikaLabs, ElevenLabs, Video Composer)
-- Publisher Services (YouTube, TikTok, Instagram)
-- Optimizer Services (Strategy, Auto-scaling, A/B Testing)
-- Analytics Services (Metrics Collector, Performance Analyzer)
+### ✅ Integration Tests (150+ tests) 🆕
+- **Daily Control Loop Workflow**: 45 tests - End-to-end workflow, activities, error handling
+- **Content Generation Pipeline**: 50 tests - OpenAI, Claude, ElevenLabs, Pika Labs
+- **Publishing Pipeline**: 30 tests - YouTube, TikTok, Instagram, analytics
+- **Database Operations**: 25 tests - Relationships, transactions, performance
+
+### ⚠️ Pending (Medium Priority)
+- Content Generation (OpenAI, Claude, Script Generator) - Unit tests
+- Video Services (PikaLabs, ElevenLabs, Video Composer) - Unit tests
+- Publisher Services (YouTube, TikTok, Instagram) - Unit tests
+- Optimizer Services (Strategy, Auto-scaling, A/B Testing) - Unit tests
+- Analytics Services (Metrics Collector, Performance Analyzer) - Unit tests
 - Reports Module (Weekly Reports)
-- Temporal Activities
-- Integration Tests
+- Temporal Activities - Unit tests
 
 ## Writing Tests
 

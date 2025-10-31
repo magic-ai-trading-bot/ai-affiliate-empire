@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as helmet from 'helmet';
 import { AppModule } from './app.module';
 import { LoggerService } from './common/logging/logger.service';
 import { SentryService } from './common/monitoring/sentry.service';
@@ -12,6 +13,22 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
+
+  // Security headers with Helmet
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   // Use custom logger
   const logger = app.get(LoggerService);
@@ -60,7 +77,27 @@ async function bootstrap() {
     .setTitle('AI Affiliate Empire API')
     .setDescription('Autonomous AI-powered affiliate marketing system')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addApiKey(
+      {
+        type: 'apiKey',
+        name: 'X-API-Key',
+        in: 'header',
+        description: 'API Key for programmatic access',
+      },
+      'API-Key',
+    )
+    .addTag('auth', 'Authentication and authorization')
     .addTag('products', 'Product discovery and ranking')
     .addTag('content', 'Content generation')
     .addTag('videos', 'Video generation')

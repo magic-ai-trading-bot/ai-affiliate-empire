@@ -16,6 +16,7 @@
 - [Troubleshooting](#troubleshooting)
 - [Security Best Practices](#security-best-practices)
 - [Deployment Checklist](#deployment-checklist)
+- [Disaster Recovery](#disaster-recovery)
 
 ## Overview
 
@@ -1337,3 +1338,397 @@ Monitor for 15-30 minutes. **Rollback if:**
 **Last Updated:** 2024-10-31
 **Version:** 1.0.0
 **Maintained By:** DevOps Team
+
+---
+
+## Disaster Recovery
+
+### Overview
+
+The AI Affiliate Empire has comprehensive disaster recovery procedures to ensure business continuity in case of database failures.
+
+**Key Metrics:**
+- **RTO (Recovery Time Objective):** < 1 hour
+- **RPO (Recovery Point Objective):** < 1 day (24 hours)
+
+### DR Scripts Location
+
+All disaster recovery scripts are located in `/scripts/disaster-recovery/`:
+
+```bash
+scripts/disaster-recovery/
+├── backup-database.sh           # Database backup creation
+├── restore-database.sh          # Database restoration
+├── verify-backup-integrity.sh   # Backup verification
+├── test-dr-procedure.sh         # DR testing automation
+└── README.md                    # Detailed documentation
+```
+
+### Quick Reference
+
+#### Create Backup
+```bash
+# Production backup with S3 upload
+./scripts/disaster-recovery/backup-database.sh \
+  -e production \
+  -o /var/backups/database \
+  -r 30 \
+  -s
+```
+
+#### Restore Database
+```bash
+# Restore from latest S3 backup
+./scripts/disaster-recovery/restore-database.sh \
+  -e production \
+  -s \
+  -f
+
+# Restore from specific local backup
+./scripts/disaster-recovery/restore-database.sh \
+  -e production \
+  -b ./backups/backup_production_20241031_120000.sql.gz \
+  -f
+```
+
+#### Verify Backup Integrity
+```bash
+# Comprehensive verification
+./scripts/disaster-recovery/verify-backup-integrity.sh \
+  -b ./backups/backup_production_latest.sql.gz \
+  -d
+```
+
+#### Run DR Test
+```bash
+# Full DR procedure test (staging)
+./scripts/disaster-recovery/test-dr-procedure.sh \
+  -e staging \
+  -f \
+  -c
+```
+
+### Automated Daily Backups
+
+**Cron Configuration:**
+```bash
+# Add to crontab (crontab -e)
+# Daily backup at 2:00 AM UTC
+0 2 * * * /path/to/scripts/disaster-recovery/backup-database.sh \
+  -e production \
+  -o /var/backups/database \
+  -r 30 \
+  -s >> /var/log/db-backup.log 2>&1
+
+# Backup verification at 3:00 AM UTC
+0 3 * * * /path/to/scripts/disaster-recovery/verify-backup-integrity.sh \
+  -b /var/backups/database/backup_production_$(date +\%Y\%m\%d)*.sql.gz \
+  -q >> /var/log/db-verify.log 2>&1
+```
+
+### Disaster Scenarios
+
+#### Scenario 1: Database Corruption
+**Detection:** Query errors, data inconsistencies
+**RTO:** 30-60 minutes
+**Procedure:**
+1. Stop application traffic
+2. Create safety backup
+3. Identify latest valid backup
+4. Restore from backup
+5. Validate restoration
+6. Restart application
+
+**Command:**
+```bash
+./scripts/disaster-recovery/restore-database.sh \
+  -e production \
+  -b ./backups/backup_production_YYYYMMDD_HHMMSS.sql.gz \
+  -f
+```
+
+#### Scenario 2: Complete Data Loss
+**Detection:** Database unavailable, connection refused
+**RTO:** 45-60 minutes
+**Procedure:**
+1. Declare incident
+2. Download latest backup from S3
+3. Verify backup integrity
+4. Provision new database (if needed)
+5. Restore database
+6. Update application configuration
+7. Comprehensive validation
+
+**Command:**
+```bash
+# Restore from S3
+./scripts/disaster-recovery/restore-database.sh \
+  -e production \
+  -s \
+  -f
+```
+
+#### Scenario 3: Partial Data Loss
+**Detection:** Missing tables or records
+**RTO:** 30-45 minutes
+**Procedure:**
+1. Identify lost data
+2. Prepare staging database
+3. Export missing data
+4. Import to production
+5. Verify data consistency
+
+#### Scenario 4: Region Failure
+**Detection:** AWS region outage
+**RTO:** 60 minutes
+**Procedure:**
+1. Activate DR region
+2. Provision database in new region
+3. Restore from cross-region backup
+4. Update DNS and load balancers
+5. Verify cross-region operation
+
+### DR Documentation
+
+**Comprehensive Documentation:**
+- **DR Runbook:** `/docs/disaster-recovery-runbook.md`
+  - Step-by-step recovery procedures for all scenarios
+  - Emergency contact information
+  - Communication protocols
+  - Post-recovery validation
+
+- **RTO/RPO Procedures:** `/docs/rto-rpo-procedures.md`
+  - RTO/RPO achievement strategies
+  - Monitoring and alerting setup
+  - Quarterly DR drill procedures
+  - Continuous improvement process
+
+- **DR Scripts README:** `/scripts/disaster-recovery/README.md`
+  - Detailed script documentation
+  - Usage examples
+  - Troubleshooting guide
+  - Best practices
+
+### Monitoring and Alerts
+
+#### Backup Monitoring
+```bash
+# CloudWatch alarm for backup failures
+aws cloudwatch put-metric-alarm \
+  --alarm-name DatabaseBackupFailed \
+  --metric-name BackupSuccess \
+  --namespace AI-Affiliate-Empire \
+  --statistic Sum \
+  --period 86400 \
+  --threshold 0 \
+  --comparison-operator LessThanOrEqualToThreshold
+```
+
+#### Discord Notifications
+```bash
+# Add to .env
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+
+# Scripts automatically send notifications on success/failure
+```
+
+### Quarterly DR Drills
+
+**Schedule:** Every 3 months (January, April, July, October)
+
+**Drill Checklist:**
+- [ ] Schedule drill date/time
+- [ ] Notify all participants
+- [ ] Prepare test environment
+- [ ] Execute recovery procedure
+- [ ] Document results
+- [ ] Update runbook
+- [ ] Address gaps
+- [ ] Schedule next drill
+
+**Success Criteria:**
+- ✓ RTO < 60 minutes achieved
+- ✓ RPO < 24 hours validated
+- ✓ Zero data loss detected
+- ✓ All validation checks passed
+- ✓ Application fully functional
+
+### Integration with Deployment Pipeline
+
+#### Pre-Deployment Backup
+```bash
+# Automatically create safety backup before migrations
+- name: Create Pre-Deployment Backup
+  run: |
+    ./scripts/disaster-recovery/backup-database.sh \
+      -e production \
+      -o ./backups/pre-deploy \
+      -n
+```
+
+#### Post-Deployment Validation
+```bash
+# Verify database health after deployment
+- name: Validate Database Health
+  run: |
+    psql -d "$DATABASE_URL" -c "SELECT count(*) FROM \"Product\";"
+    psql -d "$DATABASE_URL" -c "SELECT version();"
+```
+
+### Backup Retention Policy
+
+| Backup Type | Retention | Storage Location |
+|-------------|-----------|------------------|
+| Daily       | 30 days   | Local + S3       |
+| Weekly      | 90 days   | S3               |
+| Monthly     | 1 year    | S3 (Glacier)     |
+| Yearly      | 7 years   | S3 (Deep Archive)|
+
+### S3 Configuration
+
+#### Bucket Setup
+```bash
+# Create backup bucket
+aws s3 mb s3://ai-affiliate-empire-backups
+
+# Enable versioning
+aws s3api put-bucket-versioning \
+  --bucket ai-affiliate-empire-backups \
+  --versioning-configuration Status=Enabled
+
+# Configure lifecycle policy (see DR documentation)
+```
+
+#### Cross-Region Replication
+```bash
+# Enable replication to backup region
+aws s3api put-bucket-replication \
+  --bucket ai-affiliate-empire-backups \
+  --replication-configuration file://replication-config.json
+```
+
+### Emergency Contacts
+
+**Primary On-Call:**
+- Database Administrator: [Contact Info]
+- Phone: [Phone Number]
+- Email: [Email Address]
+
+**Backup Contacts:**
+- DevOps Lead: [Contact Info]
+- CTO: [Contact Info]
+
+**Support:**
+- AWS Support: 1-888-XXX-XXXX
+- Fly.io Support: support@fly.io
+
+### Troubleshooting DR Issues
+
+#### Issue: Backup Creation Failed
+```bash
+# Check database connectivity
+psql -d "$DATABASE_URL" -c "SELECT 1;"
+
+# Verify disk space
+df -h /var/backups
+
+# Check permissions
+ls -la /var/backups
+
+# Review logs
+tail -f /var/log/db-backup.log
+```
+
+#### Issue: Restore Failed
+```bash
+# Verify backup integrity first
+./scripts/disaster-recovery/verify-backup-integrity.sh -b [backup_file]
+
+# Check database permissions
+psql -d postgres -c "\du"
+
+# Verify target database doesn't exist
+psql -d postgres -c "\l"
+
+# Use dry-run mode to test
+./scripts/disaster-recovery/restore-database.sh -d -b [backup_file]
+```
+
+#### Issue: S3 Upload Failed
+```bash
+# Verify AWS credentials
+aws sts get-caller-identity
+
+# Check IAM permissions
+aws iam get-user-policy --user-name backup-user --policy-name backup-policy
+
+# Test S3 access
+aws s3 ls s3://ai-affiliate-empire-backups/
+
+# Check network connectivity
+curl -I https://s3.amazonaws.com
+```
+
+### Best Practices
+
+1. **Regular Testing**
+   - Run quarterly DR drills
+   - Verify backups weekly
+   - Test restore procedures monthly
+
+2. **Monitoring**
+   - Set up backup completion alerts
+   - Monitor backup age (RPO compliance)
+   - Track restore time metrics (RTO)
+   - Alert on storage capacity
+
+3. **Security**
+   - Encrypt backups at rest
+   - Use secure credentials storage
+   - Implement access controls
+   - Audit backup access logs
+
+4. **Documentation**
+   - Keep runbooks updated
+   - Document all changes
+   - Record DR drill results
+   - Maintain contact lists
+
+5. **Automation**
+   - Automate daily backups
+   - Automate verification checks
+   - Automate DR testing
+   - Automate alerting
+
+### Quick Commands Reference
+
+```bash
+# Create backup
+./scripts/disaster-recovery/backup-database.sh -e production -s
+
+# Restore database
+./scripts/disaster-recovery/restore-database.sh -e production -s -f
+
+# Verify backup
+./scripts/disaster-recovery/verify-backup-integrity.sh -b [file]
+
+# Test DR procedures
+./scripts/disaster-recovery/test-dr-procedure.sh -e staging -f -c
+
+# List backups
+ls -lht ./backups/ | head -10
+aws s3 ls s3://ai-affiliate-empire-backups/database-backups/production/
+
+# Check backup age
+find ./backups -name "backup_production_*.sql*" -type f -mtime -1
+
+# Database health check
+psql -d "$DATABASE_URL" -c "SELECT count(*) FROM \"Product\";"
+```
+
+---
+
+**For detailed DR procedures, refer to:**
+- `/docs/disaster-recovery-runbook.md`
+- `/docs/rto-rpo-procedures.md`
+- `/scripts/disaster-recovery/README.md`

@@ -1,0 +1,576 @@
+{
+  "root_group": {
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [
+      {
+        "groups": [],
+        "checks": [
+            {
+              "passes": 9,
+              "fails": 0,
+              "name": "status is 200",
+              "path": "::Analytics Overview::status is 200",
+              "id": "694948954645863ae354d4551dab21a2"
+            },
+            {
+              "id": "ad04a4b0c4a96feca45cefe413a314dc",
+              "passes": 9,
+              "fails": 0,
+              "name": "response time < 500ms",
+              "path": "::Analytics Overview::response time < 500ms"
+            },
+            {
+              "name": "response has body",
+              "path": "::Analytics Overview::response has body",
+              "id": "2d5d9fdd30f7432156554a03dd81f14b",
+              "passes": 9,
+              "fails": 0
+            },
+            {
+              "path": "::Analytics Overview::has metrics data",
+              "id": "f0155e069e74d1d12111bfd4ca27fafe",
+              "passes": 9,
+              "fails": 0,
+              "name": "has metrics data"
+            },
+            {
+              "name": "contains key metrics",
+              "path": "::Analytics Overview::contains key metrics",
+              "id": "6bafffa876f7ad85c04709f48e7526d1",
+              "passes": 9,
+              "fails": 0
+            },
+            {
+              "name": "acceptable response time",
+              "path": "::Analytics Overview::acceptable response time",
+              "id": "f9764d556ae942da9c8774e33ce41a95",
+              "passes": 9,
+              "fails": 0
+            }
+          ],
+        "name": "Analytics Overview",
+        "path": "::Analytics Overview",
+        "id": "1bef0514eaf94bf33029f3bb305c1c12"
+      },
+      {
+        "name": "Revenue Analytics",
+        "path": "::Revenue Analytics",
+        "id": "49ba2ac30534badab059a1b0ffab5111",
+        "groups": [],
+        "checks": [
+            {
+              "name": "status is 200",
+              "path": "::Revenue Analytics::status is 200",
+              "id": "406967cdecbf05d9501536bff7cce6a7",
+              "passes": 9,
+              "fails": 0
+            },
+            {
+              "name": "response time < 500ms",
+              "path": "::Revenue Analytics::response time < 500ms",
+              "id": "73a8d90ef69d830bed9233502c29502c",
+              "passes": 9,
+              "fails": 0
+            },
+            {
+              "name": "response has body",
+              "path": "::Revenue Analytics::response has body",
+              "id": "74a13144aa51952950e22b8fca2ec3bb",
+              "passes": 9,
+              "fails": 0
+            },
+            {
+              "fails": 0,
+              "name": "has revenue data",
+              "path": "::Revenue Analytics::has revenue data",
+              "id": "97aac3dd94878bc9d483d9f1063862df",
+              "passes": 9
+            },
+            {
+              "passes": 9,
+              "fails": 0,
+              "name": "includes time series",
+              "path": "::Revenue Analytics::includes time series",
+              "id": "e24f28519cfdc3bb06731fb641552900"
+            }
+          ]
+      },
+      {
+        "name": "Top Products Analytics",
+        "path": "::Top Products Analytics",
+        "id": "64505f28c24476fdb3b348fef5a9d326",
+        "groups": [],
+        "checks": [
+            {
+              "id": "184cf7e3e05688dd0e491ba6a22211b9",
+              "passes": 9,
+              "fails": 0,
+              "name": "status is 200",
+              "path": "::Top Products Analytics::status is 200"
+            },
+            {
+              "name": "response time < 500ms",
+              "path": "::Top Products Analytics::response time < 500ms",
+              "id": "0358a4553ca5a59825fadd5fb59c42b2",
+              "passes": 9,
+              "fails": 0
+            },
+            {
+              "path": "::Top Products Analytics::response has body",
+              "id": "8c86257acac60bd1539ffca5aca51d02",
+              "passes": 9,
+              "fails": 0,
+              "name": "response has body"
+            },
+            {
+              "name": "has products list",
+              "path": "::Top Products Analytics::has products list",
+              "id": "eb0eaa8593f5c7bf4d96dbd268354beb",
+              "passes": 9,
+              "fails": 0
+            },
+            {
+              "name": "fast query",
+              "path": "::Top Products Analytics::fast query",
+              "id": "475a9f4f23d607de6d5685b2820ed8fc",
+              "passes": 9,
+              "fails": 0
+            }
+          ]
+      },
+      {
+        "name": "Platform Comparison",
+        "path": "::Platform Comparison",
+        "id": "600de11d866306cf03190d901abe24bf",
+        "groups": [],
+        "checks": [
+            {
+              "name": "status is 200",
+              "path": "::Platform Comparison::status is 200",
+              "id": "60617fb42a60cba56dbbc15576234414",
+              "passes": 3,
+              "fails": 0
+            },
+            {
+              "passes": 3,
+              "fails": 0,
+              "name": "response time < 500ms",
+              "path": "::Platform Comparison::response time < 500ms",
+              "id": "7f19501f7d21b81ea149d4883b05e13c"
+            },
+            {
+              "name": "response has body",
+              "path": "::Platform Comparison::response has body",
+              "id": "01f17bf4dd1a65b0b17e908d11113f80",
+              "passes": 3,
+              "fails": 0
+            },
+            {
+              "fails": 0,
+              "name": "has platform data",
+              "path": "::Platform Comparison::has platform data",
+              "id": "4b579aa7f4dea019cfb9d1cd1b3175bf",
+              "passes": 3
+            },
+            {
+              "passes": 3,
+              "fails": 0,
+              "name": "acceptable query time",
+              "path": "::Platform Comparison::acceptable query time",
+              "id": "b082f84903fbc31bdb75c2887a189ace"
+            }
+          ]
+      },
+      {
+        "name": "Filtered Analytics",
+        "path": "::Filtered Analytics",
+        "id": "fde8ce870c1f1999d2b2c1df913dd1c2",
+        "groups": [],
+        "checks": [
+            {
+              "passes": 2,
+              "fails": 0,
+              "name": "status is 200",
+              "path": "::Filtered Analytics::status is 200",
+              "id": "1ca1df3fabc2fab8e5d684431db2dfa4"
+            },
+            {
+              "name": "response time < 500ms",
+              "path": "::Filtered Analytics::response time < 500ms",
+              "id": "47ad495c1c9d85d3b52a199cd24a43c6",
+              "passes": 2,
+              "fails": 0
+            },
+            {
+              "fails": 0,
+              "name": "response has body",
+              "path": "::Filtered Analytics::response has body",
+              "id": "06b4386bd774a4e69bade4ff3ae9722c",
+              "passes": 2
+            },
+            {
+              "passes": 2,
+              "fails": 0,
+              "name": "filtered data",
+              "path": "::Filtered Analytics::filtered data",
+              "id": "51f34df4052be4af9d8398277d8b810d"
+            }
+          ]
+      },
+      {
+        "id": "757286f1873f5e0eb8fdf517e2a08a88",
+        "groups": [],
+        "checks": [
+            {
+              "name": "status is 200",
+              "path": "::Custom Date Range::status is 200",
+              "id": "e12437623e29ff5d099e1eb7510cb158",
+              "passes": 1,
+              "fails": 0
+            },
+            {
+              "name": "response time < 500ms",
+              "path": "::Custom Date Range::response time < 500ms",
+              "id": "f6f318e26b54e163f987b1f49da1e0de",
+              "passes": 1,
+              "fails": 0
+            },
+            {
+              "name": "response has body",
+              "path": "::Custom Date Range::response has body",
+              "id": "f801bd2ea9d261882daba97209df0ea2",
+              "passes": 1,
+              "fails": 0
+            },
+            {
+              "fails": 0,
+              "name": "handles custom range",
+              "path": "::Custom Date Range::handles custom range",
+              "id": "4a8182bf47da3545f788703c8a1803f4",
+              "passes": 1
+            },
+            {
+              "path": "::Custom Date Range::not too slow",
+              "id": "1be662326f0b670f16d6639a1b46621f",
+              "passes": 1,
+              "fails": 0,
+              "name": "not too slow"
+            }
+          ],
+        "name": "Custom Date Range",
+        "path": "::Custom Date Range"
+      }
+    ],
+    "checks": [],
+    "name": "",
+    "path": ""
+  },
+  "options": {
+    "summaryTimeUnit": "",
+    "noColor": false,
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ]
+  },
+  "state": {
+    "isStdOutTTY": false,
+    "isStdErrTTY": false,
+    "testRunDurationMs": 121553.966
+  },
+  "metrics": {
+    "analytics_platform_comparison_duration": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "max": 140,
+        "p(90)": 134.2,
+        "p(95)": 137.1,
+        "avg": 107.66666666666667,
+        "min": 72,
+        "med": 111
+      }
+    },
+    "checks": {
+      "contains": "default",
+      "values": {
+        "fails": 0,
+        "rate": 1,
+        "passes": 172
+      },
+      "type": "rate"
+    },
+    "errors": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 33
+      }
+    },
+    "analytics_top_products_duration": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "max": 121,
+        "p(90)": 114.6,
+        "p(95)": 117.8,
+        "avg": 86.77777777777777,
+        "min": 65,
+        "med": 84
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "contains": "time",
+      "values": {
+        "max": 196.816,
+        "p(90)": 146.9538,
+        "p(95)": 149.916,
+        "avg": 115.72724242424245,
+        "min": 65.034,
+        "med": 121.019
+      },
+      "type": "trend"
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 65.034,
+        "med": 121.019,
+        "max": 196.816,
+        "p(90)": 146.9538,
+        "p(95)": 149.916,
+        "avg": 115.72724242424245
+      },
+      "thresholds": {
+        "p(95)<1000": {
+          "ok": true
+        }
+      }
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 74234,
+        "rate": 610.7081689132216
+      }
+    },
+    "iterations": {
+      "contains": "default",
+      "values": {
+        "rate": 0.07404118759893033,
+        "count": 9
+      },
+      "type": "counter"
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 33
+      },
+      "thresholds": {
+        "rate<0.01": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0.005,
+        "max": 0.98,
+        "p(90)": 0.3134,
+        "p(95)": 0.4589999999999996,
+        "avg": 0.09842424242424239,
+        "min": 0.003
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 115.63260606060607,
+        "min": 64.95,
+        "med": 120.957,
+        "max": 196.408,
+        "p(90)": 146.87900000000002,
+        "p(95)": 149.782
+      }
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 5297,
+        "rate": 43.57735230128156
+      }
+    },
+    "analytics_revenue_duration": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "min": 85,
+        "med": 123,
+        "max": 152,
+        "p(90)": 148,
+        "p(95)": 150,
+        "avg": 120.88888888888889
+      },
+      "thresholds": {
+        "p(95)<1000": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.0330909090909091,
+        "min": 0.012,
+        "med": 0.016,
+        "max": 0.339,
+        "p(90)": 0.0468,
+        "p(95)": 0.06299999999999997
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.04596969696969697,
+        "min": 0,
+        "med": 0,
+        "max": 0.279,
+        "p(90)": 0.21840000000000004,
+        "p(95)": 0.24359999999999998
+      }
+    },
+    "success": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 33,
+        "fails": 0
+      }
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "analytics_overview_duration": {
+      "values": {
+        "min": 105,
+        "med": 129,
+        "max": 198,
+        "p(90)": 158.8,
+        "p(95)": 178.39999999999998,
+        "avg": 135.77777777777777
+      },
+      "thresholds": {
+        "p(95)<800": {
+          "ok": true
+        }
+      },
+      "type": "trend",
+      "contains": "default"
+    },
+    "group_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 65.40175,
+        "med": 121.264791,
+        "max": 199.274542,
+        "p(90)": 147.2340502,
+        "p(95)": 150.65452539999998,
+        "avg": 116.24283333333335
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.06154545454545455,
+        "min": 0.039,
+        "med": 0.053,
+        "max": 0.182,
+        "p(90)": 0.08140000000000001,
+        "p(95)": 0.09699999999999999
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0,
+        "min": 0,
+        "med": 0
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 10384.852667,
+        "med": 12946.217459,
+        "max": 16793.144041,
+        "p(90)": 16505.965341000003,
+        "p(95)": 16649.554691,
+        "avg": 13505.753796333334
+      }
+    },
+    "http_reqs": {
+      "contains": "default",
+      "values": {
+        "count": 33,
+        "rate": 0.2714843545294112
+      },
+      "type": "counter"
+    }
+  },
+  "setup_data": {
+    "platforms": [
+      "youtube",
+      "tiktok",
+      "instagram",
+      "blog"
+    ],
+    "baseUrl": "http://localhost:3000",
+    "periods": [
+      "1d",
+      "7d",
+      "30d",
+      "90d"
+    ]
+  }
+}

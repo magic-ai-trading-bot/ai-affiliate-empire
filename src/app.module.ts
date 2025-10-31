@@ -11,6 +11,9 @@ import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.m
 import { MonitoringModule } from './common/monitoring/monitoring.module';
 import { HealthModule } from './common/health/health.module';
 import { SecretsManagerModule } from './common/secrets/secrets-manager.module';
+import { AuthModule } from './common/auth/auth.module';
+import { JwtAuthGuard } from './common/auth/guards/jwt-auth.guard';
+import { RolesGuard } from './common/auth/guards/roles.guard';
 import { validationSchema } from './common/config/env.validation';
 import { ProductModule } from './modules/product/product.module';
 import { ContentModule } from './modules/content/content.module';
@@ -20,6 +23,8 @@ import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { OptimizerModule } from './modules/optimizer/optimizer.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { GdprModule } from './modules/gdpr/gdpr.module';
+import { CostTrackingModule } from './modules/cost-tracking/cost-tracking.module';
 
 @Module({
   imports: [
@@ -43,6 +48,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     CircuitBreakerModule,
     HealthModule,
     SecretsManagerModule,
+    AuthModule,
     DatabaseModule,
     ProductModule,
     ContentModule,
@@ -52,6 +58,8 @@ import { ReportsModule } from './modules/reports/reports.module';
     AnalyticsModule,
     OptimizerModule,
     ReportsModule,
+    GdprModule,
+    CostTrackingModule,
   ],
   controllers: [AppController],
   providers: [
@@ -59,6 +67,14 @@ import { ReportsModule } from './modules/reports/reports.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })

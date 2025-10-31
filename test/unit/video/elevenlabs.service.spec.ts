@@ -111,10 +111,10 @@ describe('ElevenLabsService', () => {
       consoleSpy.mockRestore();
     });
 
-    it('should create storage directory if it does not exist', () => {
-      mockedFs.existsSync = jest.fn().mockReturnValue(false);
+    it('should create storage directory if it does not exist', async () => {
+      (mockedFs.existsSync as jest.Mock).mockReturnValue(false);
 
-      const testModule = Test.createTestingModule({
+      const testModule = await Test.createTestingModule({
         providers: [
           ElevenLabsService,
           {
@@ -219,9 +219,29 @@ describe('ElevenLabsService', () => {
     });
 
     it('should return mock audio URL when in mock mode', async () => {
-      jest.spyOn(service, 'isConfigured').mockReturnValue(false);
+      // Create a new service instance in mock mode (no API key)
+      const mockModule = await Test.createTestingModule({
+        providers: [
+          ElevenLabsService,
+          {
+            provide: ConfigService,
+            useValue: {
+              get: jest.fn((key: string) => mockConfig[key]),
+            },
+          },
+          {
+            provide: SecretsManagerService,
+            useValue: {
+              getSecret: jest.fn().mockResolvedValue(null), // No API key
+            },
+          },
+        ],
+      }).compile();
 
-      const result = await service.generateVoice({
+      const mockService = mockModule.get<ElevenLabsService>(ElevenLabsService);
+      await mockService.onModuleInit();
+
+      const result = await mockService.generateVoice({
         text: 'Hello world',
       });
 
@@ -361,9 +381,29 @@ describe('ElevenLabsService', () => {
     });
 
     it('should return empty array when in mock mode', async () => {
-      jest.spyOn(service, 'isConfigured').mockReturnValue(false);
+      // Create a new service instance in mock mode (no API key)
+      const mockModule = await Test.createTestingModule({
+        providers: [
+          ElevenLabsService,
+          {
+            provide: ConfigService,
+            useValue: {
+              get: jest.fn((key: string) => mockConfig[key]),
+            },
+          },
+          {
+            provide: SecretsManagerService,
+            useValue: {
+              getSecret: jest.fn().mockResolvedValue(null), // No API key
+            },
+          },
+        ],
+      }).compile();
 
-      const result = await service.getVoices();
+      const mockService = mockModule.get<ElevenLabsService>(ElevenLabsService);
+      await mockService.onModuleInit();
+
+      const result = await mockService.getVoices();
 
       expect(result).toEqual([]);
       expect(mockedAxios.get).not.toHaveBeenCalled();

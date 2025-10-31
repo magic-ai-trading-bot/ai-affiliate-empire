@@ -1,0 +1,46 @@
+
+═══════════════════════════════════════════════════════════
+  STRESS TEST SUMMARY
+═══════════════════════════════════════════════════════════
+
+Configuration:
+  Max VUs: 200
+  Total Duration: 30 minutes
+  Base URL: http://localhost:3000
+
+Performance Metrics:
+───────────────────────────────────────────────────────────
+  Response Time:
+    Min:  21.91ms
+    Avg:  97.28ms
+    p50:  92.87ms
+    p95:  175.38ms ✓
+    p99:  undefinedms
+    Max:  237.84ms
+
+  Request Statistics:
+    Total Requests: 110366
+    Requests/sec:   61.09
+
+  Error Rate: 0.00% ✓
+    Failed Requests: 0
+    Successful Requests: 110366
+
+  Performance Degradation:
+    Avg Factor: 41.84x
+    p95 Factor: 52.45x ✗ (threshold: <3x)
+    Max Factor: 58.38x
+
+  Test Iterations: 22073
+
+Analysis:
+───────────────────────────────────────────────────────────
+  ✓ System performs excellently under stress
+  ⚠ Significant performance degradation detected
+
+Recommendations:
+───────────────────────────────────────────────────────────
+  • Investigate bottlenecks causing 52.45x degradation
+  • Consider horizontal scaling
+
+═══════════════════════════════════════════════════════════

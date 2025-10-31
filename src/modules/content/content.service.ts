@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/common/database/prisma.service';
 import { ScriptGeneratorService } from './services/script-generator.service';
+import { FtcDisclosureService } from '@/common/compliance/ftc-disclosure.service';
 import { GenerateScriptDto } from './dto/generate-script.dto';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class ContentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly scriptGenerator: ScriptGeneratorService,
+    private readonly ftcDisclosure: FtcDisclosureService,
   ) {}
 
   async generateScript(dto: GenerateScriptDto) {
@@ -36,12 +38,19 @@ export class ContentService {
       tone,
     });
 
+    // Add FTC disclosure to script
+    const scriptWithDisclosure = this.ftcDisclosure.addDisclosure(
+      scriptContent.script,
+      'video',
+      { enabled: true, position: 'bottom' },
+    );
+
     // Create video record with script
     const video = await this.prisma.video.create({
       data: {
         productId: product.id,
         title: `${product.title} - Review`,
-        script: scriptContent.script,
+        script: scriptWithDisclosure,
         duration: scriptContent.estimatedDuration,
         language,
         status: 'PENDING',
@@ -77,12 +86,19 @@ export class ContentService {
       excerpt: `Comprehensive review of ${product.title}`,
     };
 
+    // Add FTC disclosure to blog content
+    const contentWithDisclosure = this.ftcDisclosure.addDisclosure(
+      blogContent.content,
+      'blog',
+      { enabled: true, position: 'bottom' },
+    );
+
     const blog = await this.prisma.blog.create({
       data: {
         productId: product.id,
         title: blogContent.title,
         slug: this.generateSlug(blogContent.title),
-        content: blogContent.content,
+        content: contentWithDisclosure,
         excerpt: blogContent.excerpt,
         language,
         status: 'DRAFT',

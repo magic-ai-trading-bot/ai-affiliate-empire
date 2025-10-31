@@ -1,5 +1,6 @@
 import { Controller, Get, HttpStatus, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator';
 import { LoggerService } from '../logging/logger.service';
 import { HealthCheckService } from './health-check.service';
 import {
@@ -9,6 +10,7 @@ import {
 
 @ApiTags('health')
 @Controller('health')
+@Public()
 export class HealthController {
   constructor(
     private readonly healthCheckService: HealthCheckService,
