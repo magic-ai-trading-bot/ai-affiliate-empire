@@ -142,6 +142,7 @@ GoogleService-Info.plist
 # Secrets and Credentials (Extra Protection)
 # =============================================================================
 **/.env*
+**/*.secrets
 **/secrets.json
 **/config/*.json
 !**/config/*.example.json
