@@ -27,9 +27,9 @@ module.exports = [
       ...tsPlugin.configs.recommended.rules,
       ...prettierConfig.rules,
 
-      'no-console': 'warn',
+      'no-console': 'off', // Allow console for logging
 
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off', // Allow any for flexibility
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
