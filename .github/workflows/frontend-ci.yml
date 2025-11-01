@@ -119,11 +119,11 @@ jobs:
 
       - name: Install Dashboard dependencies
         working-directory: dashboard
-        run: npm ci
+        run: npm install
 
       - name: Install Blog dependencies
         working-directory: apps/blog
-        run: npm ci
+        run: npm install
 
       - name: Start Dashboard
         working-directory: dashboard
@@ -175,11 +175,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
 
       - name: Install Dashboard dependencies
         working-directory: dashboard
-        run: npm ci
+        run: npm install
 
       - name: Start Dashboard
         working-directory: dashboard
