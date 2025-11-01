@@ -16,7 +16,7 @@
 - **Understand the System**: [System Architecture](./system-architecture.md)
 
 ### Development
-- **API Integration**: [API Reference](./api-reference.md) (800+ lines, 35+ endpoints)
+- **API Integration**: [API Reference](./api-reference.md) (800+ lines, 73 endpoints)
 - **Code Standards**: [Code Standards](./code-standards.md)
 - **Testing**: [Testing Guide](./testing-guide.md)
 - **Common Tasks**: [Developer Onboarding - Common Tasks](./developer-onboarding.md#common-tasks)
@@ -196,7 +196,7 @@ Reports (4+ files):
 
 1. **API Reference** (`api-reference.md`)
    - 800+ lines, 25KB
-   - 35+ API endpoints documented
+   - 73 REST API endpoints documented
    - All request/response examples
    - Error handling guide
    - Rate limiting documentation
@@ -251,7 +251,7 @@ Reports (4+ files):
 |------|----------|-------|
 | API Endpoints | 100% (35+ documented) | 10 |
 | Modules | 100% (8 modules) | 9 |
-| Database Models | 100% (11 models) | 5 |
+| Database Models | 100% (22 models) | 5 |
 | Configuration | 100% (100+ variables) | 8 |
 | External Services | 100% (9 services) | 6 |
 | Common Issues | 100% (50+ issues) | 2 |

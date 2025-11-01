@@ -79,7 +79,7 @@ export const mockArticles: Article[] = [
     id: '2',
     title: '7 AI Tools That Revolutionized Our Content Creation Process',
     excerpt:
-      'From GPT-5 to Pika Labs, explore the AI tools we use daily to create high-converting video and written content at scale.',
+      'From GPT-4 Turbo to Pika Labs, explore the AI tools we use daily to create high-converting video and written content at scale.',
     content: '',
     slug: '7-ai-tools-revolutionized-content-creation',
     category: mockCategories[1],

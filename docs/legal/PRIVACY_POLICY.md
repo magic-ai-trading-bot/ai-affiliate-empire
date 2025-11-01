@@ -157,7 +157,7 @@ See our [Data Retention Policy](/docs/legal/DATA_RETENTION.md) for detailed info
 We share data with the following service providers:
 
 **AI and Content Generation:**
-- OpenAI (GPT-5): Video script generation
+- OpenAI (GPT-4 Turbo): Video script generation
 - Anthropic (Claude 3.5): Blog post creation
 - ElevenLabs: Voice synthesis
 - DALL-E 3: Thumbnail generation

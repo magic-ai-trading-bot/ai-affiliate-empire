@@ -32,7 +32,7 @@ TRACK ANALYTICS → OPTIMIZE STRATEGY → SCALE WINNERS → REPEAT DAILY
 - **Backend**: NestJS + Temporal (durable workflows)
 - **Database**: PostgreSQL + Prisma
 - **Video**: Pika Labs ($28/month for 2000 videos)
-- **AI**: GPT-5 (scripts), Claude 3.5 (blogs), ElevenLabs (voice), DALL-E 3 (thumbnails)
+- **AI**: GPT-4 Turbo (scripts), Claude 3.5 (blogs), ElevenLabs (voice), DALL-E 3 (thumbnails)
 - **Platforms**: YouTube, TikTok, Instagram, Next.js blog
 - **Hosting**: Fly.io + Cloudflare R2
 - **Security**: JWT Auth, AWS Secrets Manager, RBAC, Rate Limiting

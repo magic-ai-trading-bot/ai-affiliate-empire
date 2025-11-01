@@ -33,7 +33,7 @@ Connect brands with nano/micro influencers for UGC at scale
 - **Investment**: $1K marketing
 
 ### 3. Viral Hook Generator (Impact: 9/10, Effort: Low)
-GPT-5 fine-tuned on viral content → 2-5x engagement rates
+GPT-4 Turbo fine-tuned on viral content → 2-5x engagement rates
 - **ROI**: 100-200% revenue increase
 - **Timeline**: 2 weeks
 - **Investment**: $1K fine-tuning

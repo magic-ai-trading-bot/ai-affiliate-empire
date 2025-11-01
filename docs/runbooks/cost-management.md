@@ -25,7 +25,7 @@ Procedures for monitoring, analyzing, and optimizing operational costs for AI Af
 
 | Service | Cost/Unit | Monthly Target | Total |
 |---------|-----------|----------------|-------|
-| OpenAI (GPT-5) | $0.10/script | 1500 scripts | $150 |
+| OpenAI (GPT-4 Turbo) | $0.10/script | 1500 scripts | $150 |
 | Anthropic (Claude) | $0.05/post | 500 posts | $25 |
 | DALL-E 3 | $0.04/image | 1500 images | $60 |
 | **Total Variable** | | | **$235** |
@@ -171,7 +171,7 @@ curl https://ai-affiliate-empire.fly.dev/api/analytics/costs/month
 
    # 4. Use cheaper model for drafts
    # Switch to GPT-4-turbo for initial generation
-   # Use GPT-5 only for final polish
+   # Use GPT-4 Turbo only for final polish
    ```
 
    **Scenario B: High Anthropic Costs**
@@ -498,7 +498,7 @@ await generateImages(products);  // 1 batch call
 
 | Current | Alternative | Savings | Trade-off |
 |---------|-------------|---------|-----------|
-| GPT-5 | GPT-4-turbo | 50% cost | Slight quality drop |
+| GPT-4 Turbo | GPT-4-turbo | 50% cost | Slight quality drop |
 | DALL-E 3 | Stable Diffusion | 80% cost | Different art style |
 | ElevenLabs | Google TTS | 70% cost | Less natural voice |
 | Pika Labs | RunwayML | Variable | Different features |
