@@ -9,7 +9,7 @@ import { MockPrismaService, mockPrismaService } from '../../mocks/prisma.mock';
 
 describe('MetricsCollectorService', () => {
   let service: MetricsCollectorService;
-  let _prisma: MockPrismaService;
+  let prisma: MockPrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -49,7 +49,7 @@ describe('MetricsCollectorService', () => {
       mockPrismaService.productAnalytics.findUnique.mockResolvedValue(null);
       mockPrismaService.productAnalytics.create.mockResolvedValue({});
 
-      const _result = await service.collectAll();
+      const result = await service.collectAll();
 
       expect(result).toHaveProperty('collected');
       expect(result).toHaveProperty('platforms');
@@ -60,7 +60,7 @@ describe('MetricsCollectorService', () => {
     it('should handle empty publications', async () => {
       mockPrismaService.publication.findMany.mockResolvedValue([]);
 
-      const _result = await service.collectAll();
+      const result = await service.collectAll();
 
       expect(result.collected).toBe(0);
       expect(result.platforms).toEqual(['YOUTUBE', 'TIKTOK', 'INSTAGRAM']);
@@ -81,7 +81,7 @@ describe('MetricsCollectorService', () => {
       mockPrismaService.productAnalytics.findUnique.mockResolvedValue(null);
       mockPrismaService.productAnalytics.create.mockResolvedValue({});
 
-      const _result = await service.collectAll();
+      const result = await service.collectAll();
 
       expect(result.collected).toBe(1);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -143,7 +143,7 @@ describe('MetricsCollectorService', () => {
       mockPrismaService.productAnalytics.findUnique.mockResolvedValue(null);
       mockPrismaService.productAnalytics.create.mockResolvedValue({});
 
-      const _result = await service.collectAll();
+      const result = await service.collectAll();
 
       expect(result.collected).toBeGreaterThan(0);
       expect(mockPrismaService.platformAnalytics.upsert).toHaveBeenCalled();
@@ -165,7 +165,7 @@ describe('MetricsCollectorService', () => {
       mockPrismaService.productAnalytics.findUnique.mockResolvedValue(null);
       mockPrismaService.productAnalytics.create.mockResolvedValue({});
 
-      const _result = await service.collectAll();
+      const result = await service.collectAll();
 
       expect(result.collected).toBe(1);
     });
@@ -186,7 +186,7 @@ describe('MetricsCollectorService', () => {
       mockPrismaService.productAnalytics.findUnique.mockResolvedValue(null);
       mockPrismaService.productAnalytics.create.mockResolvedValue({});
 
-      const _result = await service.collectAll();
+      const result = await service.collectAll();
 
       expect(result.collected).toBe(1);
     });
@@ -550,7 +550,7 @@ describe('MetricsCollectorService', () => {
       mockPrismaService.productAnalytics.findUnique.mockResolvedValue(null);
       mockPrismaService.productAnalytics.create.mockResolvedValue({});
 
-      const _result = await service.collectAll();
+      const result = await service.collectAll();
 
       // Should collect at least one (other platforms may succeed)
       expect(result.collected).toBeGreaterThanOrEqual(1);
@@ -570,7 +570,7 @@ describe('MetricsCollectorService', () => {
         new Error('Product analytics query failed'),
       );
 
-      const _result = await service.collectAll();
+      const result = await service.collectAll();
 
       // Should still count as collected even if product analytics fails
       expect(consoleErrorSpy).toHaveBeenCalled();

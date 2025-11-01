@@ -9,7 +9,7 @@ import { MockPrismaService, mockPrismaService } from '../../mocks/prisma.mock';
 
 describe('WeeklyReportService', () => {
   let service: WeeklyReportService;
-  let _prisma: MockPrismaService;
+  let prisma: MockPrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
