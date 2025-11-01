@@ -4,17 +4,38 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductRanker } from '@/modules/product/services/product-ranker.service';
+import { TrendAggregatorService } from '@/modules/product/services/trend-aggregator.service';
 import { createMockProduct, createMockProducts } from '../../fixtures/product.fixtures';
 
 describe('ProductRanker', () => {
   let service: ProductRanker;
+  let trendAggregator: jest.Mocked<TrendAggregatorService>;
 
   beforeEach(async () => {
+    const mockTrendAggregator = {
+      getTrendScores: jest.fn().mockResolvedValue({
+        googleTrendScore: 0.7,
+        twitterScore: 0.6,
+        redditScore: 0.5,
+        tiktokScore: 0.4,
+        aggregatedScore: 0.55,
+        source: ['google', 'reddit'],
+        failedSources: [],
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ProductRanker],
+      providers: [
+        ProductRanker,
+        {
+          provide: TrendAggregatorService,
+          useValue: mockTrendAggregator,
+        },
+      ],
     }).compile();
 
     service = module.get<ProductRanker>(ProductRanker);
+    trendAggregator = module.get(TrendAggregatorService);
   });
 
   afterEach(() => {
@@ -56,9 +77,7 @@ describe('ProductRanker', () => {
 
       // Overall score should be weighted average
       const expectedOverall =
-        scores.trendScore * 0.3 +
-        scores.profitScore * 0.4 +
-        scores.viralityScore * 0.3;
+        scores.trendScore * 0.3 + scores.profitScore * 0.4 + scores.viralityScore * 0.3;
 
       expect(scores.overallScore).toBeCloseTo(expectedOverall, 2);
     });
@@ -120,111 +139,64 @@ describe('ProductRanker', () => {
     });
   });
 
-  describe('calculateTrendScore', () => {
-    it('should give higher score to popular categories', async () => {
-      const popularProduct = createMockProduct({
-        category: 'Electronics',
-      });
-
-      const unpopularProduct = createMockProduct({
-        category: 'Automotive',
-      });
-
-      const popularScores = await service.calculateScores(popularProduct);
-      const unpopularScores = await service.calculateScores(unpopularProduct);
-
-      // Average over multiple runs to account for randomness
-      const runs = 10;
-      let popularTotal = 0;
-      let unpopularTotal = 0;
-
-      for (let i = 0; i < runs; i++) {
-        const ps = await service.calculateScores(popularProduct);
-        const us = await service.calculateScores(unpopularProduct);
-        popularTotal += ps.trendScore;
-        unpopularTotal += us.trendScore;
-      }
-
-      const popularAvg = popularTotal / runs;
-      const unpopularAvg = unpopularTotal / runs;
-
-      expect(popularAvg).toBeGreaterThan(unpopularAvg);
-    });
-
-    it('should return score between 0 and 1', async () => {
+  describe('trend and virality integration', () => {
+    it('should use TrendAggregator for trend scores', async () => {
       const product = createMockProduct();
 
-      const scores = await service.calculateScores(product);
+      await service.calculateScores(product);
 
-      expect(scores.trendScore).toBeGreaterThanOrEqual(0);
-      expect(scores.trendScore).toBeLessThanOrEqual(1);
-    });
-  });
-
-  describe('calculateViralityScore', () => {
-    it('should give higher score to visual categories', async () => {
-      const visualProduct = createMockProduct({
-        category: 'Electronics',
-      });
-
-      const nonVisualProduct = createMockProduct({
-        category: 'Books',
-      });
-
-      // Average over multiple runs
-      const runs = 10;
-      let visualTotal = 0;
-      let nonVisualTotal = 0;
-
-      for (let i = 0; i < runs; i++) {
-        const vs = await service.calculateScores(visualProduct);
-        const nvs = await service.calculateScores(nonVisualProduct);
-        visualTotal += vs.viralityScore;
-        nonVisualTotal += nvs.viralityScore;
-      }
-
-      const visualAvg = visualTotal / runs;
-      const nonVisualAvg = nonVisualTotal / runs;
-
-      expect(visualAvg).toBeGreaterThan(nonVisualAvg);
+      expect(trendAggregator.getTrendScores).toHaveBeenCalledWith(product);
     });
 
-    it('should boost score for popular brands', async () => {
-      const brandedProduct = createMockProduct({
-        brand: 'Apple',
-        category: 'Electronics',
+    it('should use Google Trends score as trendScore', async () => {
+      trendAggregator.getTrendScores.mockResolvedValue({
+        googleTrendScore: 0.85,
+        twitterScore: 0.6,
+        redditScore: 0.5,
+        tiktokScore: 0.4,
+        aggregatedScore: 0.6,
+        source: ['google'],
+        failedSources: [],
       });
 
-      const genericProduct = createMockProduct({
-        brand: 'GenericBrand',
-        category: 'Electronics',
-      });
-
-      // Average over multiple runs
-      const runs = 10;
-      let brandedTotal = 0;
-      let genericTotal = 0;
-
-      for (let i = 0; i < runs; i++) {
-        const bs = await service.calculateScores(brandedProduct);
-        const gs = await service.calculateScores(genericProduct);
-        brandedTotal += bs.viralityScore;
-        genericTotal += gs.viralityScore;
-      }
-
-      const brandedAvg = brandedTotal / runs;
-      const genericAvg = genericTotal / runs;
-
-      expect(brandedAvg).toBeGreaterThan(genericAvg);
-    });
-
-    it('should return score between 0 and 1', async () => {
       const product = createMockProduct();
-
       const scores = await service.calculateScores(product);
 
-      expect(scores.viralityScore).toBeGreaterThanOrEqual(0);
-      expect(scores.viralityScore).toBeLessThanOrEqual(1);
+      expect(scores.trendScore).toBe(0.85);
+    });
+
+    it('should use aggregated score as viralityScore', async () => {
+      trendAggregator.getTrendScores.mockResolvedValue({
+        googleTrendScore: 0.7,
+        twitterScore: 0.8,
+        redditScore: 0.6,
+        tiktokScore: 0.5,
+        aggregatedScore: 0.65,
+        source: ['google', 'twitter'],
+        failedSources: [],
+      });
+
+      const product = createMockProduct();
+      const scores = await service.calculateScores(product);
+
+      expect(scores.viralityScore).toBe(0.65);
+    });
+
+    it('should include trend sources in results', async () => {
+      trendAggregator.getTrendScores.mockResolvedValue({
+        googleTrendScore: 0.7,
+        twitterScore: 0.6,
+        redditScore: 0.5,
+        tiktokScore: 0.4,
+        aggregatedScore: 0.55,
+        source: ['google', 'reddit', 'tiktok'],
+        failedSources: ['twitter'],
+      });
+
+      const product = createMockProduct();
+      const scores = await service.calculateScores(product);
+
+      expect(scores.trendSources).toEqual(['google', 'reddit', 'tiktok']);
     });
   });
 
@@ -236,7 +208,9 @@ describe('ProductRanker', () => {
 
       // Verify sorted in descending order
       for (let i = 0; i < ranked.length - 1; i++) {
-        expect((ranked[i] as any).overallScore).toBeGreaterThanOrEqual((ranked[i + 1] as any).overallScore);
+        expect((ranked[i] as any).overallScore).toBeGreaterThanOrEqual(
+          (ranked[i + 1] as any).overallScore,
+        );
       }
     });
 

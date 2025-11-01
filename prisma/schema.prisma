@@ -74,6 +74,7 @@ model Product {
   videos          Video[]
   blogs           Blog[]
   analytics       ProductAnalytics[]
+  trendCache      TrendCache?
 
   @@index([status, overallScore])
   @@index([networkId, status])
@@ -745,4 +746,62 @@ enum CampaignStatus {
   SENDING
   SENT
   CANCELLED
+}
+
+// ============================================================================
+// TREND DATA INTEGRATION
+// ============================================================================
+
+// Trend cache for product ranking
+model TrendCache {
+  id              String   @id @default(cuid())
+  productId       String   @unique
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Trend data (all 0-1 normalized)
+  googleTrendScore Float   @default(0)
+  twitterScore    Float    @default(0)
+  redditScore     Float    @default(0)
+  tiktokScore     Float    @default(0)
+
+  // Metadata
+  source          String[] // ['google', 'twitter', 'reddit', 'tiktok']
+  lastUpdated     DateTime
+  nextUpdateAt    DateTime // Scheduled next refresh
+
+  // Error tracking
+  failedSources   String[] // Sources that failed
+  errorCount      Int      @default(0)
+  lastError       String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([nextUpdateAt])  // For finding stale cache
+}
+
+// Trend data source configuration
+model TrendDataSource {
+  id              String   @id @default(cuid())
+  name            String   @unique // 'google', 'twitter', 'reddit', 'tiktok'
+  enabled         Boolean  @default(true)
+  apiKey          String?  // Encrypted
+
+  // Rate limiting
+  dailyLimit      Int      @default(1000)
+  dailyUsed       Int      @default(0)
+  requestsPerMin  Int      @default(60)
+
+  // Caching
+  cacheTTLHours   Int      @default(12)  // 12-24 hours
+  lastSyncAt      DateTime?
+
+  // Status
+  status          String   @default("active")  // active, paused, error
+  errorMessage    String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([enabled, status])
 }

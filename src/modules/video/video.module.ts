@@ -4,6 +4,10 @@ import { VideoService } from './video.service';
 import { PikaLabsService } from './services/pikalabs.service';
 import { ElevenLabsService } from './services/elevenlabs.service';
 import { VideoComposerService } from './services/video-composer.service';
+import { FFmpegService } from './services/ffmpeg.service';
+import { FileStorageService } from './services/file-storage.service';
+import { ProgressTrackerService } from './services/progress-tracker.service';
+import { ThumbnailGeneratorService } from './services/thumbnail-generator.service';
 
 @Module({
   controllers: [VideoController],
@@ -12,7 +16,11 @@ import { VideoComposerService } from './services/video-composer.service';
     PikaLabsService,
     ElevenLabsService,
     VideoComposerService,
+    FFmpegService,
+    FileStorageService,
+    ProgressTrackerService,
+    ThumbnailGeneratorService,
   ],
-  exports: [VideoService],
+  exports: [VideoService, VideoComposerService, ProgressTrackerService],
 })
 export class VideoModule {}
