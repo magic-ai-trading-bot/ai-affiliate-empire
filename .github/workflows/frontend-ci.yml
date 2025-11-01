@@ -40,6 +40,11 @@ jobs:
         working-directory: dashboard
         run: npm test
 
+      - name: Lint code
+        working-directory: dashboard
+        run: npm run lint
+        continue-on-error: true
+
       - name: Build dashboard
         working-directory: dashboard
         run: npm run build
@@ -72,6 +77,11 @@ jobs:
       - name: Run tests
         working-directory: apps/blog
         run: npm test
+
+      - name: Lint code
+        working-directory: apps/blog
+        run: npm run lint
+        continue-on-error: true
 
       - name: Type check
         working-directory: apps/blog
