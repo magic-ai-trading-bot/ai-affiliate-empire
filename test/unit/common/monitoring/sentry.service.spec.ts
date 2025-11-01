@@ -31,7 +31,6 @@ jest.mock('@sentry/node', () => ({
 
 describe('SentryService', () => {
   let service: SentryService;
-  let _configService: ConfigService;
 
   const mockLoggerService = {
     setContext: jest.fn(),
@@ -67,8 +66,6 @@ describe('SentryService', () => {
     };
 
     beforeEach(async () => {
-      jest.clearAllMocks();
-
       const module: TestingModule = await Test.createTestingModule({
         providers: [
           SentryService,
@@ -78,7 +75,8 @@ describe('SentryService', () => {
       }).compile();
 
       service = module.get<SentryService>(SentryService);
-      configService = module.get<ConfigService>(ConfigService);
+      // onModuleInit is called when the service is instantiated
+      service.onModuleInit();
     });
 
     it('should be defined', () => {
@@ -96,16 +94,10 @@ describe('SentryService', () => {
     });
 
     it('should configure Sentry integrations', () => {
-      expect(Sentry.init).toHaveBeenCalledWith(
-        expect.objectContaining({
-          integrations: expect.arrayContaining([
-            expect.anything(),
-            expect.anything(),
-            expect.anything(),
-            expect.anything(),
-          ]),
-        }),
-      );
+      const initCall = (Sentry.init as jest.Mock).mock.calls[0][0];
+      expect(initCall.integrations).toBeDefined();
+      expect(Array.isArray(initCall.integrations)).toBe(true);
+      expect(initCall.integrations.length).toBeGreaterThanOrEqual(4);
     });
 
     it('should filter sensitive headers in beforeSend', () => {
@@ -165,6 +157,7 @@ describe('SentryService', () => {
       }).compile();
 
       service = module.get<SentryService>(SentryService);
+      service.onModuleInit();
     });
 
     it('should not initialize Sentry when DSN is missing', () => {
@@ -225,6 +218,7 @@ describe('SentryService', () => {
       }).compile();
 
       service = module.get<SentryService>(SentryService);
+      service.onModuleInit();
     });
 
     it('should capture exception with context', () => {
@@ -307,6 +301,7 @@ describe('SentryService', () => {
       }).compile();
 
       service = module.get<SentryService>(SentryService);
+      service.onModuleInit();
     });
 
     it('should capture message with default info level', () => {
@@ -364,6 +359,7 @@ describe('SentryService', () => {
       }).compile();
 
       service = module.get<SentryService>(SentryService);
+      service.onModuleInit();
     });
 
     it('should start transaction with name and operation', () => {
@@ -425,6 +421,7 @@ describe('SentryService', () => {
       }).compile();
 
       service = module.get<SentryService>(SentryService);
+      service.onModuleInit();
     });
 
     it('should add breadcrumb with default level', () => {
@@ -502,6 +499,7 @@ describe('SentryService', () => {
       }).compile();
 
       service = module.get<SentryService>(SentryService);
+      service.onModuleInit();
     });
 
     it('should close Sentry with default timeout', async () => {
@@ -556,6 +554,7 @@ describe('SentryService', () => {
       }).compile();
 
       service = module.get<SentryService>(SentryService);
+      service.onModuleInit();
     });
 
     it('should return true when closing while disabled', async () => {

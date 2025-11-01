@@ -6,7 +6,6 @@ import { LoggerService } from '../../../../src/common/logging/logger.service';
 
 describe('MetricsService', () => {
   let service: MetricsService;
-  let _configService: ConfigService;
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
@@ -37,7 +36,6 @@ describe('MetricsService', () => {
     }).compile();
 
     service = module.get<MetricsService>(MetricsService);
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(() => {
@@ -60,8 +58,12 @@ describe('MetricsService', () => {
     });
 
     it('should log initialization message', () => {
-      // onModuleInit is called during service construction
-      // The log should already have been called
+      // Clear the mocks to test onModuleInit specifically
+      mockLoggerService.log.mockClear();
+
+      // Call onModuleInit to trigger the log
+      service.onModuleInit();
+
       expect(mockLoggerService.log).toHaveBeenCalled();
       expect(mockLoggerService.log).toHaveBeenCalledWith(
         expect.stringContaining('Prometheus metrics'),
