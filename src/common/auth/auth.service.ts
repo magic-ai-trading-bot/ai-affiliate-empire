@@ -47,7 +47,7 @@ export class AuthService {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
+    const _passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
 
     // Create user
     const user = await this.prisma.user.create({

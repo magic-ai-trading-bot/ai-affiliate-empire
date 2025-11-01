@@ -77,7 +77,7 @@ describe('PublisherService', () => {
     }).compile();
 
     service = module.get<PublisherService>(PublisherService);
-    prisma = module.get<MockPrismaService>(PrismaService);
+    _prisma = module.get<MockPrismaService>(PrismaService);
     youtube = module.get(YoutubeService);
     tiktok = module.get(TiktokService);
     instagram = module.get(InstagramService);

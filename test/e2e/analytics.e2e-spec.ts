@@ -5,7 +5,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '@/app.module';
 import { PrismaService } from '@/common/database/prisma.service';
 import { createMockProduct } from '../fixtures/product.fixtures';
@@ -189,13 +189,13 @@ describe('Analytics (E2E)', () => {
         },
       });
 
-      const platforms = ['YOUTUBE', 'TIKTOK', 'INSTAGRAM'];
+      const platforms = ['YOUTUBE', 'TIKTOK', 'INSTAGRAM'] as const;
 
       for (const platform of platforms) {
         const publication = await prisma.publication.create({
           data: {
             videoId: video.id,
-            platform,
+            platform: platform as any,
             status: 'PUBLISHED',
             publishedAt: new Date(),
           },

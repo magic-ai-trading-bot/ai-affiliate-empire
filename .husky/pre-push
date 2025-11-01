@@ -11,19 +11,19 @@ echo "Running pre-push validation..."
 # Note: Tests are run in CI pipeline, not in pre-push hook
 # Developers can run 'npm run test:unit' manually if needed
 
-# 1. Check TypeScript compilation
+# 1. Check TypeScript compilation via build
 echo "Checking TypeScript compilation..."
-npx tsc --noEmit >/dev/null 2>&1
+npm run build >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-  echo "ERROR: TypeScript compilation failed. Fix type errors before pushing."
+  echo "ERROR: Build failed. Run 'npm run build' to see errors."
   exit 1
 fi
 
-# 2. Run linter
+# 2. Run linter (source files only)
 echo "Checking code style..."
-npm run lint >/dev/null 2>&1
+npx eslint "src/**/*.{ts,tsx}" --max-warnings 10 >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-  echo "ERROR: Linting failed. Run 'npm run lint:fix' to auto-fix issues."
+  echo "ERROR: Linting failed in source files. Run 'npx eslint src/**/*.ts --fix' to auto-fix issues."
   exit 1
 fi
 

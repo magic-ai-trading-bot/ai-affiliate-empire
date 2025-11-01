@@ -26,7 +26,7 @@ describe('ABTestingService', () => {
     }).compile();
 
     service = module.get<ABTestingService>(ABTestingService);
-    prisma = module.get<MockPrismaService>(PrismaService);
+    _prisma = module.get<MockPrismaService>(PrismaService);
   });
 
   describe('initialization', () => {

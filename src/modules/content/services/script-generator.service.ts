@@ -29,9 +29,9 @@ export class ScriptGeneratorService {
   async generate(params: GenerateScriptParams): Promise<ScriptOutput> {
     const {
       productTitle,
-      productDescription,
-      price,
-      category,
+      productDescription: _productDescription,
+      price: _price,
+      category: _category,
       language = 'en',
       tone = 'engaging',
     } = params;

@@ -62,7 +62,7 @@ describe('ContentService', () => {
     }).compile();
 
     service = module.get<ContentService>(ContentService);
-    prisma = module.get<MockPrismaService>(PrismaService);
+    _prisma = module.get<MockPrismaService>(PrismaService);
     scriptGenerator = module.get(ScriptGeneratorService);
     ftcDisclosure = module.get(FtcDisclosureService);
   });

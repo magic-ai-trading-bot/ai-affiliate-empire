@@ -29,6 +29,10 @@ import { mockOpenAI, mockClaude, mockElevenLabs, mockPikaLabs } from '../helpers
 
 const prisma = (global as any).testPrisma as PrismaClient;
 
+// Stub declarations for skipped tests
+const activities: any = {};
+const dailyControlLoop: any = {};
+
 // Skip this entire test suite until Temporal workflows/activities are implemented
 describe.skip('Daily Control Loop Integration', () => {
   let testEnv: TestEnvironment;

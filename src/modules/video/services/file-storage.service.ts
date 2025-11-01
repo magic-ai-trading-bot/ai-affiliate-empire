@@ -247,7 +247,7 @@ export class FileStorageService {
       stream.on('error', async (_err) => {
         void writer.close();
         await this.cleanupTempFile(outputPath);
-        reject(err);
+        reject(_err);
       });
     });
   }

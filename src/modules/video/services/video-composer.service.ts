@@ -283,12 +283,12 @@ export class VideoComposerService {
     const settled = await Promise.allSettled(promises);
 
     for (const result of settled) {
-      if (result.status === 'fulfilled') {
+      if (result.status === 'fulfilled' && result.value) {
         results.push(result.value);
       } else {
         results.push({
           success: false,
-          error: result.reason,
+          error: result.status === 'rejected' ? result.reason : new Error('Unknown error'),
         });
       }
     }

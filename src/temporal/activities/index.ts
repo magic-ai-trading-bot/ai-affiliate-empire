@@ -15,7 +15,7 @@ export async function syncProductsFromAmazon(params: {
   // In real implementation, this would call ProductService
   // For now, using mock implementation
 
-  const { category } = params;
+  const { category: _category } = params;
 
   // Mock: Return existing products count
   const count = await prisma.product.count({

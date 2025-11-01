@@ -4,7 +4,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/common/database/prisma.service';
 
@@ -394,7 +394,7 @@ describe('AuthController (E2E)', () => {
       expect(response.body.scopes).toEqual(['read:products', 'write:products']);
 
       apiKeyId = response.body.id;
-      apiKeyValue = response.body.key;
+      _apiKeyValue = response.body.key;
     });
 
     it('should list user API keys', async () => {

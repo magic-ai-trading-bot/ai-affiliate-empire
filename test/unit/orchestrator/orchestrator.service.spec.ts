@@ -118,7 +118,7 @@ describe('OrchestratorService', () => {
 
       const _result = await service.startDailyControlLoop(dto);
 
-      expect(result).toEqual({
+      expect(_result).toEqual({
         workflowId: 'daily-2025-01-01',
         runId: 'run-123',
         status: 'started',
@@ -265,7 +265,7 @@ describe('OrchestratorService', () => {
 
       const _result = await service.getWorkflowStatus('daily-2025-01-01');
 
-      expect(result).toEqual({
+      expect(_result).toEqual({
         workflowId: 'daily-2025-01-01',
         status: 'RUNNING',
         startTime: new Date('2025-01-01T00:00:00Z'),
@@ -344,7 +344,7 @@ describe('OrchestratorService', () => {
 
       const _result = await service.getWorkflowLogs();
 
-      expect(result).toEqual(mockLogs);
+      expect(_result).toEqual(mockLogs);
       expect(workflowLogMock.findMany).toHaveBeenCalledWith({
         orderBy: { createdAt: 'desc' },
         take: 50,
@@ -399,7 +399,7 @@ describe('OrchestratorService', () => {
 
       const _result = await service.getWorkflowLogs();
 
-      expect(result).toEqual([]);
+      expect(_result).toEqual([]);
     });
   });
 
@@ -413,7 +413,7 @@ describe('OrchestratorService', () => {
 
       const _result = await service.startWeeklyOptimization();
 
-      expect(result).toEqual({
+      expect(_result).toEqual({
         workflowId: 'weekly-2025-01-01',
         status: 'started',
       });

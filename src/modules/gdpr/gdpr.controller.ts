@@ -7,7 +7,6 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  UseGuards,
   Res,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';

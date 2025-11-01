@@ -57,7 +57,7 @@ describe('AnalyticsService', () => {
     }).compile();
 
     service = module.get<AnalyticsService>(AnalyticsService);
-    prisma = module.get<MockPrismaService>(PrismaService);
+    _prisma = module.get<MockPrismaService>(PrismaService);
     metricsCollector = module.get<MetricsCollectorService>(MetricsCollectorService);
     roiCalculator = module.get<ROICalculatorService>(ROICalculatorService);
     performanceAnalyzer = module.get<PerformanceAnalyzerService>(PerformanceAnalyzerService);

@@ -25,7 +25,7 @@ describe('AutoScalerService', () => {
     }).compile();
 
     service = module.get<AutoScalerService>(AutoScalerService);
-    prisma = module.get<MockPrismaService>(PrismaService);
+    _prisma = module.get<MockPrismaService>(PrismaService);
   });
 
   describe('initialization', () => {

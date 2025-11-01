@@ -1,5 +1,3 @@
-import { AlertLevel } from '@prisma/client';
-
 export interface AlertContext {
   currentSpend: number;
   budgetLimit: number;

@@ -8,7 +8,7 @@ import { jest } from '@jest/globals';
  * Mock OpenAI API responses
  */
 export const mockOpenAI = {
-  generateText: jest.fn<any, any>().mockResolvedValue({
+  generateText: ((jest.fn() as any) as any).mockResolvedValue({
     text: `Check out this amazing product! 🔥
 
 Here's why you need it:
@@ -25,7 +25,7 @@ Link in bio! #affiliate #product #review`,
     },
   }),
 
-  generateScript: jest.fn<any, any>().mockResolvedValue({
+  generateScript: (jest.fn() as any).mockResolvedValue({
     text: `Scene 1: Hook
 [Exciting music]
 "You won't believe this amazing product!"
@@ -51,7 +51,7 @@ Scene 4: CTA
  * Mock Claude API responses
  */
 export const mockClaude = {
-  generateText: jest.fn<any, any>().mockResolvedValue({
+  generateText: (jest.fn() as any).mockResolvedValue({
     text: `# Amazing Product Review
 
 ## Introduction
@@ -82,7 +82,7 @@ Highly recommended! Check it out using our affiliate link.
     },
   }),
 
-  generateBlogPost: jest.fn<any, any>().mockResolvedValue({
+  generateBlogPost: (jest.fn() as any).mockResolvedValue({
     text: `# Comprehensive Product Review
 
 Lorem ipsum dolor sit amet...`,
@@ -99,13 +99,13 @@ Lorem ipsum dolor sit amet...`,
  * Mock ElevenLabs API responses
  */
 export const mockElevenLabs = {
-  generateVoiceover: jest.fn<any, any>().mockResolvedValue({
+  generateVoiceover: (jest.fn() as any).mockResolvedValue({
     audioUrl: 'https://api.elevenlabs.io/v1/audio/mock-audio-id',
     duration: 45,
     cost: 0.15,
   }),
 
-  synthesizeSpeech: jest.fn<any, any>().mockResolvedValue({
+  synthesizeSpeech: (jest.fn() as any).mockResolvedValue({
     audioBuffer: Buffer.from('mock-audio-data'),
     duration: 30,
   }),
@@ -115,12 +115,12 @@ export const mockElevenLabs = {
  * Mock Pika Labs API responses
  */
 export const mockPikaLabs = {
-  generateVideo: jest.fn<any, any>().mockResolvedValue({
+  generateVideo: (jest.fn() as any).mockResolvedValue({
     videoId: 'mock-video-id-12345',
     status: 'processing',
   }),
 
-  checkStatus: jest.fn<any, any>().mockResolvedValue({
+  checkStatus: (jest.fn() as any).mockResolvedValue({
     videoId: 'mock-video-id-12345',
     status: 'completed',
     videoUrl: 'https://cdn.pikalabs.ai/videos/mock-video-12345.mp4',
@@ -128,7 +128,7 @@ export const mockPikaLabs = {
     duration: 60,
   }),
 
-  downloadVideo: jest.fn<any, any>().mockResolvedValue({
+  downloadVideo: (jest.fn() as any).mockResolvedValue({
     buffer: Buffer.from('mock-video-data'),
     mimeType: 'video/mp4',
   }),
@@ -138,17 +138,17 @@ export const mockPikaLabs = {
  * Mock YouTube API responses
  */
 export const mockYouTube = {
-  uploadVideo: jest.fn<any, any>().mockResolvedValue({
+  uploadVideo: (jest.fn() as any).mockResolvedValue({
     videoId: 'mock-yt-video-id',
     url: 'https://youtube.com/shorts/mock-yt-video-id',
     status: 'published',
   }),
 
-  updateMetadata: jest.fn<any, any>().mockResolvedValue({
+  updateMetadata: (jest.fn() as any).mockResolvedValue({
     success: true,
   }),
 
-  getAnalytics: jest.fn<any, any>().mockResolvedValue({
+  getAnalytics: (jest.fn() as any).mockResolvedValue({
     views: 1250,
     likes: 85,
     comments: 12,
@@ -162,13 +162,13 @@ export const mockYouTube = {
  * Mock TikTok API responses
  */
 export const mockTikTok = {
-  uploadVideo: jest.fn<any, any>().mockResolvedValue({
+  uploadVideo: (jest.fn() as any).mockResolvedValue({
     videoId: 'mock-tt-video-id',
     url: 'https://tiktok.com/@username/video/mock-tt-video-id',
     status: 'published',
   }),
 
-  getAnalytics: jest.fn<any, any>().mockResolvedValue({
+  getAnalytics: (jest.fn() as any).mockResolvedValue({
     views: 5420,
     likes: 342,
     comments: 48,
@@ -181,13 +181,13 @@ export const mockTikTok = {
  * Mock Instagram API responses
  */
 export const mockInstagram = {
-  uploadReel: jest.fn<any, any>().mockResolvedValue({
+  uploadReel: (jest.fn() as any).mockResolvedValue({
     mediaId: 'mock-ig-media-id',
     url: 'https://instagram.com/p/mock-ig-media-id',
     status: 'published',
   }),
 
-  getAnalytics: jest.fn<any, any>().mockResolvedValue({
+  getAnalytics: (jest.fn() as any).mockResolvedValue({
     views: 2180,
     likes: 156,
     comments: 24,
@@ -201,7 +201,7 @@ export const mockInstagram = {
  * Mock Amazon Product API responses
  */
 export const mockAmazon = {
-  searchProducts: jest.fn<any, any>().mockResolvedValue({
+  searchProducts: (jest.fn() as any).mockResolvedValue({
     products: [
       {
         asin: 'B08N5WRWNW',
@@ -231,7 +231,7 @@ export const mockAmazon = {
     totalResults: 2,
   }),
 
-  getProductDetails: jest.fn<any, any>().mockResolvedValue({
+  getProductDetails: (jest.fn() as any).mockResolvedValue({
     asin: 'B08N5WRWNW',
     title: 'Apple AirPods Pro (2nd Generation)',
     description: 'Active Noise Cancellation, Adaptive Transparency, Personalized Spatial Audio',

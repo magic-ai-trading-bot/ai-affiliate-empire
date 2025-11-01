@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { UpdateConsentDto, ConsentResponseDto } from './dto/consent.dto';
 
 @Injectable()

@@ -89,7 +89,7 @@ describe('ProductService', () => {
     }).compile();
 
     service = module.get<ProductService>(ProductService);
-    prisma = module.get<MockPrismaService>(PrismaService);
+    _prisma = module.get<MockPrismaService>(PrismaService);
     ranker = module.get(ProductRanker);
     amazonService = module.get(AmazonService);
   });

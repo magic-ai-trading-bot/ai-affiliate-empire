@@ -1,7 +1,7 @@
-import { NestFactory } from '@nestjs/core';
+// import { NestFactory } from '@nestjs/core';
 import { Worker } from '@temporalio/worker';
 import * as activities from './activities';
-import { AppModule } from '../app.module';
+// import { AppModule } from '../app.module';
 
 /**
  * Temporal Worker
@@ -13,7 +13,7 @@ import { AppModule } from '../app.module';
  */
 async function run() {
   // Initialize Nest.js app for dependency injection
-  const app = await NestFactory.createApplicationContext(AppModule);
+  // const _app = await NestFactory.createApplicationContext(AppModule);
   console.log('✅ Nest.js application context initialized');
 
   const temporalAddress = process.env.TEMPORAL_ADDRESS || 'localhost:7233';

@@ -78,7 +78,7 @@ describe('VideoService', () => {
     }).compile();
 
     service = module.get<VideoService>(VideoService);
-    prisma = module.get<MockPrismaService>(PrismaService);
+    _prisma = module.get<MockPrismaService>(PrismaService);
     pikaLabs = module.get(PikaLabsService);
     elevenLabs = module.get(ElevenLabsService);
     composer = module.get(VideoComposerService);

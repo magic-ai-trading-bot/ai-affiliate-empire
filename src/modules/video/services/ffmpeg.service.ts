@@ -109,7 +109,7 @@ export class FFmpegService {
           this.logger.log(`Video composition complete: ${path.basename(outputPath)}`);
           resolve();
         })
-        .on('error', (err: Error, stdout?: string, stderr?: string) => {
+        .on('error', (err: Error, stdout: string, stderr: string) => {
           this.logger.error(`FFmpeg error: ${err.message}`);
           if (stdout) this.logger.debug(`FFmpeg stdout: ${stdout}`);
           if (stderr) this.logger.debug(`FFmpeg stderr: ${stderr}`);

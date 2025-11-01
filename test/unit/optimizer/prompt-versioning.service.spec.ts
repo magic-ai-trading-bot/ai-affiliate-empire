@@ -26,7 +26,7 @@ describe('PromptVersioningService', () => {
     }).compile();
 
     service = module.get<PromptVersioningService>(PromptVersioningService);
-    prisma = module.get<MockPrismaService>(PrismaService);
+    _prisma = module.get<MockPrismaService>(PrismaService);
   });
 
   describe('initialization', () => {
