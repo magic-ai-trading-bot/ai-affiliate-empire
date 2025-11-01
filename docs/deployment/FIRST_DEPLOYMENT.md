@@ -454,7 +454,7 @@ gh run watch
 flyctl logs --app ai-affiliate-empire
 
 # Monitor errors in Sentry (if configured)
-# Visit: https://sentry.io/organizations/your-org/projects/ai-affiliate-empire/
+# Visit: https://sentry.io/organizations/magic-ai-trading-bot/projects/ai-affiliate-empire/
 ```
 
 ### Step 3.4: Verify Production Deployment

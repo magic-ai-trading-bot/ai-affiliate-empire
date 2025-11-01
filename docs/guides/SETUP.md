@@ -65,7 +65,7 @@
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/ai-affiliate-empire.git
+git clone https://github.com/magic-ai-trading-bot/ai-affiliate-empire.git
 cd ai-affiliate-empire
 ```
 
@@ -321,8 +321,8 @@ See `docs/project-roadmap.md` for complete timeline.
 
 ## 🆘 Support
 
-- **Issues**: https://github.com/yourusername/ai-affiliate-empire/issues
-- **Discussions**: https://github.com/yourusername/ai-affiliate-empire/discussions
+- **Issues**: https://github.com/magic-ai-trading-bot/ai-affiliate-empire/issues
+- **Discussions**: https://github.com/magic-ai-trading-bot/ai-affiliate-empire/discussions
 - **Documentation**: `./docs/`
 
 ---

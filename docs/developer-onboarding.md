@@ -62,7 +62,7 @@ A fully autonomous AI-powered affiliate marketing system that:
 ### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/your-org/ai-affiliate-empire.git
+git clone https://github.com/magic-ai-trading-bot/ai-affiliate-empire.git
 cd ai-affiliate-empire
 ```
 

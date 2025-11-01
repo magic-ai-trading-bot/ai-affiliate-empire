@@ -420,7 +420,7 @@ Create `scripts/setup-branch-protection.sh`:
 
 set -e
 
-REPO_OWNER="yourusername"
+REPO_OWNER="magic-ai-trading-bot"
 REPO_NAME="ai-affiliate-empire"
 
 echo "Setting up branch protection for $REPO_OWNER/$REPO_NAME..."

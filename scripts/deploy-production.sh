@@ -15,7 +15,7 @@ ENVIRONMENT="production"
 APP_NAME="ai-affiliate-empire"
 DB_APP_NAME="ai-affiliate-empire-db"
 REGISTRY="ghcr.io"
-IMAGE_NAME="$REGISTRY/yourusername/ai-affiliate-empire"
+IMAGE_NAME="$REGISTRY/magic-ai-trading-bot/ai-affiliate-empire"
 HEALTH_CHECK_URL="https://ai-affiliate-empire.fly.dev/health"
 
 echo -e "${GREEN}🚀 Starting deployment to ${ENVIRONMENT}...${NC}"

@@ -156,9 +156,9 @@ Automatic rollback is triggered when:
 
 Images are published to GitHub Container Registry:
 ```
-ghcr.io/yourusername/ai-affiliate-empire:latest
-ghcr.io/yourusername/ai-affiliate-empire:v1.0.0
-ghcr.io/yourusername/ai-affiliate-empire:main-abc1234
+ghcr.io/magic-ai-trading-bot/ai-affiliate-empire:latest
+ghcr.io/magic-ai-trading-bot/ai-affiliate-empire:v1.0.0
+ghcr.io/magic-ai-trading-bot/ai-affiliate-empire:main-abc1234
 ```
 
 ## Deployment Platforms
@@ -1325,7 +1325,7 @@ Monitor for 15-30 minutes. **Rollback if:**
 - **Fly.io Dashboard**: https://fly.io/dashboard
 - **Sentry**: https://sentry.io
 - **GitHub Actions**: Repository → Actions tab
-- **Container Registry**: ghcr.io/yourusername/ai-affiliate-empire
+- **Container Registry**: ghcr.io/magic-ai-trading-bot/ai-affiliate-empire
 
 ### Contact
 

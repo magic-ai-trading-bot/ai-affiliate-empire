@@ -52,7 +52,7 @@ Example: perf/reduce-database-queries
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/ai-affiliate-empire.git
+git clone https://github.com/magic-ai-trading-bot/ai-affiliate-empire.git
 cd ai-affiliate-empire
 
 # Configure user (if not already done)
@@ -64,8 +64,8 @@ git remote add upstream https://github.com/original-owner/ai-affiliate-empire.gi
 
 # Verify remotes
 git remote -v
-# origin    https://github.com/yourusername/ai-affiliate-empire.git (fetch)
-# origin    https://github.com/yourusername/ai-affiliate-empire.git (push)
+# origin    https://github.com/magic-ai-trading-bot/ai-affiliate-empire.git (fetch)
+# origin    https://github.com/magic-ai-trading-bot/ai-affiliate-empire.git (push)
 # upstream  https://github.com/original-owner/ai-affiliate-empire.git (fetch)
 # upstream  https://github.com/original-owner/ai-affiliate-empire.git (push)
 ```
@@ -162,7 +162,7 @@ git branch -vv
 2. Click "Compare & pull request" button
 3. Verify:
    - Base: `main` (or `develop` if applicable)
-   - Compare: `yourusername:feature/your-feature-name`
+   - Compare: `magic-ai-trading-bot:feature/your-feature-name`
 4. Fill in PR template with:
    - Clear description
    - Related issues (#123)

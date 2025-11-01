@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 ENVIRONMENT="staging"
 APP_NAME="ai-affiliate-empire-staging"
 REGISTRY="ghcr.io"
-IMAGE_NAME="$REGISTRY/yourusername/ai-affiliate-empire"
+IMAGE_NAME="$REGISTRY/magic-ai-trading-bot/ai-affiliate-empire"
 HEALTH_CHECK_URL="https://ai-affiliate-empire-staging.fly.dev/health"
 
 echo -e "${GREEN}🚀 Starting deployment to ${ENVIRONMENT}...${NC}"

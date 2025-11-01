@@ -9,7 +9,7 @@ import { MockPrismaService, mockPrismaService } from '../../mocks/prisma.mock';
 
 describe('AutoScalerService', () => {
   let service: AutoScalerService;
-  let prisma: MockPrismaService;
+  let _prisma: MockPrismaService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -56,8 +56,10 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
@@ -124,8 +126,10 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
@@ -148,8 +152,10 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
@@ -157,7 +163,8 @@ describe('AutoScalerService', () => {
 
       expect(mockPrismaService.systemConfig.update).toHaveBeenCalled();
       const updateCall = mockPrismaService.systemConfig.update.mock.calls[0][0];
-      const productConfig = updateCall.data.config.products['prod-1'];
+      const configData = JSON.parse(updateCall.data.value);
+      const productConfig = configData.products['prod-1'];
 
       expect(productConfig.videosPerWeek).toBeLessThanOrEqual(14);
     });
@@ -176,15 +183,18 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
       await service.scaleWinners(2.0);
 
       const updateCall = mockPrismaService.systemConfig.update.mock.calls[0][0];
-      const productConfig = updateCall.data.config.products['prod-1'];
+      const configData = JSON.parse(updateCall.data.value);
+      const productConfig = configData.products['prod-1'];
 
       expect(productConfig.priority).toBe('high');
     });
@@ -203,15 +213,18 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
       await service.scaleWinners(2.0);
 
       const updateCall = mockPrismaService.systemConfig.update.mock.calls[0][0];
-      const productConfig = updateCall.data.config.products['prod-1'];
+      const configData = JSON.parse(updateCall.data.value);
+      const productConfig = configData.products['prod-1'];
 
       expect(productConfig.autoScale).toBe(true);
     });
@@ -270,8 +283,10 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
@@ -294,8 +309,10 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
@@ -318,8 +335,10 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
@@ -468,8 +487,10 @@ describe('AutoScalerService', () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
@@ -479,19 +500,23 @@ describe('AutoScalerService', () => {
     });
 
     it('should handle multiple high ROI products', async () => {
-      const mockProducts = Array(10).fill(null).map((_, i) => ({
-        id: `prod-${i}`,
-        title: `Winner ${i}`,
-        status: 'ACTIVE',
-        analytics: Array(10).fill({ revenue: 100, date: new Date() }),
-        videos: [{ id: 'v1' }],
-      }));
+      const mockProducts = Array(10)
+        .fill(null)
+        .map((_, i) => ({
+          id: `prod-${i}`,
+          title: `Winner ${i}`,
+          status: 'ACTIVE',
+          analytics: Array(10).fill({ revenue: 100, date: new Date() }),
+          videos: [{ id: 'v1' }],
+        }));
 
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.systemConfig.findFirst.mockResolvedValue({
         id: 'config-1',
-        config: {},
+        key: 'system_config',
+        value: '{}',
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       mockPrismaService.systemConfig.update.mockResolvedValue({});
 
@@ -608,15 +633,17 @@ describe('AutoScalerService', () => {
 
       const existingConfig = {
         id: 'config-1',
-        config: {
+        key: 'system_config',
+        value: JSON.stringify({
           existingField: 'value',
           products: {
             'other-prod': {
               priority: 'low',
             },
           },
-        },
+        }),
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
@@ -626,9 +653,10 @@ describe('AutoScalerService', () => {
       await service.scaleWinners(2.0);
 
       const updateCall = mockPrismaService.systemConfig.update.mock.calls[0][0];
+      const configData = JSON.parse(updateCall.data.value);
 
-      expect(updateCall.data.config.existingField).toBe('value');
-      expect(updateCall.data.config.products['other-prod']).toBeDefined();
+      expect(configData.existingField).toBe('value');
+      expect(configData.products['other-prod']).toBeDefined();
     });
   });
 });

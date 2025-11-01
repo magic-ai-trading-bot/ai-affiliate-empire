@@ -322,10 +322,10 @@ This checklist must be completed before deploying to staging or production. Each
 - [ ] **Docker Image Tested**
   ```bash
   # Pull latest image
-  docker pull ghcr.io/yourusername/ai-affiliate-empire:latest
+  docker pull ghcr.io/magic-ai-trading-bot/ai-affiliate-empire:latest
 
   # Run locally
-  docker run -d -p 3000:3000 --env-file .env.test ghcr.io/yourusername/ai-affiliate-empire:latest
+  docker run -d -p 3000:3000 --env-file .env.test ghcr.io/magic-ai-trading-bot/ai-affiliate-empire:latest
 
   # Test health endpoint
   curl http://localhost:3000/health
@@ -535,7 +535,7 @@ flyctl ssh console --app ai-affiliate-empire -C "npx prisma migrate resolve --ap
 **Solutions**:
 ```bash
 # Check Sentry for error details
-# Visit: https://sentry.io/organizations/your-org/projects/ai-affiliate-empire/
+# Visit: https://sentry.io/organizations/magic-ai-trading-bot/projects/ai-affiliate-empire/
 
 # Review recent code changes
 git diff <previous-release> <current-release>

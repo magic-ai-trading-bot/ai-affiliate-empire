@@ -38,7 +38,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ai-affiliate-empire.git
+git clone https://github.com/magic-ai-trading-bot/ai-affiliate-empire.git
 cd ai-affiliate-empire
 
 # Configure Git user (if not done globally)

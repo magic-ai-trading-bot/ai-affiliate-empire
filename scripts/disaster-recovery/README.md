@@ -587,7 +587,7 @@ MIT License - See LICENSE file for details
 ## Support
 
 For issues or questions:
-- **GitHub Issues:** [Create issue](https://github.com/yourusername/ai-affiliate-empire/issues)
+- **GitHub Issues:** [Create issue](https://github.com/magic-ai-trading-bot/ai-affiliate-empire/issues)
 - **Email:** dba@company.com
 - **Slack:** #database-ops
 - **Discord:** #infrastructure

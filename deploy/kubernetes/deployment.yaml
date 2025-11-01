@@ -28,7 +28,7 @@ spec:
       # Init container for database migrations
       initContainers:
       - name: db-migrate
-        image: ghcr.io/yourusername/ai-affiliate-empire:latest
+        image: ghcr.io/magic-ai-trading-bot/ai-affiliate-empire:latest
         command: ['npx', 'prisma', 'migrate', 'deploy']
         envFrom:
         - configMapRef:
@@ -41,7 +41,7 @@ spec:
 
       containers:
       - name: api
-        image: ghcr.io/yourusername/ai-affiliate-empire:latest
+        image: ghcr.io/magic-ai-trading-bot/ai-affiliate-empire:latest
         imagePullPolicy: Always
 
         ports:

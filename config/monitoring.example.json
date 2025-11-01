@@ -1,0 +1,539 @@
+{
+  "version": "1.0",
+  "environment": "production",
+  "timestamp": "2025-11-01T00:00:00Z",
+  "description": "Example monitoring configuration for AI Affiliate Empire. Copy to monitoring.json and customize.",
+
+  "sentry": {
+    "enabled": true,
+    "dsn": "https://YOUR_PUBLIC_KEY@YOUR_HOST.ingest.sentry.io/PROJECT_ID",
+    "environment": "production",
+    "tracesSampleRate": 0.1,
+    "attachStacktrace": true,
+    "maxBreadcrumbs": 50,
+    "release": "ai-affiliate-empire@1.0.0",
+    "serverName": "backend-prod-1",
+    "integrations": ["HttpClient", "OnUncaughtException", "OnUnhandledRejection", "ContextLines"],
+    "alertRules": {
+      "errorRate": {
+        "enabled": true,
+        "threshold": 10,
+        "window": "1h",
+        "actions": ["email", "slack"]
+      },
+      "performanceDegradation": {
+        "enabled": true,
+        "threshold": 1000,
+        "metric": "p95",
+        "window": "15m",
+        "actions": ["slack"]
+      },
+      "newIssueType": {
+        "enabled": true,
+        "actions": ["email"]
+      }
+    },
+    "ignoreErrors": ["NetworkError", "AbortError"]
+  },
+
+  "discord": {
+    "enabled": true,
+    "webhookUrl": "https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN",
+    "botUsername": "AI Affiliate Monitoring",
+    "botAvatarUrl": "https://example.com/logo.png",
+    "alerts": {
+      "backup_failure": {
+        "enabled": true,
+        "severity": "critical",
+        "channel": "#alerts-critical"
+      },
+      "api_errors": {
+        "enabled": true,
+        "severity": "warning",
+        "channel": "#alerts-warning"
+      },
+      "system_health": {
+        "enabled": true,
+        "severity": "info",
+        "channel": "#alerts-info"
+      },
+      "deployment": {
+        "enabled": true,
+        "severity": "info",
+        "channel": "#alerts-deployment"
+      },
+      "cost_spike": {
+        "enabled": true,
+        "severity": "warning",
+        "channel": "#alerts-cost"
+      }
+    },
+    "embedColors": {
+      "critical": 15158332,
+      "warning": 16776960,
+      "success": 3066993,
+      "info": 3447003
+    }
+  },
+
+  "prometheus": {
+    "enabled": true,
+    "port": 9090,
+    "scrapeInterval": "15s",
+    "evaluationInterval": "30s",
+    "externalLabels": {
+      "environment": "production",
+      "service": "ai-affiliate-empire",
+      "team": "platform"
+    },
+    "retention": {
+      "time": "15d",
+      "size": "50GB"
+    },
+    "scrapeConfigs": [
+      {
+        "jobName": "backend",
+        "staticConfigs": [
+          {
+            "targets": ["localhost:3000"]
+          }
+        ],
+        "metricsPath": "/metrics",
+        "scrapeInterval": "15s",
+        "scrapeTimeout": "10s"
+      },
+      {
+        "jobName": "temporal",
+        "staticConfigs": [
+          {
+            "targets": ["localhost:7233"]
+          }
+        ],
+        "scrapeInterval": "30s"
+      }
+    ]
+  },
+
+  "alertmanager": {
+    "enabled": true,
+    "port": 9093,
+    "resolveTimeout": "5m",
+    "receivers": [
+      {
+        "name": "critical",
+        "type": "email",
+        "config": {
+          "to": ["alerts@company.com", "cto@company.com"],
+          "from": "alertmanager@company.com",
+          "smarthost": "smtp.gmail.com:587",
+          "requireTls": true,
+          "authUsername": "alerts@company.com",
+          "authPassword": "YOUR_APP_PASSWORD"
+        }
+      },
+      {
+        "name": "warning",
+        "type": "discord",
+        "config": {
+          "webhookUrl": "https://discord.com/api/webhooks/YOUR_WARNING_ID/YOUR_TOKEN"
+        }
+      },
+      {
+        "name": "slack",
+        "type": "slack",
+        "config": {
+          "apiUrl": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+          "channel": "#alerts",
+          "title": "{{ .GroupLabels.alertname }}",
+          "text": "{{ range .Alerts }}{{ .Annotations.description }}{{ end }}"
+        }
+      }
+    ],
+    "routes": [
+      {
+        "receiver": "critical",
+        "groupWait": "10s",
+        "groupInterval": "10s",
+        "repeatInterval": "1h",
+        "match": {
+          "severity": "critical"
+        },
+        "continueFlag": false
+      },
+      {
+        "receiver": "warning",
+        "groupWait": "30s",
+        "groupInterval": "5m",
+        "repeatInterval": "4h",
+        "match": {
+          "severity": "warning"
+        }
+      },
+      {
+        "receiver": "slack",
+        "groupWait": "60s",
+        "groupInterval": "1h",
+        "repeatInterval": "24h",
+        "match": {
+          "severity": "info"
+        }
+      }
+    ],
+    "inhibitionRules": [
+      {
+        "sourceMatch": {
+          "severity": "critical"
+        },
+        "targetMatch": {
+          "severity": "warning"
+        },
+        "equal": ["alertname", "instance"]
+      }
+    ]
+  },
+
+  "grafana": {
+    "enabled": true,
+    "port": 3002,
+    "adminUser": "admin",
+    "adminPassword": "YOUR_SECURE_PASSWORD",
+    "provisioning": {
+      "dashboards": "monitoring/grafana/dashboards",
+      "datasources": "monitoring/grafana/datasources"
+    },
+    "datasources": [
+      {
+        "name": "Prometheus",
+        "type": "prometheus",
+        "url": "http://prometheus:9090",
+        "default": true,
+        "jsonData": {
+          "timeInterval": "15s"
+        }
+      }
+    ]
+  },
+
+  "healthChecks": {
+    "database": {
+      "enabled": true,
+      "interval": 30000,
+      "timeout": 5000,
+      "retries": 3
+    },
+    "temporal": {
+      "enabled": true,
+      "interval": 300000,
+      "timeout": 10000,
+      "retries": 2
+    },
+    "externalApis": {
+      "enabled": true,
+      "interval": 300000,
+      "timeout": 5000,
+      "retries": 1,
+      "apis": ["openai", "anthropic"]
+    },
+    "redis": {
+      "enabled": true,
+      "interval": 60000,
+      "timeout": 5000,
+      "retries": 2
+    },
+    "elasticsearch": {
+      "enabled": false,
+      "interval": 60000,
+      "timeout": 5000,
+      "retries": 2
+    }
+  },
+
+  "metrics": {
+    "enabled": true,
+    "port": 9090,
+    "path": "/metrics",
+    "collectors": {
+      "http": {
+        "enabled": true,
+        "buckets": [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10]
+      },
+      "process": {
+        "enabled": true,
+        "includeHeap": true,
+        "includeGC": true
+      },
+      "nodejs": {
+        "enabled": true
+      },
+      "business": {
+        "enabled": true,
+        "productsSynced": true,
+        "videosGenerated": true,
+        "revenue": true,
+        "costs": true
+      }
+    }
+  },
+
+  "backupMonitoring": {
+    "enabled": true,
+    "backupDir": "./backups",
+    "alertIfOlderThan": "24h",
+    "checkInterval": "1h",
+    "requiredBackups": [
+      {
+        "name": "database",
+        "path": "./backups/database_*.sql.gz",
+        "minAge": "1d",
+        "maxAge": "1d"
+      },
+      {
+        "name": "s3_data",
+        "path": "./backups/s3_*.tar.gz",
+        "minAge": "7d",
+        "maxAge": "7d"
+      }
+    ]
+  },
+
+  "apiMonitoring": {
+    "enabled": true,
+    "interval": 300000,
+    "endpoints": [
+      {
+        "name": "health",
+        "method": "GET",
+        "url": "http://localhost:3000/health",
+        "expectedStatus": 200,
+        "timeout": 5000
+      },
+      {
+        "name": "metrics",
+        "method": "GET",
+        "url": "http://localhost:3000/metrics",
+        "expectedStatus": 200,
+        "timeout": 5000
+      },
+      {
+        "name": "api_health",
+        "method": "GET",
+        "url": "http://localhost:3000/api/health",
+        "expectedStatus": 200,
+        "timeout": 5000
+      },
+      {
+        "name": "products",
+        "method": "GET",
+        "url": "http://localhost:3000/api/products?limit=1",
+        "expectedStatus": 200,
+        "timeout": 10000
+      }
+    ]
+  },
+
+  "alertRules": [
+    {
+      "name": "HighErrorRate",
+      "enabled": true,
+      "expression": "(rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m])) > 0.05",
+      "for": "5m",
+      "severity": "critical",
+      "annotations": {
+        "summary": "High error rate detected ({{ $value | humanizePercentage }})",
+        "description": "Error rate is above 5% threshold on {{ $labels.instance }}"
+      }
+    },
+    {
+      "name": "ServiceDown",
+      "enabled": true,
+      "expression": "up{job=\"backend\"} == 0",
+      "for": "2m",
+      "severity": "critical",
+      "annotations": {
+        "summary": "Service is down",
+        "description": "{{ $labels.job }} has been unavailable for 2 minutes"
+      }
+    },
+    {
+      "name": "DatabaseConnectionFailure",
+      "enabled": true,
+      "expression": "increase(database_connection_errors_total[5m]) > 5",
+      "for": "2m",
+      "severity": "critical",
+      "annotations": {
+        "summary": "Database connection failures detected",
+        "description": "{{ $value }} connection errors in the last 5 minutes"
+      }
+    },
+    {
+      "name": "HighApiCosts",
+      "enabled": true,
+      "expression": "increase(affiliate_api_cost_dollars[1d]) > 100",
+      "for": "1h",
+      "severity": "warning",
+      "annotations": {
+        "summary": "API costs exceeding budget",
+        "description": "Daily API costs: ${{ $value }}"
+      }
+    },
+    {
+      "name": "HighMemoryUsage",
+      "enabled": true,
+      "expression": "(nodejs_heap_used_bytes / nodejs_heap_size_limit_bytes) > 0.9",
+      "for": "10m",
+      "severity": "warning",
+      "annotations": {
+        "summary": "High memory usage",
+        "description": "Memory usage is {{ $value | humanizePercentage }}"
+      }
+    },
+    {
+      "name": "HighWorkflowFailureRate",
+      "enabled": true,
+      "expression": "(rate(affiliate_workflow_failed_total[1h]) / rate(affiliate_workflow_total[1h])) > 0.1",
+      "for": "30m",
+      "severity": "warning",
+      "annotations": {
+        "summary": "High workflow failure rate",
+        "description": "Workflow failure rate: {{ $value | humanizePercentage }}"
+      }
+    },
+    {
+      "name": "NoProductsSynced",
+      "enabled": true,
+      "expression": "increase(affiliate_products_synced_total[1h]) == 0",
+      "for": "1h",
+      "severity": "warning",
+      "annotations": {
+        "summary": "No products synced in last hour",
+        "description": "Product sync may be blocked or disabled"
+      }
+    },
+    {
+      "name": "NoVideosGenerated",
+      "enabled": true,
+      "expression": "increase(affiliate_videos_generated_total[2h]) == 0",
+      "for": "2h",
+      "severity": "warning",
+      "annotations": {
+        "summary": "No videos generated in last 2 hours",
+        "description": "Video generation may be blocked or disabled"
+      }
+    },
+    {
+      "name": "RevenueDeclining",
+      "enabled": true,
+      "expression": "affiliate_revenue_dollars < (affiliate_revenue_dollars offset 1d) * 0.8",
+      "for": "1h",
+      "severity": "info",
+      "annotations": {
+        "summary": "Revenue declining vs previous day",
+        "description": "Current 24h revenue is 20% below yesterday"
+      }
+    }
+  ],
+
+  "notificationChannels": {
+    "email": {
+      "enabled": true,
+      "from": "alerts@company.com",
+      "smtpServer": "smtp.gmail.com",
+      "smtpPort": 587,
+      "useTls": true,
+      "recipients": {
+        "ops": ["ops@company.com"],
+        "dev": ["dev@company.com"],
+        "management": ["cto@company.com"]
+      }
+    },
+    "discord": {
+      "enabled": true,
+      "webhookUrl": "https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN",
+      "channels": {
+        "critical": "#alerts-critical",
+        "warning": "#alerts-warning",
+        "info": "#alerts-info"
+      }
+    },
+    "slack": {
+      "enabled": false,
+      "webhookUrl": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+      "channel": "#alerts"
+    },
+    "pagerduty": {
+      "enabled": false,
+      "integrationKey": "YOUR_PAGERDUTY_KEY"
+    }
+  },
+
+  "escalationPolicy": {
+    "critical": {
+      "responseTime": "5m",
+      "channels": ["discord", "email", "sms"],
+      "escalateAfter": "10m",
+      "escalateTo": "manager"
+    },
+    "warning": {
+      "responseTime": "30m",
+      "channels": ["discord", "email"],
+      "escalateAfter": "1h",
+      "escalateTo": "team_lead"
+    },
+    "info": {
+      "responseTime": "4h",
+      "channels": ["email"],
+      "escalateAfter": "24h",
+      "escalateTo": "none"
+    }
+  },
+
+  "onCallSchedule": [
+    {
+      "week": 1,
+      "engineer": "alice@company.com",
+      "backup": "bob@company.com",
+      "email": "oncall@company.com"
+    },
+    {
+      "week": 2,
+      "engineer": "bob@company.com",
+      "backup": "charlie@company.com",
+      "email": "oncall@company.com"
+    },
+    {
+      "week": 3,
+      "engineer": "charlie@company.com",
+      "backup": "alice@company.com",
+      "email": "oncall@company.com"
+    },
+    {
+      "week": 4,
+      "engineer": "diana@company.com",
+      "backup": "alice@company.com",
+      "email": "oncall@company.com"
+    }
+  ],
+
+  "slos": {
+    "availability": {
+      "target": 0.999,
+      "window": "30d",
+      "metric": "uptime"
+    },
+    "latency": {
+      "p95": {
+        "target": 200,
+        "unit": "ms"
+      },
+      "p99": {
+        "target": 500,
+        "unit": "ms"
+      }
+    },
+    "errorBudget": {
+      "total": 0.1,
+      "unit": "percent",
+      "window": "30d"
+    }
+  }
+}

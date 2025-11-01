@@ -414,7 +414,7 @@ flyctl releases rollback --to 144 --app ai-affiliate-empire
 # https://status.fly.io
 
 # Last resort: Deploy previous version as new deployment
-flyctl deploy --image ghcr.io/yourusername/ai-affiliate-empire:v1.2.2
+flyctl deploy --image ghcr.io/magic-ai-trading-bot/ai-affiliate-empire:v1.2.2
 ```
 
 #### Scenario 2: Application Still Unhealthy After Rollback

@@ -402,7 +402,7 @@ flyctl status --app ai-affiliate-empire
 ### Error Tracking
 
 **Sentry Integration**:
-- Dashboard: `https://sentry.io/organizations/your-org/projects/ai-affiliate-empire/`
+- Dashboard: `https://sentry.io/organizations/magic-ai-trading-bot/projects/ai-affiliate-empire/`
 - Automatic error capture
 - Release tracking
 - Performance monitoring

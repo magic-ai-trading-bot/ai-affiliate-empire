@@ -5,6 +5,7 @@
 export const mockPrismaService = {
   product: {
     create: jest.fn(),
+    createMany: jest.fn(),
     findMany: jest.fn(),
     findUnique: jest.fn(),
     findFirst: jest.fn(),
@@ -36,6 +37,14 @@ export const mockPrismaService = {
     update: jest.fn(),
     delete: jest.fn(),
   },
+  publication: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    count: jest.fn(),
+  },
   affiliateNetwork: {
     create: jest.fn(),
     findMany: jest.fn(),
@@ -45,11 +54,22 @@ export const mockPrismaService = {
   productAnalytics: {
     create: jest.fn(),
     findMany: jest.fn(),
+    findUnique: jest.fn(),
+    update: jest.fn(),
+    upsert: jest.fn(),
     aggregate: jest.fn(),
+    groupBy: jest.fn(),
   },
   networkAnalytics: {
     create: jest.fn(),
     findMany: jest.fn(),
+  },
+  platformAnalytics: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    upsert: jest.fn(),
+    aggregate: jest.fn(),
+    groupBy: jest.fn(),
   },
   workflowExecution: {
     create: jest.fn(),
@@ -81,9 +101,11 @@ export class MockPrismaService {
   video = mockPrismaService.video;
   blog = mockPrismaService.blog;
   content = mockPrismaService.content;
+  publication = mockPrismaService.publication;
   affiliateNetwork = mockPrismaService.affiliateNetwork;
   productAnalytics = mockPrismaService.productAnalytics;
   networkAnalytics = mockPrismaService.networkAnalytics;
+  platformAnalytics = mockPrismaService.platformAnalytics;
   workflowExecution = mockPrismaService.workflowExecution;
   optimizationLog = mockPrismaService.optimizationLog;
   promptVersion = mockPrismaService.promptVersion;
