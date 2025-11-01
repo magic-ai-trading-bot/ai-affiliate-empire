@@ -1,389 +1,529 @@
-/**
- * Unit tests for TiktokService
- */
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { TiktokService } from '@/modules/publisher/services/tiktok.service';
-import { SecretsManagerService } from '@/common/secrets/secrets-manager.service';
+import { TiktokService } from '../../../src/modules/publisher/services/tiktok.service';
+import { TiktokOAuth2Service } from '../../../src/modules/publisher/services/tiktok-oauth2.service';
+import { FileDownloaderService } from '../../../src/modules/publisher/services/file-downloader.service';
+import { TikTokVideoValidatorService } from '../../../src/modules/publisher/services/tiktok-video-validator.service';
+import { RateLimiterService } from '../../../src/modules/publisher/services/rate-limiter.service';
+import { SecretsManagerService } from '../../../src/common/secrets/secrets-manager.service';
+import {
+  TiktokAuthenticationError,
+  TiktokUploadError,
+  TiktokValidationError,
+  TiktokChunkUploadError,
+} from '../../../src/modules/publisher/exceptions/tiktok.exceptions';
+import { RateLimitError } from '../../../src/modules/publisher/exceptions/youtube.exceptions';
+import * as fs from 'fs';
+
+// Mock axios
+jest.mock('axios');
+
+// Mock fs before importing service
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  statSync: jest.fn(),
+  openSync: jest.fn(),
+  closeSync: jest.fn(),
+  readSync: jest.fn(),
+}));
 
 describe('TiktokService', () => {
   let service: TiktokService;
-  let configService: ConfigService;
-  let secretsManager: SecretsManagerService;
+  let oauth: TiktokOAuth2Service;
+  let downloader: FileDownloaderService;
+  let validator: TikTokVideoValidatorService;
+  let rateLimiter: RateLimiterService;
 
-  const mockConfig: Record<string, string> = {};
+  const mockAccessToken = 'mock-tiktok-access-token';
+  const mockUploadId = 'upload-123';
+  const mockUploadUrl = 'https://upload.tiktok.com/test';
+  const mockVideoId = 'video-123';
+  const mockPublishId = 'publish-123';
 
   beforeEach(async () => {
-    jest.clearAllMocks();
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TiktokService,
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string) => mockConfig[key]),
+            get: jest.fn((key: string) => {
+              const config: Record<string, string> = {
+                TIKTOK_CLIENT_KEY: 'mock-client-key',
+                TIKTOK_CLIENT_SECRET: 'mock-client-secret',
+              };
+              return config[key];
+            }),
           },
         },
         {
           provide: SecretsManagerService,
           useValue: {
-            getSecrets: jest.fn().mockResolvedValue({
-              'tiktok-client-key': 'test-client-key',
-              'tiktok-client-secret': 'test-client-secret',
+            getSecrets: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: TiktokOAuth2Service,
+          useValue: {
+            ensureValidToken: jest.fn().mockResolvedValue(mockAccessToken),
+            getAccessToken: jest.fn().mockReturnValue(mockAccessToken),
+            isAuthenticated: jest.fn().mockReturnValue(true),
+            loadTokens: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: FileDownloaderService,
+          useValue: {
+            downloadVideo: jest.fn().mockResolvedValue({
+              path: '/tmp/test-video.mp4',
+              size: 10 * 1024 * 1024, // 10MB
+              mimeType: 'video/mp4',
             }),
+            cleanupFile: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: TikTokVideoValidatorService,
+          useValue: {
+            validateVideo: jest.fn().mockResolvedValue({
+              isValid: true,
+              errors: [],
+            }),
+          },
+        },
+        {
+          provide: RateLimiterService,
+          useValue: {
+            checkLimit: jest.fn().mockResolvedValue(true),
+            consumeToken: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
     }).compile();
 
     service = module.get<TiktokService>(TiktokService);
-    configService = module.get<ConfigService>(ConfigService);
-    secretsManager = module.get<SecretsManagerService>(SecretsManagerService);
+    oauth = module.get<TiktokOAuth2Service>(TiktokOAuth2Service);
+    downloader = module.get<FileDownloaderService>(FileDownloaderService);
+    validator = module.get<TikTokVideoValidatorService>(TikTokVideoValidatorService);
+    rateLimiter = module.get<RateLimiterService>(RateLimiterService);
+
+    // Mock httpClient for service
+    (service as any).httpClient = {
+      post: jest.fn(),
+      put: jest.fn(),
+      get: jest.fn(),
+    };
+
+    // Mock fs methods
+    (fs.statSync as jest.Mock).mockReturnValue({ size: 10 * 1024 * 1024 });
+    (fs.openSync as jest.Mock).mockReturnValue(3);
+    (fs.closeSync as jest.Mock).mockImplementation(() => {});
+    (fs.readSync as jest.Mock).mockImplementation(() => 1024);
   });
 
-  describe('initialization', () => {
-    it('should be defined', () => {
-      expect(service).toBeDefined();
-    });
-
-    it('should initialize with credentials from secrets manager', async () => {
-      await service.onModuleInit();
-
-      expect(secretsManager.getSecrets).toHaveBeenCalledWith([
-        { secretName: 'tiktok-client-key', envVarName: 'TIKTOK_CLIENT_KEY' },
-        { secretName: 'tiktok-client-secret', envVarName: 'TIKTOK_CLIENT_SECRET' },
-      ]);
-
-      expect(service.isConfigured()).toBe(true);
-    });
-
-    it('should log success when credentials are found', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      await service.onModuleInit();
-
-      expect(consoleSpy).toHaveBeenCalledWith('✅ TikTok service initialized with credentials');
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should handle missing credentials gracefully', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'tiktok-client-key': '',
-        'tiktok-client-secret': '',
-      });
-
-      await service.onModuleInit();
-
-      expect(service.isConfigured()).toBe(false);
-    });
-
-    it('should handle partial credentials', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'tiktok-client-key': 'test-key',
-        'tiktok-client-secret': '',
-      });
-
-      await service.onModuleInit();
-
-      expect(service.isConfigured()).toBe(false);
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('uploadVideo', () => {
-    beforeEach(async () => {
-      await service.onModuleInit();
-    });
-
-    it('should upload video to TikTok', async () => {
-      const result = await service.uploadVideo({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Check out this amazing product! #fyp #trending',
+    it('should successfully upload video with chunked upload', async () => {
+      // Mock API responses
+      (service as any).httpClient.post.mockImplementation((url: string) => {
+        if (url.includes('/init/')) {
+          return Promise.resolve({
+            data: {
+              data: {
+                upload_id: mockUploadId,
+                upload_url: mockUploadUrl,
+              },
+            },
+          });
+        }
+        if (url.includes('/video/')) {
+          return Promise.resolve({
+            data: {
+              data: {
+                publish_id: mockPublishId,
+                video_id: mockVideoId,
+              },
+            },
+          });
+        }
       });
 
-      expect(result).toHaveProperty('videoId');
-      expect(result).toHaveProperty('url');
-      expect(result.url).toContain('tiktok.com');
-    });
-
-    it('should return mock data when credentials not configured', async () => {
-      jest.spyOn(service, 'isConfigured').mockReturnValue(false);
-
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      const result = await service.uploadVideo({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Test caption',
-      });
-
-      expect(consoleSpy).toHaveBeenCalledWith('⚠️ TikTok credentials not configured, returning mock data');
-      expect(result.videoId).toContain('TT');
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should handle captions with hashtags', async () => {
-      const result = await service.uploadVideo({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Amazing product #affiliate #trending #fyp #viral',
-      });
-
-      expect(result).toHaveProperty('videoId');
-      expect(result).toHaveProperty('url');
-    });
-
-    it('should handle long captions', async () => {
-      const longCaption = 'This is a very long caption. '.repeat(20);
+      (service as any).httpClient.put.mockResolvedValue({ status: 200 });
 
       const result = await service.uploadVideo({
         videoUrl: 'https://example.com/video.mp4',
-        caption: longCaption,
+        caption: 'Test TikTok video',
       });
 
-      expect(result).toHaveProperty('videoId');
+      expect(result).toEqual({
+        videoId: mockVideoId,
+        url: `https://www.tiktok.com/@user/video/${mockVideoId}`,
+        platform: 'TIKTOK',
+        status: 'PUBLISHED',
+        publishedAt: expect.any(Date),
+      });
+
+      // Verify OAuth2 called
+      expect(oauth.ensureValidToken).toHaveBeenCalled();
+
+      // Verify rate limit checked
+      expect(rateLimiter.checkLimit).toHaveBeenCalledWith('TIKTOK');
+
+      // Verify video downloaded
+      expect(downloader.downloadVideo).toHaveBeenCalledWith('https://example.com/video.mp4');
+
+      // Verify video validated
+      expect(validator.validateVideo).toHaveBeenCalledWith('/tmp/test-video.mp4');
+
+      // Verify rate limit consumed
+      expect(rateLimiter.consumeToken).toHaveBeenCalledWith('TIKTOK');
+
+      // Verify cleanup
+      expect(downloader.cleanupFile).toHaveBeenCalledWith('/tmp/test-video.mp4');
     });
 
-    it('should handle captions with emojis', async () => {
+    it('should fail if not authenticated', async () => {
+      jest.spyOn(oauth, 'ensureValidToken').mockResolvedValue(null);
+
+      await expect(
+        service.uploadVideo({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test video',
+        }),
+      ).rejects.toThrow(TiktokAuthenticationError);
+
+      expect(downloader.downloadVideo).not.toHaveBeenCalled();
+    });
+
+    it('should fail if rate limit exceeded', async () => {
+      jest.spyOn(rateLimiter, 'checkLimit').mockResolvedValue(false);
+
+      await expect(
+        service.uploadVideo({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test video',
+        }),
+      ).rejects.toThrow(RateLimitError);
+
+      expect(downloader.downloadVideo).not.toHaveBeenCalled();
+    });
+
+    it('should fail if video validation fails', async () => {
+      jest.spyOn(validator, 'validateVideo').mockResolvedValue({
+        isValid: false,
+        errors: ['File size too small'],
+      });
+
+      await expect(
+        service.uploadVideo({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test video',
+        }),
+      ).rejects.toThrow(TiktokValidationError);
+
+      expect(downloader.cleanupFile).toHaveBeenCalled();
+    });
+
+    it('should fail if init upload fails', async () => {
+      (service as any).httpClient.post.mockResolvedValue({
+        data: {
+          error: {
+            message: 'Invalid request',
+          },
+        },
+      });
+
+      await expect(
+        service.uploadVideo({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test video',
+        }),
+      ).rejects.toThrow(TiktokUploadError);
+    });
+
+    it('should retry chunk upload on failure', async () => {
+      (service as any).httpClient.post
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              upload_id: mockUploadId,
+              upload_url: mockUploadUrl,
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              publish_id: mockPublishId,
+              video_id: mockVideoId,
+            },
+          },
+        });
+
+      // First attempt fails, second succeeds
+      (service as any).httpClient.put
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce({ status: 200 });
+
       const result = await service.uploadVideo({
         videoUrl: 'https://example.com/video.mp4',
-        caption: '🔥 Hot deal! 🎁 Limited time offer! 💯 #sale',
+        caption: 'Test video',
       });
 
-      expect(result).toHaveProperty('videoId');
+      expect(result.videoId).toBe(mockVideoId);
+      expect((service as any).httpClient.put).toHaveBeenCalledTimes(2);
     });
 
-    it('should handle captions with mentions', async () => {
-      const result = await service.uploadVideo({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Check out @brand amazing product! #fyp',
+    it('should fail after max retries', async () => {
+      (service as any).httpClient.post.mockResolvedValueOnce({
+        data: {
+          data: {
+            upload_id: mockUploadId,
+            upload_url: mockUploadUrl,
+          },
+        },
       });
 
-      expect(result).toHaveProperty('videoId');
+      // All attempts fail
+      (service as any).httpClient.put.mockRejectedValue(new Error('Network error'));
+
+      await expect(
+        service.uploadVideo({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test video',
+        }),
+      ).rejects.toThrow(TiktokChunkUploadError);
+
+      expect((service as any).httpClient.put).toHaveBeenCalledTimes(3); // MAX_RETRIES = 3
     });
 
-    it('should handle empty caption', async () => {
-      const result = await service.uploadVideo({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: '',
-      });
+    it('should add #TikTok hashtag to caption', async () => {
+      (service as any).httpClient.post
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              upload_id: mockUploadId,
+              upload_url: mockUploadUrl,
+            },
+          },
+        })
+        .mockImplementation((url: string, data: any) => {
+          if (url.includes('/video/')) {
+            expect(data.post_info.description).toContain('#TikTok');
+            return Promise.resolve({
+              data: {
+                data: {
+                  publish_id: mockPublishId,
+                  video_id: mockVideoId,
+                },
+              },
+            });
+          }
+        });
 
-      expect(result).toHaveProperty('videoId');
-    });
-
-    it('should handle special characters in caption', async () => {
-      const result = await service.uploadVideo({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Product @ 50% OFF! Save $$$',
-      });
-
-      expect(result).toHaveProperty('videoId');
-    });
-
-    it('should generate unique video IDs', async () => {
-      const result1 = await service.uploadVideo({
-        videoUrl: 'https://example.com/video1.mp4',
-        caption: 'Caption 1',
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      const result2 = await service.uploadVideo({
-        videoUrl: 'https://example.com/video2.mp4',
-        caption: 'Caption 2',
-      });
-
-      expect(result1.videoId).not.toBe(result2.videoId);
-    });
-
-    it('should handle local file paths', async () => {
-      const result = await service.uploadVideo({
-        videoUrl: '/tmp/video.mp4',
-        caption: 'Test caption',
-      });
-
-      expect(result).toHaveProperty('videoId');
-    });
-
-    it('should log upload attempt', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      (service as any).httpClient.put.mockResolvedValue({ status: 200 });
 
       await service.uploadVideo({
         videoUrl: 'https://example.com/video.mp4',
-        caption: 'Test caption with some text',
+        caption: 'Test video without hashtag',
       });
-
-      expect(consoleSpy).toHaveBeenCalledWith('🎵 TikTok: Uploading video - Test caption with some text...');
-
-      consoleSpy.mockRestore();
     });
 
-    it('should truncate long captions in log', async () => {
-      jest.clearAllMocks(); // Clear previous mock calls
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    it('should not duplicate #TikTok hashtag', async () => {
+      (service as any).httpClient.post
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              upload_id: mockUploadId,
+              upload_url: mockUploadUrl,
+            },
+          },
+        })
+        .mockImplementation((url: string, data: any) => {
+          if (url.includes('/video/')) {
+            const description = data.post_info.description;
+            const count = (description.match(/#TikTok/g) || []).length;
+            expect(count).toBe(1);
+            return Promise.resolve({
+              data: {
+                data: {
+                  publish_id: mockPublishId,
+                  video_id: mockVideoId,
+                },
+              },
+            });
+          }
+        });
 
-      const longCaption = 'a'.repeat(100);
+      (service as any).httpClient.put.mockResolvedValue({ status: 200 });
 
       await service.uploadVideo({
         videoUrl: 'https://example.com/video.mp4',
-        caption: longCaption,
+        caption: 'Test video #TikTok already has it',
       });
-
-      expect(consoleSpy).toHaveBeenCalled();
-      const logMessage = consoleSpy.mock.calls[0][0];
-      expect(logMessage).toContain('...');
-
-      consoleSpy.mockRestore();
     });
 
-    it('should handle unicode characters in caption', async () => {
-      const result = await service.uploadVideo({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: '你好 世界 🌍 #chinese #fyp',
-      });
+    it('should handle publish failure', async () => {
+      (service as any).httpClient.post
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              upload_id: mockUploadId,
+              upload_url: mockUploadUrl,
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            error: {
+              message: 'Publish failed',
+            },
+          },
+        });
 
-      expect(result).toHaveProperty('videoId');
+      (service as any).httpClient.put.mockResolvedValue({ status: 200 });
+
+      await expect(
+        service.uploadVideo({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test video',
+        }),
+      ).rejects.toThrow(TiktokUploadError);
     });
   });
 
   describe('getVideoStats', () => {
-    beforeEach(async () => {
-      await service.onModuleInit();
+    it('should fetch video statistics', async () => {
+      (service as any).httpClient.get.mockResolvedValue({
+        data: {
+          data: {
+            video_view_count: 1000,
+            video_like_count: 50,
+            video_comment_count: 10,
+            video_share_count: 5,
+          },
+        },
+      });
+
+      const stats = await service.getVideoStats(mockVideoId);
+
+      expect(stats).toEqual({
+        views: 1000,
+        likes: 50,
+        comments: 10,
+        shares: 5,
+      });
     });
 
-    it('should return video statistics', async () => {
-      const stats = await service.getVideoStats('test-video-id');
+    it('should return zeros if stats unavailable', async () => {
+      (service as any).httpClient.get.mockRejectedValue(new Error('API error'));
 
-      expect(stats).toHaveProperty('views');
-      expect(stats).toHaveProperty('likes');
-      expect(stats).toHaveProperty('comments');
-      expect(stats).toHaveProperty('shares');
+      const stats = await service.getVideoStats(mockVideoId);
+
+      expect(stats).toEqual({
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+      });
     });
 
-    it('should return zero stats for non-existent video', async () => {
-      const stats = await service.getVideoStats('non-existent-id');
+    it('should return zeros if not authenticated', async () => {
+      jest.spyOn(oauth, 'getAccessToken').mockReturnValue(null);
 
-      expect(stats.views).toBe(0);
-      expect(stats.likes).toBe(0);
-      expect(stats.comments).toBe(0);
-      expect(stats.shares).toBe(0);
-    });
+      const stats = await service.getVideoStats(mockVideoId);
 
-    it('should handle empty video ID', async () => {
-      const stats = await service.getVideoStats('');
-
-      expect(stats).toBeDefined();
-    });
-
-    it('should handle very long video ID', async () => {
-      const longId = 'a'.repeat(1000);
-
-      const stats = await service.getVideoStats(longId);
-
-      expect(stats).toBeDefined();
+      expect(stats).toEqual({
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+      });
     });
   });
 
   describe('isConfigured', () => {
-    it('should return true when both credentials are set', async () => {
-      await service.onModuleInit();
+    it('should return true if authenticated', () => {
+      jest.spyOn(oauth, 'isAuthenticated').mockReturnValue(true);
 
       expect(service.isConfigured()).toBe(true);
     });
 
-    it('should return false when client key is missing', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'tiktok-client-key': '',
-        'tiktok-client-secret': 'test-secret',
-      });
-
-      await service.onModuleInit();
-
-      expect(service.isConfigured()).toBe(false);
-    });
-
-    it('should return false when client secret is missing', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'tiktok-client-key': 'test-key',
-        'tiktok-client-secret': '',
-      });
-
-      await service.onModuleInit();
-
-      expect(service.isConfigured()).toBe(false);
-    });
-
-    it('should return false when both credentials are missing', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'tiktok-client-key': '',
-        'tiktok-client-secret': '',
-      });
-
-      await service.onModuleInit();
+    it('should return false if not authenticated', () => {
+      jest.spyOn(oauth, 'isAuthenticated').mockReturnValue(false);
 
       expect(service.isConfigured()).toBe(false);
     });
   });
 
-  describe('rate limiting', () => {
-    beforeEach(async () => {
-      await service.onModuleInit();
-    });
+  describe('chunked upload', () => {
+    it('should upload video in multiple chunks for large files', async () => {
+      const fileSize = 150 * 1024 * 1024; // 150MB (requires 3 chunks at 64MB each)
+      (fs.statSync as jest.Mock).mockReturnValue({ size: fileSize });
 
-    it('should handle multiple uploads', async () => {
-      const uploads = [];
-
-      for (let i = 0; i < 5; i++) {
-        uploads.push(
-          service.uploadVideo({
-            videoUrl: `https://example.com/video${i}.mp4`,
-            caption: `Caption ${i} #fyp`,
-          }),
-        );
-      }
-
-      const results = await Promise.all(uploads);
-
-      expect(results).toHaveLength(5);
-      results.forEach((result) => {
-        expect(result).toHaveProperty('videoId');
-        expect(result).toHaveProperty('url');
-      });
-    });
-
-    it('should generate unique URLs for each upload', async () => {
-      const result1 = await service.uploadVideo({
-        videoUrl: 'https://example.com/video1.mp4',
-        caption: 'Caption 1',
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      const result2 = await service.uploadVideo({
-        videoUrl: 'https://example.com/video2.mp4',
-        caption: 'Caption 2',
-      });
-
-      expect(result1.url).not.toBe(result2.url);
-    });
-
-    it('should handle rapid sequential uploads', async () => {
-      const results = [];
-
-      for (let i = 0; i < 3; i++) {
-        const result = await service.uploadVideo({
-          videoUrl: `https://example.com/video${i}.mp4`,
-          caption: `Caption ${i}`,
+      (service as any).httpClient.post
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              upload_id: mockUploadId,
+              upload_url: mockUploadUrl,
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              publish_id: mockPublishId,
+              video_id: mockVideoId,
+            },
+          },
         });
-        results.push(result);
-      }
 
-      expect(results).toHaveLength(3);
+      (service as any).httpClient.put.mockResolvedValue({ status: 200 });
 
-      const videoIds = results.map(r => r.videoId);
-      const uniqueIds = new Set(videoIds);
-      expect(uniqueIds.size).toBe(3);
+      await service.uploadVideo({
+        videoUrl: 'https://example.com/video.mp4',
+        caption: 'Large video test',
+      });
+
+      // Should upload 3 chunks (64MB + 64MB + 22MB)
+      expect((service as any).httpClient.put).toHaveBeenCalledTimes(3);
+    });
+
+    it('should upload small video in single chunk', async () => {
+      const fileSize = 10 * 1024 * 1024; // 10MB
+      (fs.statSync as jest.Mock).mockReturnValue({ size: fileSize });
+
+      (service as any).httpClient.post
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              upload_id: mockUploadId,
+              upload_url: mockUploadUrl,
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            data: {
+              publish_id: mockPublishId,
+              video_id: mockVideoId,
+            },
+          },
+        });
+
+      (service as any).httpClient.put.mockResolvedValue({ status: 200 });
+
+      await service.uploadVideo({
+        videoUrl: 'https://example.com/video.mp4',
+        caption: 'Small video test',
+      });
+
+      // Should upload 1 chunk
+      expect((service as any).httpClient.put).toHaveBeenCalledTimes(1);
     });
   });
 });

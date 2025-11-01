@@ -124,22 +124,22 @@ export class FFmpegService {
    */
   async extractFrame(videoPath: string, outputPath: string, timestamp?: number): Promise<void> {
     // Default to middle of video if no timestamp provided
-    const time = timestamp !== undefined ? timestamp : null;
+    let extractTime = timestamp;
 
     this.logger.log(`Extracting frame from: ${path.basename(videoPath)}`);
 
-    return new Promise((resolve, reject) => {
-      // If no timestamp, get video duration and extract from middle
-      let extractTime = time;
-      if (extractTime === null) {
-        try {
-          const metadata = await this.getVideoInfo(videoPath);
-          extractTime = metadata.duration / 2;
-        } catch {
-          // Default to 30s if metadata extraction fails
-        }
+    // If no timestamp, get video duration and extract from middle
+    if (extractTime === undefined) {
+      try {
+        const metadata = await this.getVideoInfo(videoPath);
+        extractTime = metadata.duration / 2;
+      } catch {
+        // Default to 30s if metadata extraction fails
+        extractTime = 30;
       }
+    }
 
+    return new Promise((resolve, reject) => {
       ffmpeg(videoPath)
         .seekInput(extractTime)
         .frames(1)

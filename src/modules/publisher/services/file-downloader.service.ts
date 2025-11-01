@@ -91,7 +91,7 @@ export class FileDownloaderService {
           size: stats.size,
           mimeType,
         };
-      } catch {
+      } catch (error: any) {
         lastError = error;
         this.logger.warn(`Download attempt ${attempt + 1} failed: ${error.message}`);
 
@@ -148,7 +148,7 @@ export class FileDownloaderService {
         fs.unlinkSync(filePath);
         this.logger.log(`Cleaned up temp file: ${filePath}`);
       }
-    } catch {
+    } catch (error: any) {
       this.logger.warn(`Failed to cleanup file ${filePath}: ${error.message}`);
     }
   }
@@ -172,7 +172,7 @@ export class FileDownloaderService {
           this.logger.log(`Deleted old temp file: ${filePath}`);
         }
       }
-    } catch {
+    } catch (error: any) {
       this.logger.warn(`Failed to cleanup old files: ${error.message}`);
     }
   }

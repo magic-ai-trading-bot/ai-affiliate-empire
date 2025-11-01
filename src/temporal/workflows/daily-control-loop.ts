@@ -59,7 +59,7 @@ export async function dailyControlLoop(
   console.log(`🚀 Starting Daily Control Loop: ${workflowId}`);
 
   const startTime = Date.now();
-  let result: DailyControlLoopResult = {
+  const result: DailyControlLoopResult = {
     productsProcessed: 0,
     videosGenerated: 0,
     videosPublished: 0,
@@ -129,7 +129,9 @@ export async function dailyControlLoop(
       killThreshold: 0.5,
       scaleThreshold: 2.0,
     });
-    console.log(`✅ Optimized: killed ${optimizationResult.killed}, scaled ${optimizationResult.scaled}`);
+    console.log(
+      `✅ Optimized: killed ${optimizationResult.killed}, scaled ${optimizationResult.scaled}`,
+    );
 
     result.status = 'completed';
 
@@ -180,7 +182,7 @@ export async function weeklyOptimization(): Promise<void> {
   console.log('📈 Starting Weekly Optimization...');
 
   // Analyze 7-day performance
-  const analyticsResult = await collectAnalytics({ daysBack: 7 });
+  await collectAnalytics({ daysBack: 7 });
 
   // Kill low performers, scale winners
   await optimizeStrategy({

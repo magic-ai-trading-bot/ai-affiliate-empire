@@ -48,11 +48,13 @@ export class PublisherService {
           const platformType = platform.toLowerCase() as 'tiktok' | 'instagram';
           const validation = this.ftcValidator.validateSocialCaption(
             `${finalCaption} ${finalHashtags}`,
-            platformType
+            platformType,
           );
 
           if (!validation.isValid) {
-            console.warn(`⚠️ Caption for ${platform} missing FTC disclosure, adding automatically...`);
+            console.warn(
+              `⚠️ Caption for ${platform} missing FTC disclosure, adding automatically...`,
+            );
             finalCaption = this.ftcValidator.ensureDisclosure(finalCaption, platformType);
             console.log(`✅ FTC disclosure added to ${platform} caption`);
           } else {
@@ -142,7 +144,7 @@ export class PublisherService {
             videoUrl: video.videoUrl,
             caption: `${caption} ${hashtags}`,
           });
-          platformPostId = instagramResult.mediaId;
+          platformPostId = instagramResult.videoId;
           url = instagramResult.url;
           break;
 
@@ -243,12 +245,7 @@ Link in bio! 🔗
     const product = video.product;
     const category = product.category?.toLowerCase().replace(/\s+/g, '') || 'products';
 
-    const baseHashtags = [
-      '#affiliate',
-      '#productreview',
-      '#trending',
-      `#${category}`,
-    ];
+    const baseHashtags = ['#affiliate', '#productreview', '#trending', `#${category}`];
 
     // Add product-specific hashtags
     if (product.brand) {

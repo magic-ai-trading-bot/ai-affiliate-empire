@@ -1,21 +1,42 @@
 /**
- * Unit tests for InstagramService
+ * Unit tests for InstagramService with Graph API container-based upload
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { InstagramService } from '@/modules/publisher/services/instagram.service';
+import { InstagramOAuth2Service } from '@/modules/publisher/services/instagram-oauth2.service';
+import { FileDownloaderService } from '@/modules/publisher/services/file-downloader.service';
+import { InstagramVideoValidatorService } from '@/modules/publisher/services/instagram-video-validator.service';
+import { RateLimiterService } from '@/modules/publisher/services/rate-limiter.service';
 import { SecretsManagerService } from '@/common/secrets/secrets-manager.service';
+import {
+  InstagramAuthenticationError,
+  InstagramContainerError,
+  InstagramPublishError,
+} from '@/modules/publisher/exceptions/instagram.exceptions';
+import { RateLimitError, ValidationError } from '@/modules/publisher/exceptions/youtube.exceptions';
+import axios from 'axios';
+
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('InstagramService', () => {
   let service: InstagramService;
-  let configService: ConfigService;
-  let secretsManager: SecretsManagerService;
+  let oauth: InstagramOAuth2Service;
+  let downloader: FileDownloaderService;
+  let validator: InstagramVideoValidatorService;
+  let rateLimiter: RateLimiterService;
 
-  const mockConfig: Record<string, string> = {};
+  const mockHttpClient = {
+    get: jest.fn(),
+    post: jest.fn(),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
+
+    mockedAxios.create = jest.fn().mockReturnValue(mockHttpClient as any);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -23,24 +44,68 @@ describe('InstagramService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string) => mockConfig[key]),
+            get: jest.fn((key: string) => {
+              const config: Record<string, string> = {
+                INSTAGRAM_BUSINESS_ACCOUNT_ID: 'test-account-id',
+              };
+              return config[key];
+            }),
           },
         },
         {
           provide: SecretsManagerService,
           useValue: {
-            getSecrets: jest.fn().mockResolvedValue({
-              'instagram-access-token': 'test-access-token',
-              'instagram-business-account-id': 'test-account-id',
+            getSecrets: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: InstagramOAuth2Service,
+          useValue: {
+            loadTokens: jest.fn().mockResolvedValue(undefined),
+            ensureValidToken: jest.fn().mockResolvedValue('test-access-token'),
+            getAccessToken: jest.fn().mockReturnValue('test-access-token'),
+            isAuthenticated: jest.fn().mockReturnValue(true),
+            getRemainingDays: jest.fn().mockReturnValue(30),
+            getBusinessAccountId: jest.fn().mockResolvedValue('test-account-id'),
+          },
+        },
+        {
+          provide: FileDownloaderService,
+          useValue: {
+            downloadVideo: jest.fn().mockResolvedValue({
+              path: '/tmp/test-video.mp4',
+              size: 1024 * 1024 * 10, // 10MB
+              mimeType: 'video/mp4',
             }),
+            cleanupFile: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: InstagramVideoValidatorService,
+          useValue: {
+            validateForInstagram: jest.fn().mockResolvedValue({
+              isValid: true,
+              errors: [],
+            }),
+          },
+        },
+        {
+          provide: RateLimiterService,
+          useValue: {
+            checkLimit: jest.fn().mockResolvedValue(true),
+            consumeToken: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
     }).compile();
 
     service = module.get<InstagramService>(InstagramService);
-    configService = module.get<ConfigService>(ConfigService);
-    secretsManager = module.get<SecretsManagerService>(SecretsManagerService);
+    oauth = module.get<InstagramOAuth2Service>(InstagramOAuth2Service);
+    downloader = module.get<FileDownloaderService>(FileDownloaderService);
+    validator = module.get<InstagramVideoValidatorService>(InstagramVideoValidatorService);
+    rateLimiter = module.get<RateLimiterService>(RateLimiterService);
+
+    await service.onModuleInit();
   });
 
   describe('initialization', () => {
@@ -48,388 +113,494 @@ describe('InstagramService', () => {
       expect(service).toBeDefined();
     });
 
-    it('should initialize with credentials from secrets manager', async () => {
-      await service.onModuleInit();
-
-      expect(secretsManager.getSecrets).toHaveBeenCalledWith([
-        { secretName: 'instagram-access-token', envVarName: 'INSTAGRAM_ACCESS_TOKEN' },
-        { secretName: 'instagram-business-account-id', envVarName: 'INSTAGRAM_BUSINESS_ACCOUNT_ID' },
-      ]);
-
-      expect(service.isConfigured()).toBe(true);
+    it('should initialize with OAuth2 credentials', async () => {
+      expect(oauth.isAuthenticated).toHaveBeenCalled();
     });
 
-    it('should log success when credentials are found', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
+    it('should warn if token expires soon', async () => {
+      jest.spyOn(oauth, 'getRemainingDays').mockReturnValue(5);
       await service.onModuleInit();
-
-      expect(consoleSpy).toHaveBeenCalledWith('✅ Instagram service initialized with credentials');
-
-      consoleSpy.mockRestore();
+      expect(oauth.getRemainingDays).toHaveBeenCalled();
     });
 
-    it('should handle missing credentials gracefully', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'instagram-access-token': '',
-        'instagram-business-account-id': '',
-      });
-
+    it('should warn if not authenticated', async () => {
+      jest.spyOn(oauth, 'isAuthenticated').mockReturnValue(false);
       await service.onModuleInit();
-
-      expect(service.isConfigured()).toBe(false);
-    });
-
-    it('should handle partial credentials', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'instagram-access-token': 'test-token',
-        'instagram-business-account-id': '',
-      });
-
-      await service.onModuleInit();
-
-      expect(service.isConfigured()).toBe(false);
+      expect(oauth.isAuthenticated).toHaveBeenCalled();
     });
   });
 
-  describe('uploadReel', () => {
-    beforeEach(async () => {
-      await service.onModuleInit();
-    });
-
-    it('should upload reel to Instagram', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Check out this amazing product! #affiliate #trending',
+  describe('uploadReel - container-based flow', () => {
+    beforeEach(() => {
+      // Mock successful container creation
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: { id: 'test-container-id' },
       });
 
-      expect(result).toHaveProperty('mediaId');
-      expect(result).toHaveProperty('url');
-      expect(result.url).toContain('instagram.com/reel/');
+      // Mock successful container polling (status = FINISHED)
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: {
+          upload_status: 'FINISHED',
+          status_code: 'FINISHED',
+        },
+      });
+
+      // Mock successful publish
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: { id: 'test-media-id' },
+      });
+
+      // Mock permalink fetch
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: { permalink: 'https://instagram.com/reel/test-media-id' },
+      });
     });
 
-    it('should return mock data when credentials not configured', async () => {
-      jest.spyOn(service, 'isConfigured').mockReturnValue(false);
-
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
+    it('should upload reel successfully with container flow', async () => {
       const result = await service.uploadReel({
         videoUrl: 'https://example.com/video.mp4',
         caption: 'Test caption',
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith('⚠️ Instagram credentials not configured, returning mock data');
-      expect(result.mediaId).toContain('IG');
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should handle captions with hashtags', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Amazing product #affiliate #trending #viral #reels',
+      expect(result).toEqual({
+        videoId: 'test-media-id',
+        url: 'https://instagram.com/reel/test-media-id',
+        platform: 'INSTAGRAM',
+        status: 'PUBLISHED',
+        publishedAt: expect.any(Date),
       });
 
-      expect(result).toHaveProperty('mediaId');
-      expect(result).toHaveProperty('url');
+      // Verify all steps called
+      expect(oauth.ensureValidToken).toHaveBeenCalled();
+      expect(rateLimiter.checkLimit).toHaveBeenCalledWith('INSTAGRAM');
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(2); // create + publish
+      expect(mockHttpClient.get).toHaveBeenCalledTimes(2); // poll + permalink
+      expect(rateLimiter.consumeToken).toHaveBeenCalledWith('INSTAGRAM');
     });
 
-    it('should handle long captions', async () => {
-      const longCaption = 'This is a very long caption. '.repeat(20);
-
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: longCaption,
-      });
-
-      expect(result).toHaveProperty('mediaId');
-    });
-
-    it('should handle captions with emojis', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: '🔥 Hot deal! 🎁 Limited time! 💯 #sale',
-      });
-
-      expect(result).toHaveProperty('mediaId');
-    });
-
-    it('should handle captions with mentions', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Amazing @brand product! #reels',
-      });
-
-      expect(result).toHaveProperty('mediaId');
-    });
-
-    it('should handle empty caption', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: '',
-      });
-
-      expect(result).toHaveProperty('mediaId');
-    });
-
-    it('should handle special characters in caption', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: 'Product @ 50% OFF! Save $$$',
-      });
-
-      expect(result).toHaveProperty('mediaId');
-    });
-
-    it('should generate unique media IDs', async () => {
-      const result1 = await service.uploadReel({
-        videoUrl: 'https://example.com/video1.mp4',
-        caption: 'Caption 1',
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      const result2 = await service.uploadReel({
-        videoUrl: 'https://example.com/video2.mp4',
-        caption: 'Caption 2',
-      });
-
-      expect(result1.mediaId).not.toBe(result2.mediaId);
-    });
-
-    it('should handle local file paths', async () => {
-      const result = await service.uploadReel({
-        videoUrl: '/tmp/video.mp4',
-        caption: 'Test caption',
-      });
-
-      expect(result).toHaveProperty('mediaId');
-    });
-
-    it('should log upload attempt', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
+    it('should add Instagram hashtags to caption without hashtags', async () => {
       await service.uploadReel({
         videoUrl: 'https://example.com/video.mp4',
-        caption: 'Test caption with some text',
+        caption: 'Plain caption',
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith('📸 Instagram: Uploading Reel - Test caption with some text...');
-
-      consoleSpy.mockRestore();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          caption: expect.stringContaining('#reels'),
+        }),
+        expect.any(Object),
+      );
     });
 
-    it('should truncate long captions in log', async () => {
-      jest.clearAllMocks(); // Clear previous mock calls
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      const longCaption = 'a'.repeat(100);
-
+    it('should keep caption as-is if it has hashtags', async () => {
       await service.uploadReel({
         videoUrl: 'https://example.com/video.mp4',
-        caption: longCaption,
+        caption: 'Caption with #hashtag',
       });
 
-      expect(consoleSpy).toHaveBeenCalled();
-      const logMessage = consoleSpy.mock.calls[0][0];
-      expect(logMessage).toContain('...');
-
-      consoleSpy.mockRestore();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          caption: 'Caption with #hashtag',
+        }),
+        expect.any(Object),
+      );
     });
 
-    it('should handle unicode characters in caption', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4',
-        caption: '你好 世界 🌍 #chinese #reels',
-      });
-
-      expect(result).toHaveProperty('mediaId');
+    it('should validate URL is HTTPS', async () => {
+      await expect(
+        service.uploadReel({
+          videoUrl: 'http://example.com/video.mp4', // HTTP not HTTPS
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(ValidationError);
     });
 
-    it('should handle captions with line breaks', async () => {
-      const result = await service.uploadReel({
+    it('should validate URL format', async () => {
+      await expect(
+        service.uploadReel({
+          videoUrl: 'invalid-url',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it('should throw error if not authenticated', async () => {
+      jest.spyOn(oauth, 'ensureValidToken').mockResolvedValue(null);
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(InstagramAuthenticationError);
+    });
+
+    it('should throw error if rate limit exceeded', async () => {
+      jest.spyOn(rateLimiter, 'checkLimit').mockResolvedValue(false);
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(RateLimitError);
+    });
+
+    it('should validate video locally if requested', async () => {
+      await service.uploadReel({
         videoUrl: 'https://example.com/video.mp4',
-        caption: 'Line 1\nLine 2\nLine 3\n#reels',
+        caption: 'Test',
+        validateLocally: true,
       });
 
-      expect(result).toHaveProperty('mediaId');
+      expect(downloader.downloadVideo).toHaveBeenCalled();
+      expect(validator.validateForInstagram).toHaveBeenCalled();
+      expect(downloader.cleanupFile).toHaveBeenCalled();
+    });
+
+    it('should throw error if local validation fails', async () => {
+      jest.spyOn(validator, 'validateForInstagram').mockResolvedValue({
+        isValid: false,
+        errors: ['File too large'],
+      });
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+          validateLocally: true,
+        }),
+      ).rejects.toThrow(ValidationError);
+
+      expect(downloader.cleanupFile).toHaveBeenCalled();
+    });
+  });
+
+  describe('container creation', () => {
+    it('should handle container creation error', async () => {
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: {
+          error: { message: 'Invalid video URL' },
+        },
+      });
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(InstagramContainerError);
+    });
+
+    it('should handle network error during container creation', async () => {
+      mockHttpClient.post.mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(InstagramContainerError);
+    });
+
+    it('should handle API error response during container creation', async () => {
+      mockHttpClient.post.mockRejectedValueOnce({
+        response: {
+          data: {
+            error: { message: 'Invalid access token' },
+          },
+        },
+      });
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(InstagramContainerError);
+    });
+  });
+
+  describe('container polling', () => {
+    it('should poll until container is ready', async () => {
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: { id: 'test-container-id' },
+      });
+
+      // Mock polling: IN_PROGRESS, IN_PROGRESS, FINISHED
+      mockHttpClient.get
+        .mockResolvedValueOnce({
+          data: { upload_status: 'IN_PROGRESS' },
+        })
+        .mockResolvedValueOnce({
+          data: { upload_status: 'IN_PROGRESS' },
+        })
+        .mockResolvedValueOnce({
+          data: { upload_status: 'FINISHED' },
+        });
+
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: { id: 'test-media-id' },
+      });
+
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: { permalink: 'https://instagram.com/reel/test-media-id' },
+      });
+
+      const result = await service.uploadReel({
+        videoUrl: 'https://example.com/video.mp4',
+        caption: 'Test',
+      });
+
+      expect(result.videoId).toBe('test-media-id');
+    });
+
+    it('should throw error if container upload fails', async () => {
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: { id: 'test-container-id' },
+      });
+
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: {
+          upload_status: 'ERROR',
+          status_code: 'UPLOAD_FAILED',
+        },
+      });
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(InstagramContainerError);
+    });
+
+    it('should handle network errors during polling gracefully', async () => {
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: { id: 'test-container-id' },
+      });
+
+      // First poll fails, second succeeds
+      mockHttpClient.get.mockRejectedValueOnce(new Error('Network timeout')).mockResolvedValueOnce({
+        data: { upload_status: 'FINISHED' },
+      });
+
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: { id: 'test-media-id' },
+      });
+
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: { permalink: 'https://instagram.com/reel/test-media-id' },
+      });
+
+      const result = await service.uploadReel({
+        videoUrl: 'https://example.com/video.mp4',
+        caption: 'Test',
+      });
+
+      expect(result.videoId).toBe('test-media-id');
+    });
+
+    it('should timeout if polling takes too long', async () => {
+      mockHttpClient.post.mockResolvedValueOnce({
+        data: { id: 'test-container-id' },
+      });
+
+      // Always return IN_PROGRESS
+      mockHttpClient.get.mockResolvedValue({
+        data: { upload_status: 'IN_PROGRESS' },
+      });
+
+      // This will timeout after maxAttempts (we'll use a shorter timeout for testing)
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(InstagramContainerError);
+    }, 15000); // Increase test timeout
+  });
+
+  describe('container publishing', () => {
+    it('should handle publish error', async () => {
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: { id: 'test-container-id' } })
+        .mockResolvedValueOnce({
+          data: {
+            error: { message: 'Publish failed' },
+          },
+        });
+
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: { upload_status: 'FINISHED' },
+      });
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(InstagramPublishError);
+    });
+
+    it('should handle network error during publish', async () => {
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: { id: 'test-container-id' } })
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: { upload_status: 'FINISHED' },
+      });
+
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow(InstagramPublishError);
     });
   });
 
   describe('getMediaInsights', () => {
-    beforeEach(async () => {
-      await service.onModuleInit();
-    });
+    it('should fetch media insights successfully', async () => {
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: {
+          data: [
+            { name: 'impressions', values: [{ value: 1000 }] },
+            { name: 'reach', values: [{ value: 800 }] },
+            { name: 'engagement', values: [{ value: 50 }] },
+            { name: 'saved', values: [{ value: 10 }] },
+            { name: 'shares', values: [{ value: 5 }] },
+          ],
+        },
+      });
 
-    it('should return media insights', async () => {
       const insights = await service.getMediaInsights('test-media-id');
 
-      expect(insights).toHaveProperty('impressions');
-      expect(insights).toHaveProperty('reach');
-      expect(insights).toHaveProperty('engagement');
-      expect(insights).toHaveProperty('saves');
-      expect(insights).toHaveProperty('shares');
+      expect(insights).toEqual({
+        impressions: 1000,
+        reach: 800,
+        engagement: 50,
+        saves: 10,
+        shares: 5,
+      });
     });
 
-    it('should return zero insights for non-existent media', async () => {
-      const insights = await service.getMediaInsights('non-existent-id');
+    it('should return empty insights if not authenticated', async () => {
+      jest.spyOn(oauth, 'getAccessToken').mockReturnValue(null);
 
-      expect(insights.impressions).toBe(0);
-      expect(insights.reach).toBe(0);
-      expect(insights.engagement).toBe(0);
-      expect(insights.saves).toBe(0);
-      expect(insights.shares).toBe(0);
+      const insights = await service.getMediaInsights('test-media-id');
+
+      expect(insights).toEqual({
+        impressions: 0,
+        reach: 0,
+        engagement: 0,
+        saves: 0,
+        shares: 0,
+      });
     });
 
-    it('should handle empty media ID', async () => {
-      const insights = await service.getMediaInsights('');
+    it('should handle insights fetch error gracefully', async () => {
+      mockHttpClient.get.mockRejectedValueOnce(new Error('API error'));
 
-      expect(insights).toBeDefined();
+      const insights = await service.getMediaInsights('test-media-id');
+
+      expect(insights).toEqual({
+        impressions: 0,
+        reach: 0,
+        engagement: 0,
+        saves: 0,
+        shares: 0,
+      });
     });
+  });
 
-    it('should handle very long media ID', async () => {
-      const longId = 'a'.repeat(1000);
+  describe('getVideoStats', () => {
+    it('should map insights to video stats format', async () => {
+      mockHttpClient.get.mockResolvedValueOnce({
+        data: {
+          data: [
+            { name: 'impressions', values: [{ value: 1000 }] },
+            { name: 'shares', values: [{ value: 5 }] },
+          ],
+        },
+      });
 
-      const insights = await service.getMediaInsights(longId);
+      const stats = await service.getVideoStats('test-media-id');
 
-      expect(insights).toBeDefined();
+      expect(stats).toEqual({
+        views: 1000, // Mapped from impressions
+        likes: 0, // Not available from Instagram API
+        comments: 0,
+        shares: 5,
+      });
     });
   });
 
   describe('isConfigured', () => {
-    it('should return true when both credentials are set', async () => {
-      await service.onModuleInit();
-
+    it('should return true when authenticated', () => {
       expect(service.isConfigured()).toBe(true);
     });
 
-    it('should return false when access token is missing', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'instagram-access-token': '',
-        'instagram-business-account-id': 'test-id',
-      });
-
-      await service.onModuleInit();
-
-      expect(service.isConfigured()).toBe(false);
-    });
-
-    it('should return false when business account ID is missing', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'instagram-access-token': 'test-token',
-        'instagram-business-account-id': '',
-      });
-
-      await service.onModuleInit();
-
-      expect(service.isConfigured()).toBe(false);
-    });
-
-    it('should return false when both credentials are missing', async () => {
-      jest.spyOn(secretsManager, 'getSecrets').mockResolvedValue({
-        'instagram-access-token': '',
-        'instagram-business-account-id': '',
-      });
-
-      await service.onModuleInit();
-
+    it('should return false when not authenticated', () => {
+      jest.spyOn(oauth, 'isAuthenticated').mockReturnValue(false);
       expect(service.isConfigured()).toBe(false);
     });
   });
 
-  describe('media container workflow', () => {
-    beforeEach(async () => {
-      await service.onModuleInit();
-    });
+  describe('error handling', () => {
+    it('should log errors with stack traces', async () => {
+      jest.spyOn(oauth, 'ensureValidToken').mockRejectedValue(new Error('Auth failed'));
 
-    it('should handle multiple reel uploads', async () => {
-      const uploads = [];
-
-      for (let i = 0; i < 5; i++) {
-        uploads.push(
-          service.uploadReel({
-            videoUrl: `https://example.com/video${i}.mp4`,
-            caption: `Caption ${i} #reels`,
-          }),
-        );
-      }
-
-      const results = await Promise.all(uploads);
-
-      expect(results).toHaveLength(5);
-      results.forEach((result) => {
-        expect(result).toHaveProperty('mediaId');
-        expect(result).toHaveProperty('url');
-      });
-    });
-
-    it('should generate unique URLs for each upload', async () => {
-      const result1 = await service.uploadReel({
-        videoUrl: 'https://example.com/video1.mp4',
-        caption: 'Caption 1',
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      const result2 = await service.uploadReel({
-        videoUrl: 'https://example.com/video2.mp4',
-        caption: 'Caption 2',
-      });
-
-      expect(result1.url).not.toBe(result2.url);
-    });
-
-    it('should handle rapid sequential uploads', async () => {
-      const results = [];
-
-      for (let i = 0; i < 3; i++) {
-        const result = await service.uploadReel({
-          videoUrl: `https://example.com/video${i}.mp4`,
-          caption: `Caption ${i}`,
-        });
-        results.push(result);
-      }
-
-      expect(results).toHaveLength(3);
-
-      const mediaIds = results.map(r => r.mediaId);
-      const uniqueIds = new Set(mediaIds);
-      expect(uniqueIds.size).toBe(3);
+      await expect(
+        service.uploadReel({
+          videoUrl: 'https://example.com/video.mp4',
+          caption: 'Test',
+        }),
+      ).rejects.toThrow();
     });
   });
 
-  describe('Graph API integration', () => {
-    beforeEach(async () => {
-      await service.onModuleInit();
-    });
+  describe('rate limiting', () => {
+    it('should check rate limit before upload', async () => {
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: { id: 'container-id' } })
+        .mockResolvedValueOnce({ data: { id: 'media-id' } });
 
-    it('should handle video URLs with query parameters', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4?token=abc123',
-        caption: 'Test caption',
+      mockHttpClient.get
+        .mockResolvedValueOnce({ data: { upload_status: 'FINISHED' } })
+        .mockResolvedValueOnce({ data: { permalink: 'https://instagram.com/reel/media-id' } });
+
+      await service.uploadReel({
+        videoUrl: 'https://example.com/video.mp4',
+        caption: 'Test',
       });
 
-      expect(result).toHaveProperty('mediaId');
+      expect(rateLimiter.checkLimit).toHaveBeenCalledWith('INSTAGRAM');
+      expect(rateLimiter.consumeToken).toHaveBeenCalledWith('INSTAGRAM');
     });
+  });
 
-    it('should handle video URLs with fragments', async () => {
-      const result = await service.uploadReel({
-        videoUrl: 'https://example.com/video.mp4#section',
-        caption: 'Test caption',
+  describe('token expiry warnings', () => {
+    it('should warn when token expires in less than 10 days', async () => {
+      jest.spyOn(oauth, 'getRemainingDays').mockReturnValue(5);
+
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: { id: 'container-id' } })
+        .mockResolvedValueOnce({ data: { id: 'media-id' } });
+
+      mockHttpClient.get
+        .mockResolvedValueOnce({ data: { upload_status: 'FINISHED' } })
+        .mockResolvedValueOnce({ data: { permalink: 'https://instagram.com/reel/media-id' } });
+
+      await service.uploadReel({
+        videoUrl: 'https://example.com/video.mp4',
+        caption: 'Test',
       });
 
-      expect(result).toHaveProperty('mediaId');
-    });
-
-    it('should handle very long video URLs', async () => {
-      const longUrl = 'https://example.com/very/long/path/' + 'segment/'.repeat(50) + 'video.mp4';
-
-      const result = await service.uploadReel({
-        videoUrl: longUrl,
-        caption: 'Test caption',
-      });
-
-      expect(result).toHaveProperty('mediaId');
+      expect(oauth.getRemainingDays).toHaveBeenCalled();
     });
   });
 });
