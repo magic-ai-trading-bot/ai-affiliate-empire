@@ -31,12 +31,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: 'dashboard/package-lock.json'
 
       - name: Install dependencies
         working-directory: dashboard
-        run: npm ci
+        run: npm install
 
       - name: Run tests
         working-directory: dashboard
@@ -70,12 +68,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: 'apps/blog/package-lock.json'
 
       - name: Install dependencies
         working-directory: apps/blog
-        run: npm ci
+        run: npm install
 
       - name: Run tests
         working-directory: apps/blog
@@ -114,10 +110,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
