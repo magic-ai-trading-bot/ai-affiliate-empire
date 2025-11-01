@@ -108,6 +108,10 @@ jobs:
     environment:
       name: production
       url: https://ai-affiliate-empire.fly.dev
+      # Note: Configure GitHub environment protection rules to require:
+      # - Required reviewers (minimum 1-2 approvers)
+      # - Wait timer (optional: 5-10 minutes)
+      # Settings: Repository -> Settings -> Environments -> production
 
     steps:
       - name: Checkout code
@@ -231,6 +235,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add deployments.log
           git commit -m "chore: record production deployment ${GITHUB_SHA:0:7}" || echo "No changes to commit"
+          git push origin main || echo "Failed to push deployment log (may need repository write permissions)"
 
   post-deployment-monitoring:
     name: Post-Deployment Monitoring

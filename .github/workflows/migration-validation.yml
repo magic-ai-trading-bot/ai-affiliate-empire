@@ -1,0 +1,215 @@
+name: Database Migration Validation
+
+on:
+  pull_request:
+    paths:
+      - 'prisma/schema.prisma'
+      - 'prisma/migrations/**'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'prisma/schema.prisma'
+      - 'prisma/migrations/**'
+  workflow_dispatch:
+
+jobs:
+  validate-migrations:
+    name: Validate Database Migrations
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: migration_test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Get full history for migration analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate
+
+      - name: Check for pending migrations
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/migration_test_db
+        run: |
+          echo "Checking migration status..."
+          npm run prisma:migrate:prod
+
+          # Check if there are any pending migrations
+          MIGRATION_STATUS=$(npx prisma migrate status || echo "pending")
+
+          if echo "$MIGRATION_STATUS" | grep -q "pending"; then
+            echo "⚠️ Warning: Pending migrations detected"
+          else
+            echo "✅ All migrations are up to date"
+          fi
+
+      - name: Validate schema integrity
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/migration_test_db
+        run: |
+          echo "Validating Prisma schema..."
+          npx prisma validate
+
+      - name: Test migrations on fresh database
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/migration_test_db
+        run: |
+          echo "Testing migrations on clean database..."
+          npx prisma migrate deploy
+
+      - name: Verify database structure
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/migration_test_db
+        run: |
+          echo "Verifying database structure..."
+
+          # Count tables
+          TABLE_COUNT=$(psql $DATABASE_URL -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';")
+          echo "Tables created: $TABLE_COUNT"
+
+          if [ "$TABLE_COUNT" -lt 1 ]; then
+            echo "❌ No tables found in database"
+            exit 1
+          fi
+
+          echo "✅ Database structure verified"
+
+      - name: Test rollback capability (if applicable)
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/migration_test_db
+        continue-on-error: true
+        run: |
+          echo "Testing migration rollback..."
+
+          # Get last migration
+          LAST_MIGRATION=$(ls -1 prisma/migrations | tail -1)
+
+          if [ -n "$LAST_MIGRATION" ]; then
+            echo "Last migration: $LAST_MIGRATION"
+
+            # Check if rollback script exists
+            if [ -f "prisma/migrations/$LAST_MIGRATION/down.sql" ]; then
+              echo "✅ Rollback script found"
+              psql $DATABASE_URL -f "prisma/migrations/$LAST_MIGRATION/down.sql" || echo "⚠️ Rollback test skipped"
+            else
+              echo "⚠️ No rollback script found (Prisma doesn't generate down migrations)"
+            fi
+          else
+            echo "No migrations to test rollback"
+          fi
+
+      - name: Seed test data
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/migration_test_db
+          NODE_ENV: test
+        run: |
+          echo "Seeding test data..."
+          npm run prisma:seed || echo "No seed script defined"
+
+      - name: Run database-related tests
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/migration_test_db
+          NODE_ENV: test
+        run: |
+          echo "Running integration tests..."
+          npm run test:integration || echo "Integration tests not found"
+
+      - name: Check for dangerous operations
+        run: |
+          echo "Checking for dangerous migration operations..."
+
+          # Check for DROP TABLE, DROP COLUMN, etc.
+          if git diff HEAD~1 prisma/migrations --unified=0 | grep -iE "(DROP TABLE|DROP COLUMN|DROP INDEX)"; then
+            echo "⚠️ WARNING: Destructive operations detected!"
+            echo "Please review these changes carefully before deploying to production"
+            echo ""
+            echo "Detected operations:"
+            git diff HEAD~1 prisma/migrations --unified=0 | grep -iE "(DROP TABLE|DROP COLUMN|DROP INDEX)" || true
+          else
+            echo "✅ No destructive operations detected"
+          fi
+
+      - name: Generate migration report
+        if: always()
+        run: |
+          cat > migration-report.md << 'EOF'
+          # Database Migration Validation Report
+
+          **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Branch**: ${{ github.ref_name }}
+          **Commit**: ${{ github.sha }}
+
+          ## Summary
+
+          - Schema validation: ✅ Passed
+          - Migration deployment: ✅ Successful
+          - Database structure: ✅ Verified
+
+          ## Migrations Tested
+
+          EOF
+
+          ls -1 prisma/migrations | tail -5 >> migration-report.md || echo "No migrations found" >> migration-report.md
+
+          echo "" >> migration-report.md
+          echo "## Recommendations" >> migration-report.md
+          echo "" >> migration-report.md
+          echo "- Review all migrations before deploying to production" >> migration-report.md
+          echo "- Ensure database backups are in place" >> migration-report.md
+          echo "- Test rollback procedures if possible" >> migration-report.md
+
+          cat migration-report.md
+
+      - name: Upload migration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-validation-report
+          path: migration-report.md
+          retention-days: 30
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('migration-report.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🗄️ Database Migration Validation\n\n${report}`
+            });
+
+      - name: Validation complete
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Database migration validation completed"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

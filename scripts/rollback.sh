@@ -55,13 +55,17 @@ fi
 
 echo -e "${BLUE}📝 Previous stable release: v${PREVIOUS_RELEASE}${NC}"
 
-# Confirm rollback
-echo -e "${RED}⚠️  WARNING: This will rollback to version ${PREVIOUS_RELEASE}${NC}"
-read -p "Continue with rollback? (yes/no): " -r
+# Confirm rollback (skip in CI/CD environments)
+if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
+    echo -e "${RED}⚠️  WARNING: This will rollback to version ${PREVIOUS_RELEASE}${NC}"
+    read -p "Continue with rollback? (yes/no): " -r
 
-if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
-    echo -e "${YELLOW}Rollback cancelled${NC}"
-    exit 0
+    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+        echo -e "${YELLOW}Rollback cancelled${NC}"
+        exit 0
+    fi
+else
+    echo -e "${YELLOW}🤖 CI/CD mode: Automatically proceeding with rollback to v${PREVIOUS_RELEASE}${NC}"
 fi
 
 # Backup current database state

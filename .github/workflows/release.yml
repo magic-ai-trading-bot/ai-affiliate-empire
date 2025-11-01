@@ -38,8 +38,20 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Check test results
+        if: failure()
+        run: |
+          echo "❌ Tests failed. Release cannot proceed."
+          exit 1
+
       - name: Run linting
         run: npm run lint
+
+      - name: Check lint results
+        if: failure()
+        run: |
+          echo "❌ Linting failed. Release cannot proceed."
+          exit 1
 
       - name: Generate metadata
         run: |
