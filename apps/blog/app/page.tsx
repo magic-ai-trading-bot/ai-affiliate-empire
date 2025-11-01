@@ -30,9 +30,6 @@ const categoryIcons = {
   'case-studies': BarChart,
 };
 
-// Enable ISR - revalidate every 60 seconds
-export const revalidate = 60;
-
 export default function Home() {
   const featuredArticles = getFeaturedArticles();
   const latestArticles = getLatestArticles(6);
