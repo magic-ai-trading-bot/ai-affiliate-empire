@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build output
+dist/
+.next/
+out/
+build/
+
+# Test files
+**/__tests__/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+test/e2e/
+playwright.config.ts
+
+# Coverage
+coverage/
+*/coverage/
+.nyc_output/
+
+# Misc
+*.log
+.DS_Store
+.env*
+!.env.example

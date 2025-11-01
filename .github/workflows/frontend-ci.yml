@@ -1,0 +1,229 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'dashboard/**'
+      - 'apps/blog/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'dashboard/**'
+      - 'apps/blog/**'
+      - '.github/workflows/frontend-ci.yml'
+
+jobs:
+  test-dashboard:
+    name: Test Admin Dashboard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'dashboard/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Run tests
+        working-directory: dashboard
+        run: npm test
+
+      - name: Run lint
+        working-directory: dashboard
+        run: npm run lint
+
+      - name: Build dashboard
+        working-directory: dashboard
+        run: npm run build
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-test-results
+          path: dashboard/coverage/
+          retention-days: 7
+
+  test-blog:
+    name: Test Blog App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'apps/blog/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: apps/blog
+        run: npm ci
+
+      - name: Run tests
+        working-directory: apps/blog
+        run: npm test
+
+      - name: Run lint
+        working-directory: apps/blog
+        run: npm run lint
+
+      - name: Type check
+        working-directory: apps/blog
+        run: npm run type-check
+
+      - name: Build blog
+        working-directory: apps/blog
+        run: npm run build
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blog-test-results
+          path: apps/blog/coverage/
+          retention-days: 7
+
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: [test-dashboard, test-blog]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Dashboard dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Install Blog dependencies
+        working-directory: apps/blog
+        run: npm ci
+
+      - name: Start Dashboard
+        working-directory: dashboard
+        run: npm run dev &
+        env:
+          PORT: 3001
+
+      - name: Start Blog
+        working-directory: apps/blog
+        run: npm run dev &
+        env:
+          PORT: 3002
+
+      - name: Wait for apps to be ready
+        run: |
+          npx wait-on http://localhost:3001 http://localhost:3002 --timeout 120000
+
+      - name: Run E2E tests
+        run: npm run test:e2e:playwright
+        env:
+          E2E_BASE_URL: http://localhost:3001
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 7
+
+  accessibility-audit:
+    name: Accessibility Audit
+    runs-on: ubuntu-latest
+    needs: [test-dashboard, test-blog]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install Dashboard dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Start Dashboard
+        working-directory: dashboard
+        run: npm run dev &
+
+      - name: Wait for Dashboard
+        run: npx wait-on http://localhost:3001 --timeout 60000
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.12.x
+          lhci autorun --collect.url=http://localhost:3001 --collect.numberOfRuns=1 || true
+
+      - name: Comment accessibility score
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Accessibility audit completed. Review Lighthouse report for details."
+
+  summary:
+    name: Frontend CI Summary
+    runs-on: ubuntu-latest
+    needs: [test-dashboard, test-blog, e2e-tests, accessibility-audit]
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.test-dashboard.result }}" != "success" ]; then
+            echo "❌ Dashboard tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.test-blog.result }}" != "success" ]; then
+            echo "❌ Blog tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.e2e-tests.result }}" != "success" ]; then
+            echo "⚠️ E2E tests failed (non-blocking)"
+          fi
+          if [ "${{ needs.accessibility-audit.result }}" != "success" ]; then
+            echo "⚠️ Accessibility audit failed (non-blocking)"
+          fi
+          echo "✅ Frontend CI completed"

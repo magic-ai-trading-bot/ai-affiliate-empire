@@ -41,6 +41,11 @@
     "test:load:orchestrator": "k6 run --env BASE_URL=http://localhost:3000 test/load/scenarios/orchestrator-load.js",
     "test:load:staging": "./scripts/run-load-tests.sh baseline staging",
     "test:load:production": "./scripts/run-load-tests.sh baseline production",
+    "test:e2e:playwright": "playwright test",
+    "test:e2e:playwright:headed": "playwright test --headed",
+    "test:frontend": "npm run test:dashboard && npm run test:blog",
+    "test:dashboard": "cd dashboard && npm test",
+    "test:blog": "cd apps/blog && npm test",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:prod": "prisma migrate deploy",
@@ -101,6 +106,7 @@
     "@commitlint/config-conventional": "^18.4.3",
     "@nestjs/cli": "^11.0.10",
     "@nestjs/testing": "^11.1.8",
+    "@playwright/test": "^1.56.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^11.1.0",
     "@semantic-release/git": "^10.0.1",
@@ -134,7 +140,8 @@
     "ts-jest": "^29.4.5",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wait-on": "^9.0.1"
   },
   "engines": {
     "node": ">=18.0.0"
