@@ -18,7 +18,7 @@ graph TB
     end
 
     subgraph "Content Pipeline"
-        SCRIPT[GPT-5<br/>Script Gen]
+        SCRIPT[GPT-4 Turbo<br/>Script Gen]
         VOICE[ElevenLabs<br/>Voice Synth]
         VIDEO[Pika Labs<br/>Video Gen]
         BLOG[Claude<br/>Blog Posts]
@@ -116,7 +116,7 @@ graph TB
 
 ### 3. Content Pipeline
 
-#### Script Generator (GPT-5)
+#### Script Generator (GPT-4 Turbo)
 - Input: Product data + niche + target audience
 - Output: Video script (60s) + blog outline
 - Prompt versioning for A/B tests
@@ -317,7 +317,7 @@ Parallel: Analytics sync every hour
 - Increase Redis memory allocation
 
 **AI Models**:
-- Use GPT-5 Turbo for faster generation
+- Use GPT-4 Turbo Turbo for faster generation
 - Add Claude Opus for premium niches
 - Fine-tune models on top performers
 
@@ -376,7 +376,7 @@ graph LR
 | **Cache** | Redis | Rate limiting, session management |
 | **Queue** | BullMQ | Job processing, retry logic |
 | **Video Gen** | Pika Labs | Cost-effective, fast, API access |
-| **Scripts** | GPT-5 | High quality, creative content |
+| **Scripts** | GPT-4 Turbo | High quality, creative content |
 | **Blog** | Claude 3.5 | Long-form, nuanced writing |
 | **Voice** | ElevenLabs | Natural voices, multilingual |
 | **Images** | DALL-E 3 | High quality thumbnails |
@@ -446,7 +446,7 @@ graph LR
 - **Total Fixed**: $177
 
 ### Variable Costs (per 1500 pieces/month)
-- OpenAI (GPT-5): $150
+- OpenAI (GPT-4 Turbo): $150
 - Anthropic (Claude): $25
 - DALL-E 3: $60
 - **Total Variable**: $235

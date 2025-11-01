@@ -31,7 +31,7 @@ Fully autonomous AI-powered affiliate marketing system that discovers products, 
 - **100% Autonomous**: No human intervention after setup
 - **Self-Optimizing**: A/B tests prompts, kills poor niches, scales winners
 - **Multi-Platform**: Maximizes reach across YouTube, TikTok, Instagram, blog
-- **AI-First**: GPT-5 + Claude + Pika Labs for content quality
+- **AI-First**: GPT-4 Turbo + Claude + Pika Labs for content quality
 - **Durable**: Temporal workflows survive crashes, auto-retry failures
 - **Scalable**: Designed to scale from $0 to $100k+/month
 
@@ -44,7 +44,7 @@ Fully autonomous AI-powered affiliate marketing system that discovers products, 
 **Database**: PostgreSQL + Prisma (relational + JSONB)
 **Cache**: Redis (rate limiting, job queue)
 **Video**: Pika Labs (cost-effective, fast API)
-**AI**: GPT-5 (scripts), Claude 3.5 (blogs), ElevenLabs (voice), DALL-E 3 (thumbnails)
+**AI**: GPT-4 Turbo (scripts), Claude 3.5 (blogs), ElevenLabs (voice), DALL-E 3 (thumbnails)
 **Hosting**: Fly.io (global edge, Docker, affordable)
 **Storage**: Cloudflare R2 (S3-compatible, no egress fees)
 
@@ -73,7 +73,7 @@ PostgreSQL (products, content, metrics) ←────────────�
 ### Revenue Streams
 
 **Primary**: Amazon Associates affiliate commissions
-**Secondary**: ShareASale, CJ Affiliate (added Week 7)
+**Planned**: ShareASale, CJ Affiliate (future integration)
 **Tertiary**: Direct brand partnerships (post-launch)
 
 ### Cost Structure
