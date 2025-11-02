@@ -37,6 +37,8 @@ jobs:
         run: npm install
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
         run: npm run prisma:generate
 
       - name: Build application
@@ -125,6 +127,8 @@ jobs:
         run: npm install
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
         run: npm run prisma:generate
 
       - name: Build application
