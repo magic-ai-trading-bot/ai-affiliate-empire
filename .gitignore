@@ -149,6 +149,8 @@ GoogleService-Info.plist
 **/*-credentials.json
 **/*-token.*
 **/*-secret.*
+# But allow DTO files
+!**/*.dto.ts
 
 # =============================================================================
 # Temporary Files
