@@ -322,7 +322,6 @@ export class CostAggregatorService {
    */
   async getMonthlyProjection(): Promise<number> {
     const now = new Date();
-    const _startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const daysElapsed = now.getDate();
 

@@ -47,7 +47,7 @@ export class AuthService {
     }
 
     // Hash password
-    const _passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
+    const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
 
     // Create user
     const user = await this.prisma.user.create({
@@ -166,6 +166,7 @@ export class AuthService {
       return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...result } = user;
     return result;
   }
@@ -210,7 +211,7 @@ export class AuthService {
       this.logger.log(`Tokens refreshed for user: ${user.username}`);
 
       return tokens;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
   }

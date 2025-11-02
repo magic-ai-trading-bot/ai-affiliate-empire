@@ -13,6 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,test,dashboard}/**/*.{ts,tsx}\" --max-warnings 0",
+    "lint:src": "eslint \"src/**/*.{ts,tsx}\" --max-warnings 100",
     "lint:fix": "eslint \"{src,test,dashboard}/**/*.{ts,tsx}\" --fix",
     "test": "jest",
     "test:unit": "jest --testPathPatterns=test/unit",

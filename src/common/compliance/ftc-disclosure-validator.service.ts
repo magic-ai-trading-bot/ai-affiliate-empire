@@ -79,7 +79,7 @@ export class FtcDisclosureValidatorService {
   /**
    * Add FTC disclosure to content if missing
    */
-  ensureDisclosure(content: string, platform: 'youtube' | 'tiktok' | 'instagram' | 'blog'): string {
+  ensureDisclosure(content: string, _platform: 'youtube' | 'tiktok' | 'instagram' | 'blog'): string {
     const validation = this.validateContent(content);
 
     if (validation.hasDisclosure) {
@@ -87,7 +87,7 @@ export class FtcDisclosureValidatorService {
     }
 
     // Add platform-appropriate disclosure
-    const disclosure = this.getDisclosureForPlatform(platform);
+    const disclosure = this.getDisclosureForPlatform(_platform);
 
     // Add disclosure at the end with clear separation
     return `${content}\n\n${disclosure}`;
@@ -139,7 +139,7 @@ export class FtcDisclosureValidatorService {
   /**
    * Validate social media caption
    */
-  validateSocialCaption(caption: string, platform: 'tiktok' | 'instagram' | 'youtube'): ValidationResult {
+  validateSocialCaption(caption: string, _platform: 'tiktok' | 'instagram' | 'youtube'): ValidationResult {
     const result = this.validateContent(caption);
 
     // Check for hashtag disclosure (required for social media)

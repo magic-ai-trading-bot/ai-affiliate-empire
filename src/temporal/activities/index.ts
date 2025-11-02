@@ -7,15 +7,14 @@ const prisma = new PrismaClient();
 /**
  * Activity: Sync products from Amazon
  */
-export async function syncProductsFromAmazon(params: {
+export async function syncProductsFromAmazon(_params: {
   category?: string;
 }): Promise<{ productCount: number }> {
   console.log('🔄 [Activity] Syncing products from Amazon...');
 
   // In real implementation, this would call ProductService
   // For now, using mock implementation
-
-  const { category: _category } = params;
+  // _params.category would be used here
 
   // Mock: Return existing products count
   const count = await prisma.product.count({
