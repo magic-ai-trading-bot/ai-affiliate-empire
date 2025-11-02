@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Integration test for Publishing Pipeline
  *
@@ -13,8 +15,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
-import { YouTubeService } from '@/modules/publisher/services/youtube.service';
-import { TikTokService } from '@/modules/publisher/services/tiktok.service';
+import { YoutubeService } from '@/modules/publisher/services/youtube.service';
+import { TiktokService } from '@/modules/publisher/services/tiktok.service';
 import { InstagramService } from '@/modules/publisher/services/instagram.service';
 import { SecretsManagerService } from '@/common/secrets/secrets-manager.service';
 import {

@@ -173,8 +173,8 @@ describe('OrchestratorService', () => {
 
       const _result = await newService.startDailyControlLoop({});
 
-      expect(result.status).toBe('mock_mode');
-      expect(result.message).toContain('Temporal not configured');
+      expect(_result.status).toBe('mock_mode');
+      expect(_result.message).toContain('Temporal not configured');
       expect(consoleWarnSpy).toHaveBeenCalled();
 
       consoleWarnSpy.mockRestore();
@@ -283,7 +283,7 @@ describe('OrchestratorService', () => {
 
       const _result = await newService.getWorkflowStatus('daily-2025-01-01');
 
-      expect(result.status).toBe('mock_mode');
+      expect(_result.status).toBe('mock_mode');
 
       consoleWarnSpy.mockRestore();
     });
@@ -459,7 +459,7 @@ describe('OrchestratorService', () => {
 
       const _result = await newService.startWeeklyOptimization();
 
-      expect(result.status).toBe('mock_mode');
+      expect(_result.status).toBe('mock_mode');
 
       consoleWarnSpy.mockRestore();
     });
@@ -543,7 +543,7 @@ describe('OrchestratorService', () => {
       await expect(service.startDailyControlLoop({})).rejects.toThrow('Temporary failure');
 
       const _result = await service.startDailyControlLoop({});
-      expect(result.status).toBe('started');
+      expect(_result.status).toBe('started');
     });
   });
 
@@ -584,7 +584,7 @@ describe('OrchestratorService', () => {
         mockTemporalClient.workflow.getHandle.mockReturnValue(mockHandle);
 
         const _result = await service.getWorkflowStatus(`workflow-${status}`);
-        expect(result.status).toBe(status);
+        expect(_result.status).toBe(status);
       }
     });
   });

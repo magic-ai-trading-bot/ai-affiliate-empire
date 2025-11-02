@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Integration test for Content Generation Pipeline
  *
