@@ -90,6 +90,8 @@ jobs:
         run: npm install
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
         run: npm run prisma:generate
 
       - name: Run database migrations
