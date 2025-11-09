@@ -49,6 +49,7 @@ jobs:
       - name: Generate Prisma Client
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DIRECT_DATABASE_URL: postgresql://user:pass@localhost:5432/db
         run: npm run prisma:generate
 
       - name: Run TypeScript compiler check
@@ -92,34 +93,40 @@ jobs:
       - name: Generate Prisma Client
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          DIRECT_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
         run: npm run prisma:generate
 
       - name: Run database migrations
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          DIRECT_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
         run: npm run prisma:migrate:prod
 
       - name: Run unit tests
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          DIRECT_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           NODE_ENV: test
         run: npm run test:unit
 
       - name: Run integration tests
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          DIRECT_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           NODE_ENV: test
         run: npm run test:integration
 
       - name: Run E2E tests
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          DIRECT_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           NODE_ENV: test
         run: npm run test:e2e
 
       - name: Generate coverage report
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          DIRECT_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           NODE_ENV: test
         run: npm run test:coverage
 
@@ -190,6 +197,7 @@ jobs:
       - name: Generate Prisma Client
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DIRECT_DATABASE_URL: postgresql://user:pass@localhost:5432/db
         run: npm run prisma:generate
 
       - name: Build application
