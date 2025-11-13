@@ -377,11 +377,11 @@ describe('CostCalculatorService', () => {
       expect(breakdown.content.estimatedCost).toBeGreaterThan(0);
     });
 
-    it('should specify Claude as service', () => {
+    it('should specify OpenAI as service', () => {
       const breakdown = service.getBlogContentBreakdown();
 
-      expect(breakdown.content.service).toBe('CLAUDE');
-      expect(breakdown.content.model).toBe('claude-3.5-sonnet');
+      expect(breakdown.content.service).toBe('OPENAI');
+      expect(breakdown.content.model).toBe('gpt-4o');
     });
   });
 

@@ -7,6 +7,12 @@ import { AuthService } from '../../../src/common/auth/auth.service';
 import { PrismaService } from '../../../src/common/database/prisma.service';
 import { LoggerService } from '../../../src/common/logging/logger.service';
 
+// Mock bcrypt to avoid slow CPU-intensive hashing in tests
+jest.mock('bcrypt', () => ({
+  hash: jest.fn().mockResolvedValue('hashed_password'),
+  compare: jest.fn().mockResolvedValue(true),
+}));
+
 describe('AuthService', () => {
   let service: AuthService;
   let prismaService: PrismaService;
@@ -122,12 +128,8 @@ describe('AuthService', () => {
         email: registerDto.email,
       });
 
-      await expect(service.register(registerDto)).rejects.toThrow(
-        ConflictException,
-      );
-      await expect(service.register(registerDto)).rejects.toThrow(
-        'Email already registered',
-      );
+      await expect(service.register(registerDto)).rejects.toThrow(ConflictException);
+      await expect(service.register(registerDto)).rejects.toThrow('Email already registered');
     });
 
     it('should throw ConflictException if username already exists', async () => {
@@ -142,12 +144,8 @@ describe('AuthService', () => {
         username: registerDto.username,
       });
 
-      await expect(service.register(registerDto)).rejects.toThrow(
-        ConflictException,
-      );
-      await expect(service.register(registerDto)).rejects.toThrow(
-        'Username already taken',
-      );
+      await expect(service.register(registerDto)).rejects.toThrow(ConflictException);
+      await expect(service.register(registerDto)).rejects.toThrow('Username already taken');
     });
   });
 
@@ -219,9 +217,7 @@ describe('AuthService', () => {
       mockPrismaService.user.findFirst.mockResolvedValue(null);
       mockPrismaService.auditLog.create.mockResolvedValue({});
 
-      await expect(service.login(loginDto)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
     });
   });
 
@@ -265,9 +261,7 @@ describe('AuthService', () => {
         throw new Error('Invalid token');
       });
 
-      await expect(service.refreshTokens('invalid-token')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.refreshTokens('invalid-token')).rejects.toThrow(UnauthorizedException);
     });
   });
 });

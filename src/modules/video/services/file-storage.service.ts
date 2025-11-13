@@ -105,10 +105,14 @@ export class FileStorageService {
       await fs.unlink(filepath);
       this.logger.debug(`Cleaned up temp file: ${path.basename(filepath)}`);
     } catch (err) {
-      // Ignore errors if file doesn't exist
-      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-        this.logger.warn(`Failed to cleanup file: ${err.message}`);
+      const error = err as NodeJS.ErrnoException;
+      // Silently ignore if file doesn't exist
+      if (error.code === 'ENOENT') {
+        this.logger.debug(`File already deleted or not found: ${filepath}`);
+        return;
       }
+      // Log other errors but don't throw
+      this.logger.warn(`Failed to cleanup file ${filepath}: ${error.message || String(err)}`);
     }
   }
 

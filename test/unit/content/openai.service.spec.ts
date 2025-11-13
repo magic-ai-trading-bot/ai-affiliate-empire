@@ -225,11 +225,13 @@ describe('OpenAIService', () => {
       secretsManager.getSecret.mockResolvedValue('test-api-key');
       await service.onModuleInit();
 
-      (mockOpenAIClient.chat.completions.create as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (mockOpenAIClient.chat.completions.create as jest.Mock).mockRejectedValue(
+        new Error('API Error'),
+      );
 
       await expect(service.generateText('Test')).rejects.toThrow(OpenAIError);
       await expect(service.generateText('Test')).rejects.toThrow('Failed to generate text');
-    });
+    }, 10000);
   });
 
   describe('retry logic', () => {

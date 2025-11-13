@@ -73,19 +73,28 @@ export class PublisherService {
       } catch (error) {
         console.error(`Error publishing to ${platform}:`, error);
 
-        // Create failed publication record
-        const failedPublication = await this.prisma.publication.create({
-          data: {
+        // Find the failed publication that was already created and updated
+        const failedPublication = await this.prisma.publication.findFirst({
+          where: {
             videoId: video.id,
             platform: platform as Platform,
-            caption,
-            hashtags,
             status: 'FAILED',
-            errorMessage: error.message,
+          },
+          orderBy: {
+            createdAt: 'desc',
           },
         });
 
-        publications.push(failedPublication);
+        if (failedPublication) {
+          publications.push(failedPublication);
+        } else {
+          // Fallback: create error object if no publication found
+          publications.push({
+            platform: platform as Platform,
+            status: 'FAILED',
+            errorMessage: error.message,
+          } as any);
+        }
       }
     }
 

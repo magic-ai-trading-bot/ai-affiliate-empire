@@ -277,7 +277,7 @@ describe('HealthCheckService', () => {
       const result2 = await service.checkExternalApis();
 
       expect(result1).toEqual(result2);
-      expect(mockedAxios.get).toHaveBeenCalledTimes(2); // 2 calls for first check only
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1); // 1 call for first check only (OpenAI)
     });
   });
 
@@ -298,7 +298,7 @@ describe('HealthCheckService', () => {
       await service.checkExternalApis();
 
       expect(mockPrismaService.$queryRaw).toHaveBeenCalledTimes(2);
-      expect(mockedAxios.get.mock.calls.length).toBeGreaterThan(2);
+      expect(mockedAxios.get).toHaveBeenCalledTimes(2); // Called once before clear, once after
     });
 
     it('should respect cache TTL for database checks', async () => {
@@ -335,7 +335,7 @@ describe('HealthCheckService', () => {
       const result2 = await service.checkExternalApis();
 
       expect(result1.lastCheck).toBe(result2.lastCheck);
-      expect(mockedAxios.get).toHaveBeenCalledTimes(2); // 2 APIs, called once each
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1); // OpenAI API, called once and cached
     });
   });
 

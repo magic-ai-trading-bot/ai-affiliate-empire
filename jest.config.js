@@ -7,6 +7,7 @@ module.exports = {
     '/test/smoke/',
     '/test/integration/',
     '/test/load/',
+    '/test/e2e/',
   ],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
