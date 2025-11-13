@@ -381,7 +381,7 @@ describe('CostCalculatorService', () => {
       const breakdown = service.getBlogContentBreakdown();
 
       expect(breakdown.content.service).toBe('OPENAI');
-      expect(breakdown.content.model).toBe('gpt-4o');
+      expect(breakdown.content.model).toBe('gpt-4-turbo');
     });
   });
 

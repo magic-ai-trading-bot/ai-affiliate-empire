@@ -12,11 +12,7 @@ describe('Daily Control Loop Workflow', () => {
 
   beforeAll(async () => {
     try {
-      testEnv = await TestWorkflowEnvironment.createLocal({
-        server: {
-          timeout: '30s', // Increase timeout for server startup
-        },
-      });
+      testEnv = await TestWorkflowEnvironment.createLocal();
     } catch (error) {
       console.warn('Temporal test environment not available:', error.message);
       // Skip tests if Temporal isn't available

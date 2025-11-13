@@ -179,6 +179,9 @@ describe('AuthService', () => {
         passwordHash: hashedPassword,
       });
 
+      // Mock bcrypt.compare to return false for wrong password
+      (bcrypt.compare as jest.Mock).mockResolvedValueOnce(false);
+
       const result = await service.validateUser('testuser', 'WrongPassword');
 
       expect(result).toBeNull();
