@@ -31,6 +31,9 @@ module.exports = {
     '^@common/(.*)$': '<rootDir>/src/common/$1',
     '^@temporal/(.*)$': '<rootDir>/src/temporal/$1',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(p-queue|p-timeout|eventemitter3)/)',
+  ],
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   testTimeout: 30000,
   coverageThreshold: {

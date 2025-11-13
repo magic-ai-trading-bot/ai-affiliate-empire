@@ -7,13 +7,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { VideoComposerService } from '@/modules/video/services/video-composer.service';
+import { FFmpegService } from '@/modules/video/services/ffmpeg.service';
+import { FileStorageService } from '@/modules/video/services/file-storage.service';
+import { ProgressTrackerService } from '@/modules/video/services/progress-tracker.service';
+import { ThumbnailGeneratorService } from '@/modules/video/services/thumbnail-generator.service';
 
 describe('VideoComposerService', () => {
   let service: VideoComposerService;
   let configService: ConfigService;
 
-  const mockConfig: Record<string, string> = {
+  const mockConfig: Record<string, any> = {
     STORAGE_DIR: '/tmp/test-videos',
+    STORAGE_MAX_PARALLEL: 5,
   };
 
   beforeEach(async () => {
@@ -25,7 +30,37 @@ describe('VideoComposerService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string) => mockConfig[key]),
+            get: jest.fn((key: string, defaultValue?: any) => mockConfig[key] ?? defaultValue),
+          },
+        },
+        {
+          provide: FFmpegService,
+          useValue: {
+            compose: jest.fn(),
+            generateThumbnail: jest.fn(),
+            addCaptions: jest.fn(),
+          },
+        },
+        {
+          provide: FileStorageService,
+          useValue: {
+            upload: jest.fn(),
+            download: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+        {
+          provide: ProgressTrackerService,
+          useValue: {
+            track: jest.fn(),
+            update: jest.fn(),
+            complete: jest.fn(),
+          },
+        },
+        {
+          provide: ThumbnailGeneratorService,
+          useValue: {
+            generate: jest.fn(),
           },
         },
       ],
@@ -228,10 +263,7 @@ describe('VideoComposerService', () => {
     });
 
     it('should add captions with empty script', async () => {
-      const result = await service.addCaptions(
-        'https://example.com/video.mp4',
-        '',
-      );
+      const result = await service.addCaptions('https://example.com/video.mp4', '');
 
       expect(result).toBe('https://example.com/video.mp4');
     });
@@ -239,19 +271,13 @@ describe('VideoComposerService', () => {
     it('should add captions with long script', async () => {
       const longScript = 'This is a very long script. '.repeat(100);
 
-      const result = await service.addCaptions(
-        'https://example.com/video.mp4',
-        longScript,
-      );
+      const result = await service.addCaptions('https://example.com/video.mp4', longScript);
 
       expect(result).toBe('https://example.com/video.mp4');
     });
 
     it('should add captions for local video path', async () => {
-      const result = await service.addCaptions(
-        '/tmp/video.mp4',
-        'Test script',
-      );
+      const result = await service.addCaptions('/tmp/video.mp4', 'Test script');
 
       expect(result).toBe('/tmp/video.mp4');
     });
@@ -268,10 +294,7 @@ describe('VideoComposerService', () => {
     it('should log caption addition', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      await service.addCaptions(
-        'https://example.com/video.mp4',
-        'Test script',
-      );
+      await service.addCaptions('https://example.com/video.mp4', 'Test script');
 
       expect(consoleSpy).toHaveBeenCalledWith('📝 Adding captions to video...');
 
@@ -281,19 +304,13 @@ describe('VideoComposerService', () => {
 
   describe.skip('addCTA', () => {
     it('should add CTA overlay to video', async () => {
-      const result = await service.addCTA(
-        'https://example.com/video.mp4',
-        'Click link in bio!',
-      );
+      const result = await service.addCTA('https://example.com/video.mp4', 'Click link in bio!');
 
       expect(result).toBe('https://example.com/video.mp4');
     });
 
     it('should add CTA with empty text', async () => {
-      const result = await service.addCTA(
-        'https://example.com/video.mp4',
-        '',
-      );
+      const result = await service.addCTA('https://example.com/video.mp4', '');
 
       expect(result).toBe('https://example.com/video.mp4');
     });
@@ -301,19 +318,13 @@ describe('VideoComposerService', () => {
     it('should add CTA with long text', async () => {
       const longCTA = 'This is a very long CTA message that should still work properly';
 
-      const result = await service.addCTA(
-        'https://example.com/video.mp4',
-        longCTA,
-      );
+      const result = await service.addCTA('https://example.com/video.mp4', longCTA);
 
       expect(result).toBe('https://example.com/video.mp4');
     });
 
     it('should add CTA for local video path', async () => {
-      const result = await service.addCTA(
-        '/tmp/video.mp4',
-        'Shop now!',
-      );
+      const result = await service.addCTA('/tmp/video.mp4', 'Shop now!');
 
       expect(result).toBe('/tmp/video.mp4');
     });
@@ -339,10 +350,7 @@ describe('VideoComposerService', () => {
     it('should log CTA addition', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      await service.addCTA(
-        'https://example.com/video.mp4',
-        'Click link in bio!',
-      );
+      await service.addCTA('https://example.com/video.mp4', 'Click link in bio!');
 
       expect(consoleSpy).toHaveBeenCalledWith('🔗 Adding CTA overlay...');
 

@@ -80,7 +80,9 @@ describe('PikaLabsService', () => {
           {
             provide: ConfigService,
             useValue: {
-              get: jest.fn((key: string) => key === 'PIKALABS_MOCK_MODE' ? 'true' : mockConfig[key]),
+              get: jest.fn((key: string) =>
+                key === 'PIKALABS_MOCK_MODE' ? 'true' : mockConfig[key],
+              ),
             },
           },
           {
@@ -105,7 +107,9 @@ describe('PikaLabsService', () => {
 
       await service.onModuleInit();
 
-      expect(consoleSpy).toHaveBeenCalledWith('⚠️  Pika Labs API key not found, running in MOCK MODE');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '⚠️  Pika Labs API key not found, running in MOCK MODE',
+      );
       consoleSpy.mockRestore();
     });
 
@@ -147,7 +151,8 @@ describe('PikaLabsService', () => {
         data: { id: generationId },
       });
 
-      mockedAxios.get = jest.fn()
+      mockedAxios.get = jest
+        .fn()
         .mockResolvedValueOnce({
           data: { status: 'processing' },
         })
@@ -156,7 +161,8 @@ describe('PikaLabsService', () => {
         });
 
       const mockVideoData = Buffer.from('mock-video-data');
-      mockedAxios.get = jest.fn()
+      mockedAxios.get = jest
+        .fn()
         .mockResolvedValueOnce({
           data: { status: 'processing' },
         })
@@ -204,7 +210,8 @@ describe('PikaLabsService', () => {
       });
 
       const mockVideoData = Buffer.from('mock-video-data');
-      mockedAxios.get = jest.fn()
+      mockedAxios.get = jest
+        .fn()
         .mockResolvedValueOnce({
           data: { status: 'completed', videoUrl },
         })
@@ -255,7 +262,9 @@ describe('PikaLabsService', () => {
         duration: 3,
       });
 
-      expect(result).toBe('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
+      expect(result).toBe(
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      );
       expect(mockedAxios.post).not.toHaveBeenCalled();
     });
 
@@ -269,7 +278,8 @@ describe('PikaLabsService', () => {
 
       // Mock polling: pending -> processing -> completed
       const mockVideoData = Buffer.from('mock-video-data');
-      mockedAxios.get = jest.fn()
+      mockedAxios.get = jest
+        .fn()
         .mockResolvedValueOnce({
           data: { status: 'pending' },
         })
@@ -283,13 +293,25 @@ describe('PikaLabsService', () => {
           data: mockVideoData,
         });
 
-      await service.generateVideo({
+      jest.useFakeTimers();
+
+      const promise = service.generateVideo({
         prompt: 'Test video',
         duration: 3,
       });
 
+      // Advance timers for polling
+      await jest.advanceTimersByTimeAsync(10000);
+      await jest.advanceTimersByTimeAsync(10000);
+      await jest.advanceTimersByTimeAsync(10000);
+
+      const result = await promise;
+
       // Should have called status endpoint 3 times + download once
       expect(mockedAxios.get).toHaveBeenCalledTimes(4);
+      expect(result).toContain('/tmp/test-videos/video-');
+
+      jest.useRealTimers();
     });
 
     it('should handle generation failure', async () => {
@@ -402,7 +424,8 @@ describe('PikaLabsService', () => {
       });
 
       const mockVideoData = Buffer.from('mock-video-data');
-      mockedAxios.get = jest.fn()
+      mockedAxios.get = jest
+        .fn()
         .mockResolvedValueOnce({
           data: { status: 'completed', videoUrl },
         })
@@ -430,7 +453,8 @@ describe('PikaLabsService', () => {
       });
 
       const mockVideoData = Buffer.from('mock-video-data');
-      mockedAxios.get = jest.fn()
+      mockedAxios.get = jest
+        .fn()
         .mockRejectedValueOnce({
           response: { status: 404 },
         })
@@ -468,7 +492,8 @@ describe('PikaLabsService', () => {
       });
 
       const mockVideoData = Buffer.from('mock-video-data');
-      mockedAxios.get = jest.fn()
+      mockedAxios.get = jest
+        .fn()
         .mockResolvedValueOnce({
           data: { status: 'completed', videoUrl },
         })
@@ -499,7 +524,8 @@ describe('PikaLabsService', () => {
       });
 
       const mockVideoData = Buffer.from('mock-video-data');
-      mockedAxios.get = jest.fn()
+      mockedAxios.get = jest
+        .fn()
         .mockResolvedValueOnce({
           data: { status: 'completed', videoUrl },
         })
@@ -507,7 +533,8 @@ describe('PikaLabsService', () => {
           data: mockVideoData,
         });
 
-      const complexPrompt = 'A futuristic city with flying cars, neon lights, and holographic advertisements, cinematic lighting, 4K quality';
+      const complexPrompt =
+        'A futuristic city with flying cars, neon lights, and holographic advertisements, cinematic lighting, 4K quality';
 
       await service.generateVideo({
         prompt: complexPrompt,
@@ -537,7 +564,9 @@ describe('PikaLabsService', () => {
           {
             provide: ConfigService,
             useValue: {
-              get: jest.fn((key: string) => key === 'PIKALABS_MOCK_MODE' ? 'true' : mockConfig[key]),
+              get: jest.fn((key: string) =>
+                key === 'PIKALABS_MOCK_MODE' ? 'true' : mockConfig[key],
+              ),
             },
           },
           {
