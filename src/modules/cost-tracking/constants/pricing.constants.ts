@@ -27,26 +27,8 @@ export const PRICING = {
       output: 0.0006 / 1000,
     },
   },
-  CLAUDE: {
-    'claude-3.5-sonnet': {
-      input: 0.003 / 1000,
-      output: 0.015 / 1000,
-    },
-    'claude-3-opus': {
-      input: 0.015 / 1000,
-      output: 0.075 / 1000,
-    },
-    'claude-3-sonnet': {
-      input: 0.003 / 1000,
-      output: 0.015 / 1000,
-    },
-    'claude-3-haiku': {
-      input: 0.00025 / 1000,
-      output: 0.00125 / 1000,
-    },
-  },
   ELEVENLABS: {
-    characterCost: 0.30 / 1000, // $0.30 per 1K characters
+    characterCost: 0.3 / 1000, // $0.30 per 1K characters
     // Pro subscription: $99/month for 500K characters
     subscriptionMonthly: 99,
     subscriptionCharacters: 500000,
@@ -81,7 +63,7 @@ export const PRICING = {
     // PostgreSQL storage
     storage: 0.115 / (1024 * 1024 * 1024), // $0.115 per GB/month
     // Compute time (if applicable)
-    computeHour: 0.10, // $0.10 per hour
+    computeHour: 0.1, // $0.10 per hour
   },
 } as const;
 
@@ -105,7 +87,7 @@ export const CONTENT_COST_ESTIMATES = {
       service: 'OPENAI',
       model: 'gpt-4-turbo',
       estimatedTokens: 1500, // input + output
-      estimatedCost: 0.10,
+      estimatedCost: 0.1,
     },
     voice: {
       service: 'ELEVENLABS',
@@ -126,12 +108,12 @@ export const CONTENT_COST_ESTIMATES = {
   },
   BLOG_POST: {
     content: {
-      service: 'CLAUDE',
-      model: 'claude-3.5-sonnet',
+      service: 'OPENAI',
+      model: 'gpt-4-turbo',
       estimatedTokens: 3000,
-      estimatedCost: 0.05,
+      estimatedCost: 0.12,
     },
-    total: 0.05,
+    total: 0.12,
   },
 } as const;
 
@@ -161,7 +143,6 @@ export const ALERT_MESSAGES = {
  */
 export const PROVIDER_NAMES = {
   openai: 'OpenAI',
-  anthropic: 'Anthropic (Claude)',
   elevenlabs: 'ElevenLabs',
   pika: 'Pika Labs',
   dalle: 'DALL-E',
@@ -177,7 +158,6 @@ export const PROVIDER_NAMES = {
  */
 export const SERVICE_NAMES = {
   OPENAI: 'OpenAI',
-  CLAUDE: 'Claude',
   ELEVENLABS: 'ElevenLabs',
   PIKA: 'Pika Labs',
   DALLE: 'DALL-E',

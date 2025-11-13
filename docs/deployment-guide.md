@@ -211,7 +211,6 @@ flyctl postgres attach \
 # 7. Configure secrets (see Environment Configuration section)
 flyctl secrets set -a ai-affiliate-empire-staging \
   OPENAI_API_KEY=sk-... \
-  ANTHROPIC_API_KEY=sk-... \
   # ... other secrets
 
 # 8. Deploy
@@ -400,7 +399,6 @@ SECRET_NAME_PREFIX=ai-affiliate-empire
 ```bash
 # AI Services
 OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
 
 # Content Generation
 ELEVENLABS_API_KEY=...
@@ -495,7 +493,6 @@ npm run start:prod
 # Set secrets
 flyctl secrets set -a ai-affiliate-empire \
   OPENAI_API_KEY=sk-... \
-  ANTHROPIC_API_KEY=sk-...
 
 # List secrets (values hidden)
 flyctl secrets list -a ai-affiliate-empire

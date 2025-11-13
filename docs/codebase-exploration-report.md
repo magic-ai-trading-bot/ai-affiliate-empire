@@ -415,7 +415,6 @@ Key Dependencies:
 ├── @temporalio/client@1.13.1
 ├── @temporalio/worker@1.13.1
 ├── openai@6.7.0
-├── @anthropic-ai/sdk@0.68.0
 ├── axios@1.13.1
 ├── winston@3.18.3
 ├── @aws-sdk/client-secrets-manager@3.920.0

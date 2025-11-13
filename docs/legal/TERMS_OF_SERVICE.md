@@ -143,7 +143,6 @@ You may NOT:
 - No refunds for partial months
 
 **Usage-Based Costs:**
-- AI API costs (OpenAI, Anthropic, etc.)
 - Video generation costs (Pika Labs)
 - Voice synthesis costs (ElevenLabs)
 - Image generation costs (DALL-E 3)
@@ -209,7 +208,6 @@ You may NOT:
 
 **Generated Content:**
 - AI-generated content is owned by you
-- Subject to AI provider terms (OpenAI, Anthropic, etc.)
 - You are responsible for content rights clearance
 - We don't guarantee content is copyright-free
 

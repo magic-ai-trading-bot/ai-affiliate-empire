@@ -154,7 +154,6 @@ flyctl secrets set PORT="3000" --app ai-affiliate-empire
 ### AI Service API Keys
 ```bash
 flyctl secrets set OPENAI_API_KEY="sk-..." --app ai-affiliate-empire
-flyctl secrets set ANTHROPIC_API_KEY="sk-ant-..." --app ai-affiliate-empire
 flyctl secrets set ELEVENLABS_API_KEY="..." --app ai-affiliate-empire
 ```
 

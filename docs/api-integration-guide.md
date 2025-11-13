@@ -29,7 +29,6 @@ Each API can operate in mock mode for development without API keys:
 ```bash
 # Enable mock mode in .env
 OPENAI_MOCK_MODE=true
-ANTHROPIC_MOCK_MODE=true
 ELEVENLABS_MOCK_MODE=true
 PIKALABS_MOCK_MODE=true
 AMAZON_MOCK_MODE=true
@@ -39,9 +38,9 @@ AMAZON_MOCK_MODE=true
 
 ## Required APIs
 
-### 1. OpenAI (GPT-4)
+### 1. OpenAI (GPT-4o)
 
-**Purpose**: Video script generation
+**Purpose**: Video script and blog post generation
 
 **Getting API Key**:
 1. Go to https://platform.openai.com/
@@ -53,15 +52,16 @@ AMAZON_MOCK_MODE=true
 **Configuration**:
 ```bash
 OPENAI_API_KEY=sk-proj-your-key-here
-OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MODEL=gpt-4o
 OPENAI_MOCK_MODE=false
 ```
 
 **Cost Estimate**:
-- Model: GPT-4 Turbo
-- Usage: ~50 scripts/day
-- Cost per script: $0.02
-- Monthly cost: ~$30
+- Model: GPT-4o
+- Usage: ~50 scripts/day + ~10 blogs/day
+- Cost per script: $0.01
+- Cost per blog: $0.02
+- Monthly cost: ~$25
 
 **Rate Limits**:
 - Tier 1: 500 RPM, 30,000 TPM
@@ -79,47 +79,6 @@ curl https://api.openai.com/v1/usage \
 ```
 
 ---
-
-### 2. Anthropic Claude
-
-**Purpose**: Blog post generation
-
-**Getting API Key**:
-1. Go to https://console.anthropic.com/
-2. Create account
-3. Navigate to API Keys
-4. Generate new key (starts with `sk-ant-...`)
-
-**Configuration**:
-```bash
-ANTHROPIC_API_KEY=sk-ant-your-key-here
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-ANTHROPIC_MOCK_MODE=false
-```
-
-**Cost Estimate**:
-- Model: Claude 3.5 Sonnet
-- Usage: ~10 blogs/day
-- Cost per blog: $0.05
-- Monthly cost: ~$15
-
-**Rate Limits**:
-- Tier 1: 50 requests/minute
-- Tier 2: 1,000 requests/minute
-
-**Troubleshooting**:
-```bash
-# Test API key
-curl https://api.anthropic.com/v1/messages \
-  -H "x-api-key: $ANTHROPIC_API_KEY" \
-  -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  -d '{
-    "model": "claude-3-5-sonnet-20241022",
-    "max_tokens": 100,
-    "messages": [{"role": "user", "content": "Hello"}]
-  }'
-```
 
 ---
 
@@ -359,28 +318,25 @@ curl "https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange
 ## Cost Estimates
 
 ### Minimal Setup (Development)
-- OpenAI: $30/month
-- Anthropic: $15/month
-- **Total**: $45/month
+- OpenAI: $25/month
+- **Total**: $25/month
 - All other APIs in mock mode
 
 ### Full Production Setup
-- OpenAI: $30/month
-- Anthropic: $15/month
+- OpenAI: $25/month
 - ElevenLabs: $28/month
 - Pika Labs: $28/month
 - YouTube: Free
 - TikTok: Free
 - Instagram: Free
 - Amazon PA-API: Free
-- **Total**: ~$100/month
+- **Total**: ~$81/month
 
 ### At Scale (50+ videos/day)
-- OpenAI: $50/month
-- Anthropic: $25/month
+- OpenAI: $40/month
 - ElevenLabs: $50/month
 - Pika Labs: $28/month (within limit)
-- **Total**: ~$153/month
+- **Total**: ~$118/month
 
 ---
 
@@ -433,7 +389,6 @@ Mock mode allows development without API costs:
 ```bash
 # .env
 OPENAI_MOCK_MODE=true
-ANTHROPIC_MOCK_MODE=true
 ELEVENLABS_MOCK_MODE=true
 PIKALABS_MOCK_MODE=true
 AMAZON_MOCK_MODE=true
@@ -450,7 +405,6 @@ AMAZON_MOCK_MODE=true
 ```bash
 # Test one API at a time
 OPENAI_MOCK_MODE=false  # Real API
-ANTHROPIC_MOCK_MODE=true  # Mock
 
 # Monitor costs in provider dashboard
 ```
@@ -473,7 +427,6 @@ ANTHROPIC_MOCK_MODE=true  # Mock
 ## Support Resources
 
 - **OpenAI**: https://help.openai.com/
-- **Anthropic**: https://support.anthropic.com/
 - **ElevenLabs**: https://help.elevenlabs.io/
 - **Pika Labs**: support@pika.art
 - **Amazon PA-API**: https://webservices.amazon.com/paapi5/documentation/

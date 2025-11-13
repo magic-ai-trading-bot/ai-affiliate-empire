@@ -232,7 +232,6 @@ export const validationSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
   DATABASE_URL: Joi.string().required(),
   OPENAI_API_KEY: Joi.string().required(),
-  ANTHROPIC_API_KEY: Joi.string().required(),
   JWT_SECRET: Joi.string().min(32).required(),
   ENCRYPTION_KEY: Joi.string().min(32).required(),
   // ... all required env vars

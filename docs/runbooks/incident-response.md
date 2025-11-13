@@ -288,10 +288,8 @@ flyctl secrets list --app ai-affiliate-empire
 
 # Check API service status
 curl https://api.openai.com/v1/models  # OpenAI
-curl https://api.anthropic.com/v1/messages  # Claude
 
 # Check error patterns
-flyctl logs --app ai-affiliate-empire | grep -i "generation\|openai\|anthropic"
 
 # If API issue, enable fallback
 flyctl secrets set ENABLE_MOCK_MODE=true --app ai-affiliate-empire
@@ -602,7 +600,6 @@ Post-Mortem: [Will be published within X days]
 
 ### Vendor Support (for P0/P1)
 - **OpenAI**: https://platform.openai.com/support
-- **Anthropic**: support@anthropic.com
 - **ElevenLabs**: support@elevenlabs.io
 - **Pika Labs**: support@pika.art
 

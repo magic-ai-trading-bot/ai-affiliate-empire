@@ -114,7 +114,6 @@ This checklist must be completed before deploying to staging or production. Each
   - [ ] `DATABASE_URL` - PostgreSQL connection string
   - [ ] `NODE_ENV` - Set to "staging" or "production"
   - [ ] `OPENAI_API_KEY` - OpenAI API key
-  - [ ] `ANTHROPIC_API_KEY` - Claude API key
   - [ ] Platform credentials (YouTube, TikTok, Instagram)
   - [ ] AWS Secrets Manager credentials (production only)
 
@@ -168,7 +167,6 @@ This checklist must be completed before deploying to staging or production. Each
 
   # API Keys
   OPENAI_API_KEY=sk-...
-  ANTHROPIC_API_KEY=sk-ant-...
 
   # Platform Credentials
   YOUTUBE_CLIENT_ID=...

@@ -2,9 +2,7 @@ import * as Joi from 'joi';
 
 export const validationSchema = Joi.object({
   // Environment
-  NODE_ENV: Joi.string()
-    .valid('development', 'production', 'test')
-    .default('development'),
+  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
   PORT: Joi.number().default(3000),
 
   // Database
@@ -18,10 +16,6 @@ export const validationSchema = Joi.object({
   // OpenAI
   OPENAI_API_KEY: Joi.string().required(),
   OPENAI_MODEL: Joi.string().default('gpt-4-turbo-preview'),
-
-  // Anthropic Claude
-  ANTHROPIC_API_KEY: Joi.string().required(),
-  ANTHROPIC_MODEL: Joi.string().default('claude-3-5-sonnet-20241022'),
 
   // ElevenLabs
   ELEVENLABS_API_KEY: Joi.string().required(),
@@ -62,9 +56,7 @@ export const validationSchema = Joi.object({
   TEMPORAL_NAMESPACE: Joi.string().default('default'),
 
   // Logging
-  LOG_LEVEL: Joi.string()
-    .valid('error', 'warn', 'info', 'debug', 'verbose')
-    .default('info'),
+  LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'debug', 'verbose').default('info'),
 
   // Security
   JWT_SECRET: Joi.string().min(32).required(),

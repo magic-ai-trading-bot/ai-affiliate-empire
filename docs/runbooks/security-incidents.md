@@ -142,7 +142,6 @@ Incident response procedures for security events in AI Affiliate Empire. All sec
    # Rotate API keys
    flyctl secrets set \
      OPENAI_API_KEY=new-key \
-     ANTHROPIC_API_KEY=new-key \
      DATABASE_URL=new-url \
      --app ai-affiliate-empire
 
@@ -205,7 +204,6 @@ Incident response procedures for security events in AI Affiliate Empire. All sec
    ```bash
    # Revoke on provider side immediately
    # OpenAI: https://platform.openai.com/api-keys
-   # Anthropic: https://console.anthropic.com/settings/keys
    # Others: respective dashboards
 
    # Generate new key
@@ -217,7 +215,6 @@ Incident response procedures for security events in AI Affiliate Empire. All sec
    ```bash
    # Check billing for unauthorized charges
    # OpenAI: https://platform.openai.com/usage
-   # Anthropic: https://console.anthropic.com/billing
 
    # Document unauthorized usage
    # Prepare for potential dispute

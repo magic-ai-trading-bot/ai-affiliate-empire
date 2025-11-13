@@ -85,7 +85,6 @@ PostgreSQL (products, content, metrics) ←────────────�
 
 **Variable** ($235/month for 1500 pieces):
 - OpenAI: $150
-- Anthropic: $25
 - DALL-E 3: $60
 
 **Total**: $412/month operating costs

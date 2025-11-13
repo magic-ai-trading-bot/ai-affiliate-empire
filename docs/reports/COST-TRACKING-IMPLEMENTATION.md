@@ -431,7 +431,6 @@ export default function CostDashboard() {
 ### Validation Checklist
 
 1. **OpenAI Costs**: Compare `CostEntry` totals vs OpenAI usage dashboard
-2. **Claude Costs**: Compare against Anthropic console
 3. **ElevenLabs**: Verify character count matches subscription usage
 4. **Pika Labs**: Confirm video counts align with subscription tier
 

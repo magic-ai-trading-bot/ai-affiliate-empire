@@ -93,11 +93,9 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/affiliate_empire"
 
 # Required APIs
 OPENAI_API_KEY="sk-..."
-ANTHROPIC_API_KEY="sk-ant-..."
 
 # Optional (use mock mode in development)
 OPENAI_MOCK_MODE=true
-ANTHROPIC_MOCK_MODE=true
 ELEVENLABS_MOCK_MODE=true
 PIKALABS_MOCK_MODE=true
 AMAZON_MOCK_MODE=true

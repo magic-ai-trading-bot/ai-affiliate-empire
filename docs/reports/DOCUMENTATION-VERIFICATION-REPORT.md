@@ -475,7 +475,6 @@ Phase 8: Launch & Scale
 ### AI Services (9/10)
 
 - ✅ OpenAI: GPT-4 Turbo (NOT GPT-4 Turbo as documented)
-- ✅ Anthropic: Claude 3.5 Sonnet
 - ✅ ElevenLabs: Voice synthesis
 - ✅ Pika Labs: Video generation
 - ✅ DALL-E 3: Thumbnail generation (planned)

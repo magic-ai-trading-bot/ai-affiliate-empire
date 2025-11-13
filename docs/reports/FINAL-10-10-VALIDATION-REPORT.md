@@ -316,7 +316,6 @@ AUTO-SCALING:
 ```
 EXTERNAL API TESTING:
 - OpenAI GPT-4: Untested with real keys
-- Anthropic Claude: Untested with real keys
 - Amazon PA-API: Untested with real credentials
 - ElevenLabs: Untested with real API key
 - Pika Labs: Untested with real API key
@@ -532,7 +531,6 @@ END-TO-END FLOWS:
 
 - [ ] **Integration** ⚡
   - [ ] OpenAI tested with real API key
-  - [ ] Anthropic Claude tested with real API key
   - [ ] Amazon PA-API tested with real credentials
   - [ ] ElevenLabs tested with real API key
   - [ ] Pika Labs tested with real API key

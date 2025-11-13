@@ -667,7 +667,6 @@ fly logs --app ai-affiliate-empire | grep -i alert
 **8. Need DPA for EU Users?**
 - Current: Documentation ready, not signed
 - Question: Which processors require DPAs?
-- Recommendations: OpenAI, Anthropic, Pika, ElevenLabs, AWS, Fly.io
 - Decision Needed: Before EU users
 
 **9. COPPA Compliance Required?**
@@ -748,7 +747,6 @@ fly logs --app ai-affiliate-empire | grep -i alert
 # Required secrets in GitHub Actions
 gh secret set DATABASE_URL
 gh secret set OPENAI_API_KEY
-gh secret set ANTHROPIC_API_KEY
 gh secret set AWS_ACCESS_KEY_ID
 gh secret set AWS_SECRET_ACCESS_KEY
 gh secret set SENTRY_DSN

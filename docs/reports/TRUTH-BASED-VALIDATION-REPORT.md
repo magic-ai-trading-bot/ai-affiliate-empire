@@ -258,12 +258,10 @@ TOTAL            | ✅ PASS | 200max | 125,482   | 0      | 175ms avg
 **Evidence Found**:
 ```
 ✅ Dependencies installed:
-  "@anthropic-ai/sdk": "^0.68.0"
   "openai": "^6.7.0"
   "paapi5-nodejs-sdk": "^1.1.0" (Amazon)
 
 ✅ Service files exist:
-  /src/modules/content/services/claude.service.ts
   /src/modules/content/services/openai.service.ts
   /src/modules/product/services/amazon.service.ts
   /src/modules/publisher/services/youtube.service.ts

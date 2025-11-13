@@ -215,12 +215,12 @@ describe('MetricsService', () => {
 
     it('should increment API cost gauge', async () => {
       service.setApiCost(10, {
-        service: 'anthropic',
-        operation: 'claude-api',
+        service: 'openai',
+        operation: 'gpt-api',
       });
       service.incrementApiCost(5, {
-        service: 'anthropic',
-        operation: 'claude-api',
+        service: 'openai',
+        operation: 'gpt-api',
       });
 
       const metrics = await service.getMetricsAsJSON();
@@ -229,8 +229,8 @@ describe('MetricsService', () => {
       expect(costMetric.values).toContainEqual(
         expect.objectContaining({
           labels: expect.objectContaining({
-            service: 'anthropic',
-            operation: 'claude-api',
+            service: 'openai',
+            operation: 'gpt-api',
           }),
           value: 15,
         }),

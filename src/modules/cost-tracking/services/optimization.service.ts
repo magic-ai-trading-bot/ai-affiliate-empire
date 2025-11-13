@@ -44,10 +44,7 @@ export class OptimizationService {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     // Group costs by service and calculate totals
-    const serviceCosts = await this.aggregator.getServiceBreakdown(
-      thirtyDaysAgo,
-      new Date(),
-    );
+    const serviceCosts = await this.aggregator.getServiceBreakdown(thirtyDaysAgo, new Date());
 
     const recommendations = [];
 
@@ -90,22 +87,6 @@ export class OptimizationService {
         savingsPercent: 50,
         recommendation: 'Use GPT-4-Turbo for most tasks, GPT-3.5-Turbo for simple completions',
         implementation: 'Update model selection logic in script generation service',
-      });
-    }
-
-    // Check Claude usage
-    const claudeCost = await this.getServiceCost(CostService.CLAUDE, 30);
-    if (claudeCost > 50) {
-      recommendations.push({
-        type: OptimizationType.MODEL_SELECTION,
-        priority: Priority.MEDIUM,
-        title: 'Optimize Claude model usage',
-        description: `High Claude costs ($${claudeCost.toFixed(2)}/month). Consider using Claude Haiku for simpler tasks.`,
-        currentCost: claudeCost,
-        estimatedSavings: claudeCost * 0.4,
-        savingsPercent: 40,
-        recommendation: 'Use Claude Haiku for blog outlines, Claude Sonnet for full posts',
-        implementation: 'Add model selection logic based on task complexity',
       });
     }
 

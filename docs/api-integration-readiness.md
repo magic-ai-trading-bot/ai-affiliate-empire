@@ -10,21 +10,22 @@ Comprehensive analysis of all API integrations required for production deploymen
 
 ## Required API Integrations
 
-### 1. OpenAI API (Script Generation)
+### 1. OpenAI API (Script & Blog Generation)
 
 **Status:** ✅ READY with Mock Fallback
 
 **Configuration:**
 ```env
 OPENAI_API_KEY=sk-proj-...
-OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MODEL=gpt-4o
 OPENAI_MOCK_MODE=false # Set to 'true' for development
 ```
 
 **Purpose:**
 - Generate video scripts for product reviews
+- Generate SEO-optimized blog posts
 - Create content variations
-- AI-powered script optimization
+- AI-powered content optimization
 
 **Mock Mode:** ✅ Available
 - Enables development without API key
@@ -32,39 +33,12 @@ OPENAI_MOCK_MODE=false # Set to 'true' for development
 - Full workflow testable without costs
 
 **Production Requirements:**
-- Valid OpenAI API key with GPT-4 access
+- Valid OpenAI API key with GPT-4o access
 - Billing enabled on OpenAI account
 - Rate limits: Check org limits before production
-- Estimated cost: ~$0.03 per script generation
+- Estimated cost: ~$0.01 per script, ~$0.02 per blog post
 
 ---
-
-### 2. Anthropic Claude API (Blog Post Generation)
-
-**Status:** ✅ READY with Mock Fallback
-
-**Configuration:**
-```env
-ANTHROPIC_API_KEY=sk-ant-...
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-ANTHROPIC_MOCK_MODE=false
-```
-
-**Purpose:**
-- Generate SEO-optimized blog posts
-- Long-form content creation
-- Product comparison articles
-
-**Mock Mode:** ✅ Available
-- Sample blog post data
-- Full content pipeline testable
-- Development without API costs
-
-**Production Requirements:**
-- Valid Anthropic API key
-- Claude 3.5 Sonnet access
-- Rate limits: Check account tier
-- Estimated cost: ~$0.015 per 1K tokens
 
 ---
 
@@ -410,30 +384,29 @@ ENCRYPTION_KEY=your-32-character-encryption-key-here
 ## Production Readiness Summary
 
 ### ✅ READY (Mock Mode Available)
-1. OpenAI API (Script Generation)
-2. Anthropic Claude API (Blog Posts)
-3. ElevenLabs API (Voice)
-4. Pika Labs API (Video)
-5. DALL-E 3 API (Thumbnails)
-6. Amazon PAAPI (Products)
+1. OpenAI API (Script & Blog Generation)
+2. ElevenLabs API (Voice)
+3. Pika Labs API (Video)
+4. DALL-E 3 API (Thumbnails)
+5. Amazon PAAPI (Products)
 
 ### ⚠️ NEEDS CREDENTIALS
-7. ShareASale API
-8. CJ Affiliate API
-9. YouTube Data API
-10. TikTok API
-11. Instagram Graph API
-12. Facebook Graph API
-13. Cloudflare R2 Storage
+6. ShareASale API
+7. CJ Affiliate API
+8. YouTube Data API
+9. TikTok API
+10. Instagram Graph API
+11. Facebook Graph API
+12. Cloudflare R2 Storage
 
 ### ✅ READY (Self-hosted)
-14. Temporal Orchestration
-15. Database (PostgreSQL)
-16. Cache (Redis)
+13. Temporal Orchestration
+14. Database (PostgreSQL)
+15. Cache (Redis)
 
 ### ⚠️ NEEDS PRODUCTION SECRETS
-17. JWT secrets
-18. Encryption keys
+16. JWT secrets
+17. Encryption keys
 
 ---
 
@@ -443,7 +416,6 @@ ENCRYPTION_KEY=your-32-character-encryption-key-here
 ```env
 # All mock modes enabled
 OPENAI_MOCK_MODE=true
-ANTHROPIC_MOCK_MODE=true
 ELEVENLABS_MOCK_MODE=true
 PIKALABS_MOCK_MODE=true
 AMAZON_MOCK_MODE=true
@@ -465,7 +437,6 @@ AMAZON_MOCK_MODE=true
 ```env
 # All mock modes disabled, real API keys configured
 OPENAI_MOCK_MODE=false
-ANTHROPIC_MOCK_MODE=false
 ELEVENLABS_MOCK_MODE=false
 PIKALABS_MOCK_MODE=false
 AMAZON_MOCK_MODE=false
@@ -486,8 +457,7 @@ Assuming 30 videos/day, 30 blog posts/day:
 
 | Service | Usage | Estimated Cost |
 |---------|-------|----------------|
-| OpenAI (GPT-4) | 900 scripts + 900 thumbnails | ~$80 |
-| Anthropic Claude | 900 blog posts | ~$100 |
+| OpenAI (GPT-4o) | 900 scripts + 900 blogs + 900 thumbnails | ~$60 |
 | ElevenLabs | 900 voiceovers | ~$100 (Creator plan) |
 | Pika Labs | 900 videos | Variable (check pricing) |
 | Amazon PAAPI | Free (with Associates account) | $0 |
@@ -495,7 +465,7 @@ Assuming 30 videos/day, 30 blog posts/day:
 | YouTube | Free | $0 |
 | TikTok | Free | $0 |
 | Instagram | Free | $0 |
-| **Total** | | **~$288-400/month** |
+| **Total** | | **~$268-380/month** |
 
 **Note:** Actual costs vary based on usage patterns, API pricing changes, and subscription tiers.
 
@@ -507,8 +477,7 @@ Assuming 30 videos/day, 30 blog posts/day:
 
 - [ ] Generate production JWT secrets (32+ characters)
 - [ ] Configure AWS Secrets Manager for production
-- [ ] Obtain OpenAI API key with GPT-4 access
-- [ ] Obtain Anthropic API key
+- [ ] Obtain OpenAI API key with GPT-4o access
 - [ ] Set up Cloudflare R2 bucket and credentials
 - [ ] Configure Temporal Cloud or self-hosted production instance
 - [ ] Set up production database with backups
@@ -567,8 +536,7 @@ Assuming 30 videos/day, 30 blog posts/day:
 ## Mock Mode Implementation Status
 
 **Verified Mock Modes:**
-- ✅ OpenAI (OPENAI_MOCK_MODE)
-- ✅ Anthropic (ANTHROPIC_MOCK_MODE)
+- ✅ OpenAI (OPENAI_MOCK_MODE) - scripts and blogs
 - ✅ ElevenLabs (ELEVENLABS_MOCK_MODE)
 - ✅ Pika Labs (PIKALABS_MOCK_MODE)
 - ✅ Amazon PAAPI (AMAZON_MOCK_MODE)

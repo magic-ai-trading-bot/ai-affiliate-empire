@@ -489,7 +489,6 @@ if (isEUUser) {
 - California Attorney General: https://oag.ca.gov/
 
 **Third-Party Processors:**
-- OpenAI, Anthropic, Pika Labs, ElevenLabs, AWS, Fly.io, Cloudflare
 - DPA contact information in processor agreements
 
 ---

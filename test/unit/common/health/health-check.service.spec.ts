@@ -32,7 +32,6 @@ describe('HealthCheckService', () => {
       const config: Record<string, string> = {
         TEMPORAL_ADDRESS: 'localhost:7233',
         OPENAI_API_KEY: 'test-openai-key',
-        ANTHROPIC_API_KEY: 'test-anthropic-key',
       };
       return config[key];
     }),
@@ -200,42 +199,23 @@ describe('HealthCheckService', () => {
 
   describe('External APIs Health Check', () => {
     it('should return healthy when all APIs are available', async () => {
-      mockedAxios.get
-        .mockResolvedValueOnce({ status: 200, data: {} }) // OpenAI
-        .mockResolvedValueOnce({ status: 200, data: {} }); // Anthropic
+      mockedAxios.get.mockResolvedValueOnce({ status: 200, data: {} }); // OpenAI
 
       const result = await service.checkExternalApis();
 
       expect(result.status).toBe(ComponentStatus.HEALTHY);
       expect(result.message).toBe('All external APIs are available');
       expect(result.details?.openai).toBe(true);
-      expect(result.details?.anthropic).toBe(true);
-    });
-
-    it('should return degraded when some APIs are unavailable', async () => {
-      mockedAxios.get
-        .mockResolvedValueOnce({ status: 200, data: {} }) // OpenAI success
-        .mockRejectedValueOnce(new Error('Timeout')); // Anthropic fail
-
-      const result = await service.checkExternalApis();
-
-      expect(result.status).toBe(ComponentStatus.DEGRADED);
-      expect(result.message).toBe('1/2 external APIs are available');
-      expect(result.details?.openai).toBe(true);
-      expect(result.details?.anthropic).toBe(false);
     });
 
     it('should return unhealthy when all APIs are unavailable', async () => {
-      mockedAxios.get
-        .mockRejectedValueOnce(new Error('Network error')) // OpenAI fail
-        .mockRejectedValueOnce(new Error('Timeout')); // Anthropic fail
+      mockedAxios.get.mockRejectedValueOnce(new Error('Network error')); // OpenAI fail
 
       const result = await service.checkExternalApis();
 
       expect(result.status).toBe(ComponentStatus.UNHEALTHY);
       expect(result.message).toBe('All external APIs are unavailable');
       expect(result.details?.openai).toBe(false);
-      expect(result.details?.anthropic).toBe(false);
     });
 
     it('should check OpenAI API with correct headers', async () => {
@@ -252,29 +232,11 @@ describe('HealthCheckService', () => {
       );
     });
 
-    it('should check Anthropic API with correct headers', async () => {
-      mockedAxios.get.mockResolvedValue({ status: 200, data: {} });
-
-      await service.checkExternalApis();
-
-      expect(mockedAxios.get).toHaveBeenCalledWith(
-        'https://api.anthropic.com/v1/models',
-        expect.objectContaining({
-          headers: {
-            'x-api-key': 'test-anthropic-key',
-            'anthropic-version': '2023-06-01',
-          },
-          timeout: 5000,
-        }),
-      );
-    });
-
     it('should skip APIs with mock keys', async () => {
       const mockConfigWithMockKeys = {
         get: jest.fn((key: string) => {
           const config: Record<string, string> = {
             OPENAI_API_KEY: 'mock',
-            ANTHROPIC_API_KEY: 'mock',
           };
           return config[key];
         }),
@@ -294,24 +256,17 @@ describe('HealthCheckService', () => {
 
       expect(result.status).toBe(ComponentStatus.UNHEALTHY);
       expect(result.details?.openai).toBe(false);
-      expect(result.details?.anthropic).toBe(false);
       expect(mockedAxios.get).not.toHaveBeenCalled();
     });
 
     it('should log warnings for failed API checks', async () => {
-      mockedAxios.get
-        .mockRejectedValueOnce(new Error('OpenAI error'))
-        .mockRejectedValueOnce(new Error('Anthropic error'));
+      mockedAxios.get.mockRejectedValueOnce(new Error('OpenAI error'));
 
       await service.checkExternalApis();
 
       expect(mockLoggerService.warn).toHaveBeenCalledWith(
         'OpenAI API health check failed',
         'OpenAI error',
-      );
-      expect(mockLoggerService.warn).toHaveBeenCalledWith(
-        'Anthropic API health check failed',
-        'Anthropic error',
       );
     });
 
@@ -395,9 +350,7 @@ describe('HealthCheckService', () => {
     });
 
     it('should handle Temporal connection errors gracefully', async () => {
-      (Connection.connect as jest.Mock).mockRejectedValue(
-        new Error('Service unavailable'),
-      );
+      (Connection.connect as jest.Mock).mockRejectedValue(new Error('Service unavailable'));
 
       const result = await service.checkTemporal();
 
@@ -426,10 +379,7 @@ describe('HealthCheckService', () => {
   describe('Response Time Tracking', () => {
     it('should track database response time', async () => {
       mockPrismaService.$queryRaw.mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve([{ '?column?': 1 }]), 50),
-          ),
+        () => new Promise((resolve) => setTimeout(() => resolve([{ '?column?': 1 }]), 50)),
       );
 
       const result = await service.checkDatabase();
@@ -442,9 +392,9 @@ describe('HealthCheckService', () => {
     it('should track Temporal response time', async () => {
       const mockConnection = {
         workflowService: {
-          getSystemInfo: jest.fn().mockImplementation(
-            () => new Promise((resolve) => setTimeout(resolve, 30)),
-          ),
+          getSystemInfo: jest
+            .fn()
+            .mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 30))),
         },
         close: jest.fn(),
       };

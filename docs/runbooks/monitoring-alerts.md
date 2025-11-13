@@ -226,7 +226,6 @@ Response procedures for all monitoring alerts in AI Affiliate Empire. Each alert
 
 2. **Identify Cost Driver** (5 minutes)
    - OpenAI costs high? → Check generation volume
-   - Anthropic costs high? → Check blog post generation
    - ElevenLabs costs high? → Check voice synthesis
    - Pika costs high? → Check video generation
 

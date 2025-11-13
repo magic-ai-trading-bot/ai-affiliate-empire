@@ -32,33 +32,6 @@ export class CostCalculatorService {
   }
 
   /**
-   * Calculate Claude API cost based on tokens and model
-   */
-  calculateClaudeCost(
-    inputTokens: number,
-    outputTokens: number,
-    model: string = 'claude-3.5-sonnet',
-  ): CostCalculation {
-    const pricing = (PRICING.CLAUDE as any)[model] || PRICING.CLAUDE['claude-3.5-sonnet'];
-    const inputCost = inputTokens * pricing.input;
-    const outputCost = outputTokens * pricing.output;
-    const totalCost = inputCost + outputCost;
-
-    return {
-      service: 'CLAUDE',
-      operation: `${model}-completion`,
-      amount: totalCost,
-      details: {
-        inputTokens,
-        outputTokens,
-        tokens: inputTokens + outputTokens,
-        model,
-        provider: 'anthropic',
-      },
-    };
-  }
-
-  /**
    * Calculate ElevenLabs TTS cost based on characters
    */
   calculateElevenLabsCost(characters: number): CostCalculation {

@@ -170,7 +170,6 @@ docs/
   - `BlogSearchService`: Blog content search
 - Tests: 100% for critical AI generation paths
 - Lines of Code: 432 core logic
-- Real API Integration: ✅ OpenAI, Anthropic Claude
 
 **5. Analytics Module**
 - Status: COMPLETE
@@ -479,7 +478,6 @@ Database Layer (PostgreSQL)
 | Service | Provider | Version | Integration |
 |---------|----------|---------|-------------|
 | **Script Generation** | OpenAI (GPT-4/5) | 6.7.0 | ✅ Real API |
-| **Blog Generation** | Anthropic (Claude 3.5) | 0.68.0 | ✅ Real API |
 | **Video Generation** | Pika Labs | Custom SDK | ✅ Real API |
 | **Voice Synthesis** | ElevenLabs | API v1 | ✅ Real API |
 | **Thumbnail Gen** | DALL-E 3 | Via OpenAI | ✅ Real API |
@@ -725,7 +723,6 @@ Files:
 
 Environment Variables: 50+ defined
 ├── Database: DATABASE_URL, DIRECT_DATABASE_URL
-├── APIs: OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
 ├── OAuth: YOUTUBE_CLIENT_ID, TIKTOK_CLIENT_ID, etc.
 ├── Services: SENTRY_DSN, AWS_REGION, etc.
 └── Feature Flags: Various feature toggles

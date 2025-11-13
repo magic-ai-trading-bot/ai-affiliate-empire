@@ -26,7 +26,6 @@ Procedures for monitoring, analyzing, and optimizing operational costs for AI Af
 | Service | Cost/Unit | Monthly Target | Total |
 |---------|-----------|----------------|-------|
 | OpenAI (GPT-4 Turbo) | $0.10/script | 1500 scripts | $150 |
-| Anthropic (Claude) | $0.05/post | 500 posts | $25 |
 | DALL-E 3 | $0.04/image | 1500 images | $60 |
 | **Total Variable** | | | **$235** |
 
@@ -48,7 +47,6 @@ curl https://ai-affiliate-empire.fly.dev/api/analytics/costs/today
 #   "total": 14.25,
 #   "breakdown": {
 #     "openai": 5.20,
-#     "anthropic": 0.85,
 #     "dalle": 2.40,
 #     "elevenlabs": 3.20,
 #     "pika": 0.93,
@@ -88,7 +86,6 @@ curl https://ai-affiliate-empire.fly.dev/api/analytics/costs/month
 
    # Check for anomalies
    # - OpenAI > $5/day → Investigate
-   # - Anthropic > $1/day → Investigate
    # - DALL-E > $2.50/day → Investigate
    ```
 
@@ -174,7 +171,6 @@ curl https://ai-affiliate-empire.fly.dev/api/analytics/costs/month
    # Use GPT-4 Turbo only for final polish
    ```
 
-   **Scenario B: High Anthropic Costs**
    ```bash
    # Check blog post generation
    curl https://ai-affiliate-empire.fly.dev/api/content/blogs/count/today
@@ -292,7 +288,6 @@ curl https://ai-affiliate-empire.fly.dev/api/analytics/costs/month
 
    # Breakdown by service:
    # - OpenAI: calls, tokens, cost
-   # - Anthropic: calls, tokens, cost
    # - DALL-E: images, cost
    # - ElevenLabs: characters, cost
    # - Pika: videos, cost

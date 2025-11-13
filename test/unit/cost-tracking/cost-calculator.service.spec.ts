@@ -106,65 +106,6 @@ describe('CostCalculatorService', () => {
     });
   });
 
-  describe('calculateClaudeCost', () => {
-    it('should calculate cost for Claude 3.5 Sonnet correctly', () => {
-      const result = service.calculateClaudeCost(1000, 500, 'claude-3.5-sonnet');
-
-      const expectedInputCost = 1000 * PRICING.CLAUDE['claude-3.5-sonnet'].input;
-      const expectedOutputCost = 500 * PRICING.CLAUDE['claude-3.5-sonnet'].output;
-      const expectedTotal = expectedInputCost + expectedOutputCost;
-
-      expect(result.service).toBe('CLAUDE');
-      expect(result.operation).toBe('claude-3.5-sonnet-completion');
-      expect(result.amount).toBeCloseTo(expectedTotal, 6);
-      expect(result.details.inputTokens).toBe(1000);
-      expect(result.details.outputTokens).toBe(500);
-    });
-
-    it('should calculate cost for Claude 3 Opus', () => {
-      const result = service.calculateClaudeCost(1000, 500, 'claude-3-opus');
-
-      const expectedInputCost = 1000 * PRICING.CLAUDE['claude-3-opus'].input;
-      const expectedOutputCost = 500 * PRICING.CLAUDE['claude-3-opus'].output;
-      const expectedTotal = expectedInputCost + expectedOutputCost;
-
-      expect(result.amount).toBeCloseTo(expectedTotal, 6);
-    });
-
-    it('should calculate cost for Claude 3 Haiku', () => {
-      const result = service.calculateClaudeCost(1000, 500, 'claude-3-haiku');
-
-      const expectedInputCost = 1000 * PRICING.CLAUDE['claude-3-haiku'].input;
-      const expectedOutputCost = 500 * PRICING.CLAUDE['claude-3-haiku'].output;
-      const expectedTotal = expectedInputCost + expectedOutputCost;
-
-      expect(result.amount).toBeCloseTo(expectedTotal, 6);
-    });
-
-    it('should default to Claude 3.5 Sonnet', () => {
-      const result = service.calculateClaudeCost(1000, 500);
-
-      expect(result.operation).toBe('claude-3.5-sonnet-completion');
-      expect(result.details.model).toBe('claude-3.5-sonnet');
-    });
-
-    it('should fallback to Claude 3.5 Sonnet for unknown model', () => {
-      const result = service.calculateClaudeCost(1000, 500, 'unknown-model');
-
-      const expectedInputCost = 1000 * PRICING.CLAUDE['claude-3.5-sonnet'].input;
-      const expectedOutputCost = 500 * PRICING.CLAUDE['claude-3.5-sonnet'].output;
-      const expectedTotal = expectedInputCost + expectedOutputCost;
-
-      expect(result.amount).toBeCloseTo(expectedTotal, 6);
-    });
-
-    it('should include provider in details', () => {
-      const result = service.calculateClaudeCost(1000, 500);
-
-      expect(result.details.provider).toBe('anthropic');
-    });
-  });
-
   describe('calculateElevenLabsCost', () => {
     it('should calculate cost based on character count', () => {
       const characters = 1000;

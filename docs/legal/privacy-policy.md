@@ -23,7 +23,6 @@ AI Affiliate Empire ("we," "our," or "us") is committed to protecting your priva
 ### Third-Party Data
 - Social media platform analytics (YouTube, TikTok, Instagram)
 - Affiliate network data (Amazon Associates, ShareASale, CJ Affiliate)
-- AI service provider data (OpenAI, Anthropic, ElevenLabs)
 
 ## How We Use Your Information
 
@@ -42,7 +41,6 @@ We may share your information with:
 
 ### Service Providers
 - Cloud hosting providers (Fly.io, AWS)
-- AI content generation services (OpenAI, Anthropic, ElevenLabs, Pika Labs)
 - Social media platforms (YouTube, TikTok, Instagram)
 - Affiliate networks (Amazon Associates, ShareASale, CJ Affiliate)
 - Analytics providers

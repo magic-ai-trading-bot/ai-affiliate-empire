@@ -158,7 +158,6 @@ We share data with the following service providers:
 
 **AI and Content Generation:**
 - OpenAI (GPT-4 Turbo): Video script generation
-- Anthropic (Claude 3.5): Blog post creation
 - ElevenLabs: Voice synthesis
 - DALL-E 3: Thumbnail generation
 - Pika Labs: Video rendering

@@ -79,8 +79,6 @@
 - **Troubleshooting**: [API Setup Guide Troubleshooting](./api-setup-guide.md#troubleshooting)
 
 ### Anthropic Claude
-- **Setup Guide**: [API Setup Guide Section 2](./api-setup-guide.md#2-anthropic-claude---blog-post-generation)
-- **Checklist**: [API Setup Checklist Section 1.2](./api-setup-checklist.md#12-anthropic-claude---blog-generation)
 - **Troubleshooting**: [API Setup Guide Troubleshooting](./api-setup-guide.md#troubleshooting)
 
 ### ElevenLabs

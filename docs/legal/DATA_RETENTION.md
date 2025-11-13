@@ -462,7 +462,6 @@ Monthly 1st Day 04:00 UTC:
 | Fly.io | Infrastructure | Per our policy | Monthly review |
 | Cloudflare | Media files | Per our policy | Automated sync |
 | OpenAI | API requests | 30 days | DPA compliance |
-| Anthropic | API requests | 30 days | DPA compliance |
 
 ### 9.2 Processor Deletion Coordination
 

@@ -40,7 +40,6 @@ export class CostAggregatorService {
     // Calculate totals by service
     const serviceTotals = {
       openaiCost: 0,
-      claudeCost: 0,
       elevenlabsCost: 0,
       pikaCost: 0,
       dalleCost: 0,
@@ -61,9 +60,6 @@ export class CostAggregatorService {
       switch (entry.service) {
         case CostService.OPENAI:
           serviceTotals.openaiCost += cost;
-          break;
-        case CostService.CLAUDE:
-          serviceTotals.claudeCost += cost;
           break;
         case CostService.ELEVENLABS:
           serviceTotals.elevenlabsCost += cost;
@@ -240,10 +236,7 @@ export class CostAggregatorService {
   /**
    * Get cost breakdown by service for a date range
    */
-  async getServiceBreakdown(
-    startDate: Date,
-    endDate: Date,
-  ): Promise<ServiceCostBreakdown[]> {
+  async getServiceBreakdown(startDate: Date, endDate: Date): Promise<ServiceCostBreakdown[]> {
     const entries = await this.prisma.costEntry.findMany({
       where: {
         timestamp: {

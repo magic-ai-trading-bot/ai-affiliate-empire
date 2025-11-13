@@ -321,7 +321,6 @@ Post-production continuous improvement priorities:
 - 14 database models (Prisma)
 
 **External Integrations**:
-- ✅ OpenAI, Anthropic, Amazon, ElevenLabs, Pika Labs
 - ⏳ YouTube, TikTok, Instagram (planned)
 
 **Operating Costs**:

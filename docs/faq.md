@@ -137,7 +137,6 @@ See `/docs/api-integration-guide.md` for setup instructions.
 **Answer**: Yes! Use mock mode:
 ```env
 OPENAI_MOCK_MODE=true
-ANTHROPIC_MOCK_MODE=true
 ELEVENLABS_MOCK_MODE=true
 PIKALABS_MOCK_MODE=true
 AMAZON_MOCK_MODE=true

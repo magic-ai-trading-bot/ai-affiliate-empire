@@ -156,7 +156,6 @@
 
 **Priority 1 - Legal:**
 1. Sign Data Processing Agreements with all processors:
-   - OpenAI, Anthropic, Pika Labs, ElevenLabs
    - AWS, Fly.io, Cloudflare
    - Stripe (payment processing)
 2. Implement Standard Contractual Clauses for US transfers

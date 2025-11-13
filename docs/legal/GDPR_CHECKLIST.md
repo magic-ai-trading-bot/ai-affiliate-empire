@@ -338,7 +338,6 @@ Response: {
 | Processing Activity | Purpose | Legal Basis | Data Categories | Recipients | Retention |
 |--------------------|---------|-------------|-----------------|------------|-----------|
 | User registration | Service provision | Contract | Name, email, payment | Stripe (payment) | Account + 30 days |
-| Content generation | Service provision | Contract | User preferences, API keys | OpenAI, Anthropic, Pika, ElevenLabs | 2 years |
 | Analytics tracking | Service improvement | Legitimate Interest | Usage metrics, performance | Internal only | 2 years |
 | Financial records | Legal compliance | Legal Obligation | Invoices, payments | Tax authorities | 7 years |
 | Security logs | Security & compliance | Legitimate Interest | Access logs, errors | Internal only | 1 year |
@@ -368,7 +367,6 @@ Response: {
 | Recipient | Location | Data Type | Safeguard | Status |
 |-----------|----------|-----------|-----------|--------|
 | OpenAI | USA | API requests | SCC needed | ⚠️ Pending |
-| Anthropic | USA | API requests | SCC needed | ⚠️ Pending |
 | AWS | USA/EU | Credentials | SCC available | ⚠️ Pending |
 | Fly.io | USA/EU | Infrastructure | SCC needed | ⚠️ Pending |
 | Cloudflare | USA/EU | Media files | SCC available | ⚠️ Pending |
@@ -432,7 +430,6 @@ Conduct DPIA for:
 | Processor | Service | DPA Status | Review Date |
 |-----------|---------|------------|-------------|
 | OpenAI | Content generation | ⚠️ Required | Pre-launch |
-| Anthropic | Content generation | ⚠️ Required | Pre-launch |
 | Pika Labs | Video generation | ⚠️ Required | Pre-launch |
 | ElevenLabs | Voice synthesis | ⚠️ Required | Pre-launch |
 | AWS | Secrets management | ⚠️ Required | Pre-launch |

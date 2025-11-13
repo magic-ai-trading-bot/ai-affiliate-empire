@@ -67,7 +67,6 @@ The following secrets are managed by AWS Secrets Manager:
 
 ### AI Services
 - `openai-api-key` - OpenAI API key for GPT models
-- `anthropic-api-key` - Anthropic API key for Claude models
 - `elevenlabs-api-key` - ElevenLabs API key for voice generation
 - `pikalabs-api-key` - Pika Labs API key for video generation
 

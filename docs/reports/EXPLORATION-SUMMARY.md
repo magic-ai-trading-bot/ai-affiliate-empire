@@ -52,7 +52,6 @@ All major APIs are **real, production-grade integrations** (not mocks):
 
 **AI/Content**:
 - ✅ OpenAI (GPT-4/5) for script generation
-- ✅ Anthropic Claude 3.5 for blog posts
 - ✅ Pika Labs for video generation
 - ✅ ElevenLabs for voice synthesis
 - ✅ DALL-E 3 for thumbnails

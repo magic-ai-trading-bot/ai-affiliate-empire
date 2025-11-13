@@ -713,7 +713,6 @@ Authorization: Bearer {access_token}
     "temporal": "connected",
     "external_apis": {
       "openai": "available",
-      "anthropic": "available",
       "pikalabs": "available"
     }
   },

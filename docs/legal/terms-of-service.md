@@ -71,7 +71,6 @@ You agree to:
 
 The Service integrates with third-party platforms:
 - YouTube, TikTok, Instagram (content publishing)
-- OpenAI, Anthropic, ElevenLabs, Pika Labs (AI services)
 - Amazon Associates, ShareASale, CJ Affiliate (affiliate networks)
 
 You must comply with each platform's terms of service. We are not responsible for third-party service interruptions or policy changes.

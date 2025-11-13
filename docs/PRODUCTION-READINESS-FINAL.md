@@ -102,21 +102,20 @@ The AI Affiliate Empire project has achieved significant production readiness ac
 **Status: DEVELOPMENT READY, 60% PRODUCTION READY**
 
 **Ready APIs (with Mock Mode):**
-1. ✅ OpenAI GPT-4 (Script Generation)
-2. ✅ Anthropic Claude (Blog Posts)
-3. ✅ ElevenLabs (Voice Generation)
-4. ✅ Pika Labs (Video Generation)
-5. ✅ DALL-E 3 (Thumbnails)
-6. ✅ Amazon PAAPI (Products)
+1. ✅ OpenAI GPT-4o (Script & Blog Generation)
+2. ✅ ElevenLabs (Voice Generation)
+3. ✅ Pika Labs (Video Generation)
+4. ✅ DALL-E 3 (Thumbnails)
+5. ✅ Amazon PAAPI (Products)
 
 **Needs Credentials:**
-7. ⚠️ ShareASale API
-8. ⚠️ CJ Affiliate API
-9. ⚠️ YouTube Data API (OAuth)
-10. ⚠️ TikTok API
-11. ⚠️ Instagram Graph API
-12. ⚠️ Facebook Graph API
-13. ⚠️ Cloudflare R2 Storage
+6. ⚠️ ShareASale API
+7. ⚠️ CJ Affiliate API
+8. ⚠️ YouTube Data API (OAuth)
+9. ⚠️ TikTok API
+10. ⚠️ Instagram Graph API
+11. ⚠️ Facebook Graph API
+12. ⚠️ Cloudflare R2 Storage
 
 **Key Achievements:**
 - Mock mode enables full development without API costs
@@ -205,7 +204,7 @@ The AI Affiliate Empire project has achieved significant production readiness ac
 **Impact:** Enables real content generation
 
 **Required Actions:**
-1. Obtain OpenAI, Anthropic, ElevenLabs, Pika Labs API keys
+1. Obtain OpenAI, ElevenLabs, Pika Labs API keys
 2. Get Amazon Associates approved (requires 3 sales in 180 days)
 3. Configure YouTube, TikTok, Instagram OAuth
 4. Set up Cloudflare R2 bucket
@@ -263,7 +262,6 @@ The AI Affiliate Empire project has achieved significant production readiness ac
 
 **Priority 4: Core API Credentials** ⏱️ 2-4 weeks
 - [ ] Obtain OpenAI API key (GPT-4 access)
-- [ ] Obtain Anthropic API key (Claude 3.5)
 - [ ] Get ElevenLabs API key (Creator plan)
 - [ ] Get Pika Labs API access
 - [ ] Set up Cloudflare R2 bucket
@@ -326,18 +324,17 @@ Month 2-3: Amazon + Social APIs → 10/10 ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐ (FULL P
 
 | Service | Cost |
 |---------|------|
-| OpenAI (GPT-4 + DALL-E 3) | ~$80 |
-| Anthropic Claude | ~$100 |
+| OpenAI (GPT-4o + DALL-E 3) | ~$60 |
 | ElevenLabs | ~$100 |
 | Pika Labs | Variable |
 | Amazon PAAPI | Free |
 | Social Media APIs | Free |
-| **API Services Total** | **~$280-400/month** |
+| **API Services Total** | **~$260-380/month** |
 
 ### Total Estimated Monthly Cost
-**$368-758/month** (infrastructure + APIs)
+**$348-738/month** (infrastructure + APIs)
 
-**Break-even:** ~15-30 affiliate sales/month at $25 commission average
+**Break-even:** ~14-30 affiliate sales/month at $25 commission average
 
 ---
 
@@ -482,7 +479,7 @@ Month 2-3: Amazon + Social APIs → 10/10 ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐ (FULL P
 - [ ] Integrate authentication system
 - [ ] Generate production secrets (JWT, encryption)
 - [ ] Set up AWS Secrets Manager
-- [ ] Obtain core API credentials (OpenAI, Anthropic, ElevenLabs, Pika)
+- [ ] Obtain core API credentials (OpenAI, ElevenLabs, Pika)
 - [ ] Configure Cloudflare R2 storage
 - [ ] Set up production database with backups
 - [ ] Configure Sentry error tracking

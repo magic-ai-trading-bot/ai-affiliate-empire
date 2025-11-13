@@ -142,7 +142,6 @@ flyctl secrets set \
 # AI Service API Keys
 flyctl secrets set \
   OPENAI_API_KEY="sk-..." \
-  ANTHROPIC_API_KEY="sk-ant-..." \
   --app ai-affiliate-empire-staging
 
 # Set to true when ready to test, false for initial deployment
@@ -178,7 +177,6 @@ flyctl secrets set \
 # AI Service API Keys
 flyctl secrets set \
   OPENAI_API_KEY="sk-..." \
-  ANTHROPIC_API_KEY="sk-ant-..." \
   ELEVENLABS_API_KEY="..." \
   PIKA_LABS_API_KEY="..." \
   --app ai-affiliate-empire

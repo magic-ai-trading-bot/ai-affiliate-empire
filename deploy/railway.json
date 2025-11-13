@@ -81,10 +81,6 @@
       "description": "OpenAI API key for content generation",
       "required": true
     },
-    "ANTHROPIC_API_KEY": {
-      "description": "Anthropic Claude API key",
-      "required": true
-    },
     "AWS_SECRETS_MANAGER_ENABLED": {
       "description": "Enable AWS Secrets Manager",
       "default": "false"

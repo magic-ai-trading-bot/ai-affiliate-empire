@@ -42,24 +42,87 @@ const SECRET_PREFIX = process.env.SECRET_NAME_PREFIX || 'ai-affiliate-empire';
 
 // Mapping of environment variable names to AWS secret names
 const SECRET_MAPPINGS = [
-  { envVar: 'OPENAI_API_KEY', secretName: 'openai-api-key', description: 'OpenAI API key for GPT models' },
-  { envVar: 'ANTHROPIC_API_KEY', secretName: 'anthropic-api-key', description: 'Anthropic API key for Claude models' },
-  { envVar: 'ELEVENLABS_API_KEY', secretName: 'elevenlabs-api-key', description: 'ElevenLabs API key for voice generation' },
-  { envVar: 'PIKALABS_API_KEY', secretName: 'pikalabs-api-key', description: 'Pika Labs API key for video generation' },
-  { envVar: 'AMAZON_ACCESS_KEY', secretName: 'amazon-access-key', description: 'Amazon PA-API access key' },
-  { envVar: 'AMAZON_SECRET_KEY', secretName: 'amazon-secret-key', description: 'Amazon PA-API secret key' },
-  { envVar: 'AMAZON_PARTNER_TAG', secretName: 'amazon-partner-tag', description: 'Amazon Associates partner tag' },
-  { envVar: 'YOUTUBE_CLIENT_ID', secretName: 'youtube-client-id', description: 'YouTube OAuth client ID' },
-  { envVar: 'YOUTUBE_CLIENT_SECRET', secretName: 'youtube-client-secret', description: 'YouTube OAuth client secret' },
-  { envVar: 'TIKTOK_CLIENT_KEY', secretName: 'tiktok-client-key', description: 'TikTok API client key' },
-  { envVar: 'TIKTOK_CLIENT_SECRET', secretName: 'tiktok-client-secret', description: 'TikTok API client secret' },
-  { envVar: 'INSTAGRAM_ACCESS_TOKEN', secretName: 'instagram-access-token', description: 'Instagram Graph API access token' },
-  { envVar: 'INSTAGRAM_BUSINESS_ACCOUNT_ID', secretName: 'instagram-business-account-id', description: 'Instagram Business account ID' },
-  { envVar: 'SHARESALE_API_TOKEN', secretName: 'sharesale-api-token', description: 'ShareASale API token' },
-  { envVar: 'SHARESALE_API_SECRET', secretName: 'sharesale-api-secret', description: 'ShareASale API secret' },
+  {
+    envVar: 'OPENAI_API_KEY',
+    secretName: 'openai-api-key',
+    description: 'OpenAI API key for GPT models',
+  },
+  {
+    envVar: 'ELEVENLABS_API_KEY',
+    secretName: 'elevenlabs-api-key',
+    description: 'ElevenLabs API key for voice generation',
+  },
+  {
+    envVar: 'PIKALABS_API_KEY',
+    secretName: 'pikalabs-api-key',
+    description: 'Pika Labs API key for video generation',
+  },
+  {
+    envVar: 'AMAZON_ACCESS_KEY',
+    secretName: 'amazon-access-key',
+    description: 'Amazon PA-API access key',
+  },
+  {
+    envVar: 'AMAZON_SECRET_KEY',
+    secretName: 'amazon-secret-key',
+    description: 'Amazon PA-API secret key',
+  },
+  {
+    envVar: 'AMAZON_PARTNER_TAG',
+    secretName: 'amazon-partner-tag',
+    description: 'Amazon Associates partner tag',
+  },
+  {
+    envVar: 'YOUTUBE_CLIENT_ID',
+    secretName: 'youtube-client-id',
+    description: 'YouTube OAuth client ID',
+  },
+  {
+    envVar: 'YOUTUBE_CLIENT_SECRET',
+    secretName: 'youtube-client-secret',
+    description: 'YouTube OAuth client secret',
+  },
+  {
+    envVar: 'TIKTOK_CLIENT_KEY',
+    secretName: 'tiktok-client-key',
+    description: 'TikTok API client key',
+  },
+  {
+    envVar: 'TIKTOK_CLIENT_SECRET',
+    secretName: 'tiktok-client-secret',
+    description: 'TikTok API client secret',
+  },
+  {
+    envVar: 'INSTAGRAM_ACCESS_TOKEN',
+    secretName: 'instagram-access-token',
+    description: 'Instagram Graph API access token',
+  },
+  {
+    envVar: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',
+    secretName: 'instagram-business-account-id',
+    description: 'Instagram Business account ID',
+  },
+  {
+    envVar: 'SHARESALE_API_TOKEN',
+    secretName: 'sharesale-api-token',
+    description: 'ShareASale API token',
+  },
+  {
+    envVar: 'SHARESALE_API_SECRET',
+    secretName: 'sharesale-api-secret',
+    description: 'ShareASale API secret',
+  },
   { envVar: 'CJ_API_KEY', secretName: 'cj-api-key', description: 'CJ Affiliate API key' },
-  { envVar: 'R2_ACCESS_KEY_ID', secretName: 'r2-access-key-id', description: 'Cloudflare R2 access key ID' },
-  { envVar: 'R2_SECRET_ACCESS_KEY', secretName: 'r2-secret-access-key', description: 'Cloudflare R2 secret access key' },
+  {
+    envVar: 'R2_ACCESS_KEY_ID',
+    secretName: 'r2-access-key-id',
+    description: 'Cloudflare R2 access key ID',
+  },
+  {
+    envVar: 'R2_SECRET_ACCESS_KEY',
+    secretName: 'r2-secret-access-key',
+    description: 'Cloudflare R2 secret access key',
+  },
   { envVar: 'JWT_SECRET', secretName: 'jwt-secret', description: 'JWT signing secret' },
   { envVar: 'ENCRYPTION_KEY', secretName: 'encryption-key', description: 'AES-256 encryption key' },
 ];
@@ -117,11 +180,7 @@ class SecretsMigrator {
   /**
    * Create a new secret in AWS Secrets Manager
    */
-  async createSecret(
-    secretName: string,
-    secretValue: string,
-    description: string,
-  ): Promise<void> {
+  async createSecret(secretName: string, secretValue: string, description: string): Promise<void> {
     const fullSecretName = `${SECRET_PREFIX}/${secretName}`;
 
     await this.client.send(

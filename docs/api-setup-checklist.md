@@ -10,8 +10,8 @@ Last Updated: 2025-11-01 | Version: 1.0
 
 ### Setup Timeline Estimate
 - **Quick Setup** (mock mode): 10 minutes
-- **Development Setup** (OpenAI + Claude): 30 minutes
-- **Full Production Setup** (all 8 APIs): 3-4 hours (excluding approval times)
+- **Development Setup** (OpenAI only): 20 minutes
+- **Full Production Setup** (all 7 APIs): 3-4 hours (excluding approval times)
 - **TikTok API Approval**: 1-4 weeks
 - **YouTube OAuth Setup**: 15 minutes
 
@@ -32,7 +32,6 @@ For testing without API costs:
 [ ] Step 3: Enable mock mode
     cat >> .env << 'EOF'
     OPENAI_MOCK_MODE=true
-    ANTHROPIC_MOCK_MODE=true
     ELEVENLABS_MOCK_MODE=true
     PIKALABS_MOCK_MODE=true
     AMAZON_MOCK_MODE=true
@@ -54,11 +53,11 @@ For testing without API costs:
 
 ---
 
-## Phase 1: Core Content Generation APIs (30 minutes)
+## Phase 1: Core Content Generation API (20 minutes)
 
-### 1.1 OpenAI (GPT-4) - Script Generation
+### 1.1 OpenAI (GPT-4) - Script & Blog Generation
 
-Required for: Video script generation
+Required for: Video script generation and blog post creation
 
 ```bash
 [ ] 1.1.1 Create OpenAI Account
@@ -70,7 +69,7 @@ Required for: Video script generation
 [ ] 1.1.2 Setup Billing
     - Go to https://platform.openai.com/account/billing/overview
     - Add payment method (credit card or PayPal)
-    - Set spending limit: $100-200/month
+    - Set spending limit: $50-100/month
     - Verify billing is active
 
 [ ] 1.1.3 Generate API Key
@@ -84,67 +83,20 @@ Required for: Video script generation
     Command:
     curl https://api.openai.com/v1/models \
       -H "Authorization: Bearer sk-proj-YOUR_KEY"
-    Expected: List of models returned (includes gpt-4-turbo-preview)
+    Expected: List of models returned (includes gpt-4o)
 
 [ ] 1.1.5 Update Environment
     Edit .env file:
     OPENAI_API_KEY=sk-proj-your-key-here
-    OPENAI_MODEL=gpt-4-turbo-preview
+    OPENAI_MODEL=gpt-4o
     OPENAI_MOCK_MODE=false
 
 [ ] 1.1.6 Configure Billing Alerts
     - In OpenAI dashboard, Settings → Billing
-    - Set email alert threshold: $50/month
+    - Set email alert threshold: $40/month
     - Confirm alerts enabled
 
 Estimated Cost: $30-50/month
-Status: ✓ Configured
-```
-
-### 1.2 Anthropic Claude - Blog Generation
-
-Required for: Blog post generation
-
-```bash
-[ ] 1.2.1 Create Anthropic Account
-    - Navigate to https://console.anthropic.com/
-    - Sign up with email
-    - Verify email address
-    - Accept terms of service
-
-[ ] 1.2.2 Setup Billing
-    - Go to Settings → Billing
-    - Add payment method
-    - Set spending limit: $50-100/month
-    - Confirm billing enabled
-
-[ ] 1.2.3 Generate API Key
-    - Navigate to Settings → API Keys
-    - Click "Generate Key"
-    - Name: ai-affiliate-empire-prod
-    - Copy key (format: sk-ant-...)
-    - Store securely
-
-[ ] 1.2.4 Test API Key
-    Command:
-    curl https://api.anthropic.com/v1/messages \
-      -H "x-api-key: sk-ant-YOUR_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "content-type: application/json" \
-      -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":100,"messages":[{"role":"user","content":"Test"}]}'
-    Expected: 200 response with message content
-
-[ ] 1.2.5 Update Environment
-    Edit .env file:
-    ANTHROPIC_API_KEY=sk-ant-your-key-here
-    ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-    ANTHROPIC_MOCK_MODE=false
-
-[ ] 1.2.6 Configure Billing Alerts
-    - In Anthropic dashboard
-    - Set email alert threshold: $25/month
-
-Estimated Cost: $15-25/month
 Status: ✓ Configured
 ```
 
@@ -556,8 +508,7 @@ Status: ✓ Configured
     ====================================================
     API CREDENTIALS VALIDATION
     ====================================================
-    ✓ OpenAI API: Valid (gpt-4-turbo-preview available)
-    ✓ Anthropic API: Valid (claude-3-5-sonnet available)
+    ✓ OpenAI API: Valid (gpt-4o available)
     ✓ ElevenLabs API: Valid (100,000 chars/month)
     ✓ Pika Labs API: Valid (2,000 videos/month)
     ✓ YouTube API: Valid (authorized, 10,000 quota/day)
@@ -565,7 +516,7 @@ Status: ✓ Configured
     ✗ Instagram API: Invalid (token expired)
     ✓ Cloudflare R2: Valid (ai-affiliate-videos bucket)
 
-    Overall Status: 7/8 APIs Ready
+    Overall Status: 6/7 APIs Ready
     ====================================================
 
 [ ] 4. Fix any failing APIs
@@ -585,7 +536,7 @@ Status: ✓ Configured
     npm run test:integration -- --test=openai-script-generation
 
 [ ] 3. Test blog generation
-    npm run test:integration -- --test=anthropic-blog-generation
+    npm run test:integration -- --test=openai-blog-generation
 
 [ ] 4. Test voice generation
     npm run test:integration -- --test=elevenlabs-voice-generation
@@ -648,7 +599,7 @@ Security & Secrets Management:
 [ ] JWT secrets generated and stored
 
 API Configuration:
-[ ] All 8 APIs validated and working
+[ ] All 7 APIs validated and working
 [ ] Rate limits reviewed and acceptable
 [ ] Spending limits configured on paid APIs
 [ ] Monitoring/alerting setup for each API
@@ -693,7 +644,7 @@ Documentation:
 
 [ ] 4. Verify connectivity
     npm run test:api-connectivity
-    # Expected: All 8 APIs connected ✓
+    # Expected: All 7 APIs connected ✓
 
 [ ] 5. Monitor for 24 hours
     - Check logs: docker-compose logs -f backend
@@ -776,10 +727,6 @@ Documentation:
 - Rate limit: Check usage, wait 60 seconds, retry
 - Billing problem: Verify payment method, update credit card
 
-**Anthropic Issues**:
-- Invalid key: Regenerate at https://console.anthropic.com/
-- Model unavailable: Use current model, update code
-- Rate limit: Request upgrade, implement exponential backoff
 
 **ElevenLabs Issues**:
 - Voice not found: List voices with API, use correct ID
@@ -845,7 +792,6 @@ Documentation:
 | API | Support | Email | Status Page |
 |-----|---------|-------|-------------|
 | OpenAI | https://help.openai.com/ | support@openai.com | https://status.openai.com/ |
-| Anthropic | https://support.anthropic.com/ | support@anthropic.com | Status via dashboard |
 | ElevenLabs | https://help.elevenlabs.io/ | support@elevenlabs.io | - |
 | Pika Labs | support@pika.art | support@pika.art | - |
 | Google Cloud | https://cloud.google.com/support | - | https://status.cloud.google.com/ |

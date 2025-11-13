@@ -23,12 +23,11 @@ Last Updated: 2025-11-01 | Status: Active | Version: 1.0
 
 ## Overview
 
-This guide covers all 8 APIs required for production deployment:
+This guide covers all 7 APIs required for production deployment:
 
 | API | Purpose | Cost/Month | Status | Required |
 |-----|---------|-----------|--------|----------|
-| OpenAI (GPT-4) | Script generation | $30-50 | Production | ✓ Yes |
-| Anthropic Claude | Blog post generation | $15-25 | Production | ✓ Yes |
+| OpenAI (GPT-4) | Script & blog generation | $30-50 | Production | ✓ Yes |
 | ElevenLabs | Voice generation | $28-50 | Production | ✓ Yes |
 | Pika Labs | Video generation | $28 | Production | ✓ Yes |
 | YouTube Data API | Publishing shorts | Free (10k quota) | Production | ✓ Yes |
@@ -36,7 +35,7 @@ This guide covers all 8 APIs required for production deployment:
 | Instagram Graph API | Publishing reels | Free | Production | ✓ Yes |
 | Cloudflare R2 | Video storage | ~$5-10 | Production | ✓ Yes |
 
-**Total Production Cost**: ~$150-170/month (without overage)
+**Total Production Cost**: ~$100-140/month (without overage)
 
 ---
 
@@ -55,7 +54,6 @@ cp .env.example .env
 # Enable mock mode for development
 cat >> .env << EOF
 OPENAI_MOCK_MODE=true
-ANTHROPIC_MOCK_MODE=true
 ELEVENLABS_MOCK_MODE=true
 PIKALABS_MOCK_MODE=true
 AMAZON_MOCK_MODE=true
@@ -90,9 +88,7 @@ npm run start:prod
 ```
 REQUIRED BEFORE PRODUCTION:
 □ OPENAI_API_KEY - sk-proj-...
-□ OPENAI_MODEL - gpt-4-turbo-preview (or current model)
-□ ANTHROPIC_API_KEY - sk-ant-...
-□ ANTHROPIC_MODEL - claude-3-5-sonnet-20241022 (or current)
+□ OPENAI_MODEL - gpt-4o (or current model)
 □ ELEVENLABS_API_KEY - ...
 □ ELEVENLABS_VOICE_ID - EXAVITQu4vr4xnSDxMaL (or custom)
 □ PIKALABS_API_KEY - ...
@@ -119,7 +115,7 @@ REQUIRED BEFORE PRODUCTION:
 
 ### 1. OpenAI (GPT-4) - Script Generation
 
-**Purpose**: AI-powered video script generation for content creation
+**Purpose**: AI-powered video script and blog post generation for content creation
 
 **Account Type Required**: OpenAI Platform Account with billing enabled
 
@@ -148,16 +144,17 @@ REQUIRED BEFORE PRODUCTION:
    ```bash
    # Add to .env
    OPENAI_API_KEY=sk-proj-your-key-here
-   OPENAI_MODEL=gpt-4-turbo-preview
+   OPENAI_MODEL=gpt-4o
    OPENAI_MOCK_MODE=false
    ```
 
 **Cost Estimation**
-- Input: $0.01 per 1K tokens
-- Output: $0.03 per 1K tokens
-- Average script: 500 tokens input, 1000 tokens output = ~$0.04/script
-- 50 scripts/day = $2/day = $60/month
-- **Recommended budget**: $100/month
+- Input: $0.0025 per 1K tokens (GPT-4o)
+- Output: $0.01 per 1K tokens (GPT-4o)
+- Average script: 500 tokens input, 1000 tokens output = ~$0.01/script
+- Average blog: 1000 tokens input, 2000 tokens output = ~$0.02/blog
+- 50 scripts/day + 10 blogs/day = ~$0.70/day = $21/month
+- **Recommended budget**: $50/month
 
 **Rate Limits**
 - Tier 1 (new account): 500 requests/min, 30,000 tokens/min
@@ -184,71 +181,6 @@ curl https://api.openai.com/v1/models \
 ```
 
 ---
-
-### 2. Anthropic Claude - Blog Post Generation
-
-**Purpose**: High-quality blog post and content generation
-
-**Account Type Required**: Anthropic Console Account with billing
-
-#### Step-by-Step Setup
-
-1. **Create Anthropic Account**
-   - Visit https://console.anthropic.com/
-   - Sign up with email
-   - Verify email address
-   - Accept terms
-
-2. **Enable Billing**
-   - Go to Settings → Billing
-   - Add payment method
-   - Set spending limit: $50-100/month
-   - Confirm billing is active
-
-3. **Generate API Key**
-   - Navigate to Settings → API Keys
-   - Click "Generate Key"
-   - Name it: `ai-affiliate-empire-prod`
-   - Copy immediately
-   - Store in secure location
-
-4. **Configure Application**
-   ```bash
-   # Add to .env
-   ANTHROPIC_API_KEY=sk-ant-your-key-here
-   ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-   ANTHROPIC_MOCK_MODE=false
-   ```
-
-**Cost Estimation**
-- Input: $0.003 per 1K tokens
-- Output: $0.015 per 1K tokens
-- Average blog: 2000 tokens input, 3000 tokens output = ~$0.06/blog
-- 10 blogs/day = $0.60/day = $18/month
-- **Recommended budget**: $50/month
-
-**Rate Limits**
-- Tier 1: 50 requests/minute, 10,000 tokens/minute
-- Tier 2: 1,000 requests/minute (after approval)
-
-**Monitoring**
-- Dashboard: https://console.anthropic.com/
-- Monitor usage in billing section
-- Set email alerts
-
-**Testing**
-```bash
-# Test API key validity
-curl https://api.anthropic.com/v1/messages \
-  -H "x-api-key: sk-ant-YOUR_KEY" \
-  -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  -d '{
-    "model": "claude-3-5-sonnet-20241022",
-    "max_tokens": 100,
-    "messages": [{"role": "user", "content": "Test"}]
-  }'
-```
 
 ---
 
@@ -763,38 +695,35 @@ aws s3 cp test.mp4 s3://ai-affiliate-videos/test.mp4 \
 
 ### Minimal Setup (Development)
 ```
-OpenAI (scripts)      $30/month
-Anthropic (blogs)     $15/month
+OpenAI (scripts + blogs) $30/month
 ─────────────────────────────
-TOTAL:                $45/month
+TOTAL:                   $30/month
 ```
 
 ### Standard Setup (Early Production)
 ```
-OpenAI (scripts)      $30/month
-Anthropic (blogs)     $15/month
-ElevenLabs (voice)    $28/month
-Pika Labs (video)     $28/month
-Cloudflare R2 (storage) $5/month
-YouTube (free)        $0/month
-TikTok (free)         $0/month
-Instagram (free)      $0/month
+OpenAI (scripts + blogs) $30/month
+ElevenLabs (voice)       $28/month
+Pika Labs (video)        $28/month
+Cloudflare R2 (storage)  $5/month
+YouTube (free)           $0/month
+TikTok (free)            $0/month
+Instagram (free)         $0/month
 ─────────────────────────────
-TOTAL:                $106/month
+TOTAL:                   $91/month
 ```
 
 ### Full Production Setup (50-100 videos/day)
 ```
-OpenAI (scripts)      $50/month
-Anthropic (blogs)     $25/month
-ElevenLabs (voice)    $50/month
-Pika Labs (video)     $28/month
-Cloudflare R2         $10/month
-YouTube (free)        $0/month
-TikTok (free)         $0/month
-Instagram (free)      $0/month
+OpenAI (scripts + blogs) $50/month
+ElevenLabs (voice)       $50/month
+Pika Labs (video)        $28/month
+Cloudflare R2            $10/month
+YouTube (free)           $0/month
+TikTok (free)            $0/month
+Instagram (free)         $0/month
 ─────────────────────────────
-TOTAL:                $163/month
+TOTAL:                   $138/month
 ```
 
 ### ROI Calculation
@@ -809,7 +738,7 @@ TOTAL:                $163/month
 **Expected Revenue at Scale**:
 - 100 videos/day × $0.003 average/view × 1,000 views = $300/day
 - $300/day × 30 days = $9,000/month
-- Minus costs ($163) = **$8,837/month net**
+- Minus costs ($138) = **$8,862/month net**
 
 ---
 
@@ -820,7 +749,6 @@ TOTAL:                $163/month
 | API | Rate Limit | Daily Capacity | Notes |
 |-----|-----------|----------------|-------|
 | OpenAI | 500 RPM (T1), 5K RPM (T2) | 500+ requests | Tier increases with spend |
-| Anthropic | 50 RPM (T1), 1K RPM (T2) | 50+ requests | Request upgrade for T2 |
 | ElevenLabs | 30 concurrent | 100K chars/month | Creator plan |
 | Pika Labs | 2K/month | 66-70/day | Within plan |
 | YouTube | 10K units/day | 6-8 videos | 1,600 units per upload |
@@ -855,7 +783,6 @@ chmod +x ./scripts/setup/validate-api-credentials.sh
 
 # Expected output:
 # ✓ OpenAI API: Valid
-# ✓ Anthropic API: Valid
 # ✗ ElevenLabs API: Invalid key
 # etc.
 ```
@@ -869,15 +796,6 @@ curl https://api.openai.com/v1/models \
 # Should return: number of available models (20+)
 ```
 
-#### Anthropic Test
-```bash
-curl https://api.anthropic.com/v1/messages \
-  -H "x-api-key: $ANTHROPIC_API_KEY" \
-  -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}'
-# Should return 200 with message content
-```
 
 #### ElevenLabs Test
 ```bash
@@ -1117,7 +1035,6 @@ openssl s_client -connect api.openai.com:443 -showcerts
 | API | Support URL | Response Time |
 |-----|------------|----------------|
 | OpenAI | https://help.openai.com/ | 24-48 hours |
-| Anthropic | https://support.anthropic.com/ | 24-48 hours |
 | ElevenLabs | https://help.elevenlabs.io/ | 12-24 hours |
 | Pika Labs | support@pika.art | 24-48 hours |
 | Google Cloud | https://cloud.google.com/support | Varies by plan |
@@ -1130,7 +1047,7 @@ openssl s_client -connect api.openai.com:443 -showcerts
 ## FAQ
 
 **Q: Can I use free tiers for production?**
-A: Partially. YouTube, TikTok, and Instagram are free. OpenAI and Anthropic need paid tiers for production volumes. ElevenLabs and Pika Labs have no free tiers but offer affordable plans.
+A: Partially. YouTube, TikTok, and Instagram are free. OpenAI needs a paid tier for production volumes. ElevenLabs and Pika Labs have no free tiers but offer affordable plans.
 
 **Q: What happens if an API goes down?**
 A: The application uses circuit breakers and fallback mechanisms. Content generation will queue and retry. Published content won't be affected.

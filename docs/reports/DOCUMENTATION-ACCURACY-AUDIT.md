@@ -44,7 +44,6 @@
 #### 3. **Content Generation Module** (95%)
 - ✅ `script-generator.service.ts` - Script generation with OpenAI
 - ✅ `openai.service.ts` - OpenAI GPT-4 integration (working)
-- ✅ `claude.service.ts` - Anthropic Claude integration (working)
 - ⚠️ `blog-search.service.ts` - Blog generation (marked TODO for views/clicks tracking)
 - ✅ Database models: Video, Blog
 

@@ -75,7 +75,6 @@
     "prisma",
     "nextjs",
     "openai-gpt4",
-    "claude-ai",
     "roi-tracking",
     "multi-platform-publishing",
     "self-optimizing",
@@ -151,7 +150,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.68.0",
     "@aws-sdk/client-secrets-manager": "^3.920.0",
     "@nestjs/common": "^11.1.8",
     "@nestjs/config": "^4.0.2",

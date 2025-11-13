@@ -171,7 +171,6 @@ cp .env.example .env
 nano .env
 
 # Verify required variables are set
-cat .env | grep "OPENAI_API_KEY\|ANTHROPIC_API_KEY\|DATABASE_URL"
 ```
 
 ---
@@ -565,24 +564,6 @@ curl https://api.openai.com/v1/models \
   -H "Authorization: Bearer $OPENAI_API_KEY"
 ```
 
-### Issue: "Anthropic API rate limit exceeded"
-
-**Symptom**: "429 Too Many Requests" from Anthropic
-
-**Solution**:
-```bash
-# Check current usage
-curl https://api.anthropic.com/v1/usage \
-  -H "x-api-key: $ANTHROPIC_API_KEY"
-
-# Implement backoff in code
-# Already handled by circuit breaker
-
-# Contact Anthropic to increase limits
-
-# Use mock mode to reduce API calls
-ANTHROPIC_MOCK_MODE=true
-```
 
 ### Issue: "Temporal server not responding"
 

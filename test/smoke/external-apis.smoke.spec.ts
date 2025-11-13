@@ -24,7 +24,7 @@ describe('External API Connectivity Smoke Tests', () => {
     it('should verify OpenAI API connectivity', async () => {
       const response = await client.get('/health/services', {
         headers: {
-          'Authorization': `Bearer ${process.env.HEALTH_CHECK_TOKEN || 'test'}`,
+          Authorization: `Bearer ${process.env.HEALTH_CHECK_TOKEN || 'test'}`,
         },
       });
 
@@ -32,21 +32,6 @@ describe('External API Connectivity Smoke Tests', () => {
         const openai = response.data.services.openai;
         if (openai) {
           expect(openai.status).toMatch(/connected|available|ok/i);
-        }
-      }
-    });
-
-    it('should verify Anthropic API connectivity', async () => {
-      const response = await client.get('/health/services', {
-        headers: {
-          'Authorization': `Bearer ${process.env.HEALTH_CHECK_TOKEN || 'test'}`,
-        },
-      });
-
-      if (response.status === 200 && response.data.services) {
-        const anthropic = response.data.services.anthropic;
-        if (anthropic) {
-          expect(anthropic.status).toMatch(/connected|available|ok/i);
         }
       }
     });

@@ -220,7 +220,6 @@ watch -n 5 "docker logs ai-affiliate-backend | tail -1"
 | Service | Likely Cause | Fix |
 |---------|--------------|-----|
 | OpenAI | High token usage | Optimize prompts, reduce batch size |
-| Anthropic | Heavy content generation | Reduce generation frequency |
 | Pika Labs | Too many video generations | Batch videos, skip low-performers |
 | ElevenLabs | Voice generation loops | Check for infinite retry loops |
 

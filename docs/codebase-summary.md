@@ -315,7 +315,6 @@ ai-affiliate-empire/
 - `content.service.ts` - Content orchestration
 - `script-generator.service.ts` - Video script generation
 - `openai.service.ts` - OpenAI GPT-4 Turbo integration
-- `claude.service.ts` - Anthropic Claude 3.5 Sonnet integration
 - `content.controller.ts` - 8 REST API endpoints
 
 **Key Features**:
@@ -1056,7 +1055,6 @@ SECRET_NAME_PREFIX=ai-affiliate-empire
 ```bash
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4-turbo-preview
-ANTHROPIC_API_KEY=sk-ant-...
 ELEVENLABS_API_KEY=...
 PIKA_LABS_API_KEY=...
 ```
@@ -1099,7 +1097,6 @@ All external APIs support mock mode for development:
 
 ```bash
 OPENAI_MOCK_MODE=true
-ANTHROPIC_MOCK_MODE=true
 ELEVENLABS_MOCK_MODE=true
 PIKALABS_MOCK_MODE=true
 AMAZON_MOCK_MODE=true
@@ -1177,7 +1174,6 @@ AMAZON_MOCK_MODE=true
   "@temporalio/workflow": "^1.13.1",
   "@temporalio/worker": "^1.13.1",
   "openai": "^6.7.0",
-  "@anthropic-ai/sdk": "^0.68.0",
   "axios": "^1.13.1",
   "winston": "^3.11.0",
   "joi": "^17.11.0"

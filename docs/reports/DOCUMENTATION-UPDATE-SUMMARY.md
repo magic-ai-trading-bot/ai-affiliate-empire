@@ -58,7 +58,6 @@ Completed comprehensive documentation update for AI Affiliate Empire project. Ad
   - Runtime issues (modules, TypeScript, crashes)
   - API issues (auth, validation, rate limits, errors)
   - Database issues (connections, migrations, locks)
-  - External service issues (OpenAI, Anthropic, YouTube)
   - Performance issues (slow queries, memory leaks)
   - Deployment issues (memory, health checks)
   - Security issues (exposed credentials, SSL)

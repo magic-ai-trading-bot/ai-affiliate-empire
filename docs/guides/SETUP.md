@@ -20,7 +20,6 @@
   - Enable GPT-4 Turbo access
   - Add payment method ($5-20/month estimated)
 
-- **Anthropic Claude** - [console.anthropic.com](https://console.anthropic.com/)
   - Create API key
   - Claude 3.5 Sonnet access
 
@@ -107,9 +106,6 @@ DATABASE_URL="postgresql://user:password@localhost:5432/ai_affiliate_empire"
 OPENAI_API_KEY="sk-proj-..."
 OPENAI_MODEL="gpt-4-turbo-preview"
 
-# Anthropic Claude
-ANTHROPIC_API_KEY="sk-ant-..."
-ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
 
 # ElevenLabs
 ELEVENLABS_API_KEY="..."
@@ -261,7 +257,6 @@ fly launch
 
 # Set secrets
 fly secrets set OPENAI_API_KEY="sk-..."
-fly secrets set ANTHROPIC_API_KEY="sk-ant-..."
 # ... set all required secrets
 
 # Deploy
@@ -300,10 +295,6 @@ Check if API keys are correctly set:
 curl https://api.openai.com/v1/models \
   -H "Authorization: Bearer $OPENAI_API_KEY"
 
-# Anthropic
-curl https://api.anthropic.com/v1/messages \
-  -H "x-api-key: $ANTHROPIC_API_KEY" \
-  -H "anthropic-version: 2023-06-01"
 ```
 
 ---

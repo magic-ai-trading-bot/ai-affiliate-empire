@@ -8,10 +8,7 @@ import { ComponentStatus, ComponentHealth } from './dto/health-response.dto';
 
 @Injectable()
 export class HealthCheckService {
-  private healthCache: Map<
-    string,
-    { result: ComponentHealth; timestamp: number }
-  > = new Map();
+  private healthCache: Map<string, { result: ComponentHealth; timestamp: number }> = new Map();
   private readonly cacheTTL = 30000; // 30 seconds
 
   constructor(
@@ -73,7 +70,7 @@ export class HealthCheckService {
       });
 
       await connection.workflowService.getSystemInfo({});
-      connection.close();
+      void connection.close();
 
       const duration = Date.now() - startTime;
 
@@ -111,7 +108,6 @@ export class HealthCheckService {
 
     const apiChecks = {
       openai: false,
-      anthropic: false,
     };
 
     let healthyCount = 0;
@@ -130,25 +126,6 @@ export class HealthCheckService {
       }
     } catch (error) {
       this.logger.warn('OpenAI API health check failed', error.message);
-    }
-
-    // Check Anthropic API
-    try {
-      const anthropicKey =
-        this.configService.get<string>('ANTHROPIC_API_KEY');
-      if (anthropicKey && anthropicKey !== 'mock') {
-        await axios.get('https://api.anthropic.com/v1/models', {
-          headers: {
-            'x-api-key': anthropicKey,
-            'anthropic-version': '2023-06-01',
-          },
-          timeout: 5000,
-        });
-        apiChecks.anthropic = true;
-        healthyCount++;
-      }
-    } catch (error) {
-      this.logger.warn('Anthropic API health check failed', error.message);
     }
 
     let status: ComponentStatus;

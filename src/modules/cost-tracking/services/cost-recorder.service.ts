@@ -77,39 +77,9 @@ export class CostRecorderService {
   }
 
   /**
-   * Record Claude API cost
-   */
-  async recordClaudeCost(
-    inputTokens: number,
-    outputTokens: number,
-    model: string = 'claude-3.5-sonnet',
-    resourceId?: string,
-    resourceType?: string,
-  ) {
-    const calculation = this.calculator.calculateClaudeCost(inputTokens, outputTokens, model);
-
-    return this.recordCost({
-      service: CostService.CLAUDE,
-      operation: calculation.operation,
-      amount: calculation.amount,
-      inputTokens: calculation.details.inputTokens!,
-      outputTokens: calculation.details.outputTokens!,
-      tokens: calculation.details.tokens!,
-      model: calculation.details.model!,
-      provider: calculation.details.provider!,
-      resourceId,
-      resourceType,
-    });
-  }
-
-  /**
    * Record ElevenLabs TTS cost
    */
-  async recordElevenLabsCost(
-    characters: number,
-    resourceId?: string,
-    resourceType?: string,
-  ) {
+  async recordElevenLabsCost(characters: number, resourceId?: string, resourceType?: string) {
     const calculation = this.calculator.calculateElevenLabsCost(characters);
 
     return this.recordCost({
@@ -127,11 +97,7 @@ export class CostRecorderService {
   /**
    * Record Pika Labs video generation cost
    */
-  async recordPikaCost(
-    durationSeconds: number,
-    resourceId?: string,
-    resourceType?: string,
-  ) {
+  async recordPikaCost(durationSeconds: number, resourceId?: string, resourceType?: string) {
     const calculation = this.calculator.calculatePikaCost(durationSeconds);
 
     return this.recordCost({

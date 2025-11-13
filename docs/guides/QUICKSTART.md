@@ -23,7 +23,6 @@ cp .env.example .env
 ```bash
 # Minimum required
 OPENAI_API_KEY="sk-..."              # Get from platform.openai.com
-ANTHROPIC_API_KEY="sk-ant-..."       # Get from console.anthropic.com
 
 # Amazon Associates (optional - uses mocks if not provided)
 AMAZON_ACCESS_KEY="..."
@@ -141,10 +140,7 @@ npm run temporal:worker
    - Copy to `.env` as `OPENAI_API_KEY`
    - Cost: ~$0.02/script
 
-2. **Anthropic Claude** (Blog Writing)
-   - Go to: https://console.anthropic.com/
    - Create API key
-   - Copy to `.env` as `ANTHROPIC_API_KEY`
    - Cost: ~$0.05/blog
 
 ### Optional Keys (System uses mocks if not provided)

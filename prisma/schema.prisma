@@ -469,7 +469,6 @@ model CostEntry {
 
 enum CostService {
   OPENAI
-  CLAUDE
   ELEVENLABS
   PIKA
   DALLE

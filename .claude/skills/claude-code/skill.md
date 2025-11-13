@@ -68,7 +68,6 @@ Claude Code is Anthropic's agentic coding tool that lives in your terminal and h
 ### Installation
 ```bash
 # Install via npm (recommended)
-npm install -g @anthropic-ai/claude-code
 
 # Or via pip
 pip install claude-code
@@ -80,7 +79,6 @@ pip install claude-code
 claude login
 
 # Or set environment variable
-export ANTHROPIC_API_KEY=your_api_key
 ```
 
 ### First Run
@@ -264,9 +262,7 @@ Concrete examples of skill usage.
 Skills can be used with the Claude API:
 
 ```typescript
-import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const response = await client.messages.create({
   model: 'claude-sonnet-4-5-20250929',
@@ -590,11 +586,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: anthropic/claude-code-action@v1
         with:
           command: '/fix:types && /test'
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
 
 ### GitLab CI/CD
@@ -605,8 +599,6 @@ Example pipeline:
 claude-review:
   image: node:18
   script:
-    - npm install -g @anthropic-ai/claude-code
-    - claude login --api-key $ANTHROPIC_API_KEY
     - claude '/fix:types && /test'
   only:
     - merge_requests
@@ -701,7 +693,6 @@ claude logout
 claude login
 
 # Verify API key
-echo $ANTHROPIC_API_KEY
 ```
 
 **MCP Server Connection Issues**
@@ -740,9 +731,7 @@ claude --debug "implement feature"
 ### Getting Help
 
 - Documentation: https://docs.claude.com/claude-code
-- GitHub Issues: https://github.com/anthropics/claude-code/issues
 - Support: support.claude.com
-- Community: discord.gg/anthropic
 
 ## Best Practices
 

@@ -119,7 +119,6 @@ ai-affiliate-empire/
 
 **AI & Content**:
 - ✅ OpenAI (GPT-4 Turbo, DALL-E 3)
-- ✅ Anthropic Claude (Haiku, Sonnet, Opus)
 - ✅ ElevenLabs (Voice generation)
 - ✅ Pika Labs (Video generation)
 

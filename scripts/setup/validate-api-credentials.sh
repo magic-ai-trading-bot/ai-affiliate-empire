@@ -13,13 +13,12 @@
 #
 # This script validates:
 #   1. OpenAI (GPT-4)
-#   2. Anthropic Claude
-#   3. ElevenLabs
-#   4. Pika Labs
-#   5. YouTube Data API
-#   6. TikTok Content API
-#   7. Instagram Graph API
-#   8. Cloudflare R2
+#   2. ElevenLabs
+#   3. Pika Labs
+#   4. YouTube Data API
+#   5. TikTok Content API
+#   6. Instagram Graph API
+#   7. Cloudflare R2
 #
 # Exit codes:
 #   0 = All APIs valid
@@ -173,58 +172,6 @@ validate_openai() {
         return 0
     else
         log_error "OpenAI: HTTP $http_code - $body"
-        return 1
-    fi
-}
-
-# Validate Anthropic API
-validate_anthropic() {
-    ((TOTAL++))
-    local api_key=$(get_env "ANTHROPIC_API_KEY" "")
-    local mock_mode=$(get_env "ANTHROPIC_MOCK_MODE" "false")
-
-    log_debug "Anthropic API Key: ${api_key:0:10}..."
-    log_debug "Anthropic Mock Mode: $mock_mode"
-
-    if [[ "$mock_mode" == "true" ]]; then
-        log_warning "Anthropic: Mock mode enabled (skipping real API validation)"
-        return 0
-    fi
-
-    if [[ -z "$api_key" ]]; then
-        log_error "Anthropic: No API key provided (ANTHROPIC_API_KEY)"
-        return 1
-    fi
-
-    if [[ ! $api_key =~ ^sk-ant- ]]; then
-        log_error "Anthropic: Invalid API key format (should start with sk-ant-)"
-        return 1
-    fi
-
-    # Test API connection
-    local response
-    response=$(curl -s -w "\n%{http_code}" \
-        -X POST https://api.anthropic.com/v1/messages \
-        -H "x-api-key: $api_key" \
-        -H "anthropic-version: 2023-06-01" \
-        -H "content-type: application/json" \
-        -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}' 2>&1 || echo -e "error\n000")
-
-    local http_code=$(echo "$response" | tail -n 1)
-    local body=$(echo "$response" | head -n -1)
-
-    if [[ "$http_code" == "200" ]]; then
-        log_success "Anthropic API: Valid"
-        log_debug "Response: $(echo "$body" | head -c 100)..."
-        return 0
-    elif [[ "$http_code" == "401" ]]; then
-        log_error "Anthropic: Authentication failed (invalid API key)"
-        return 1
-    elif [[ "$http_code" == "429" ]]; then
-        log_warning "Anthropic: Rate limited (API key likely valid)"
-        return 0
-    else
-        log_error "Anthropic: HTTP $http_code - $body"
         return 1
     fi
 }
@@ -475,7 +422,6 @@ main() {
     echo ""
 
     validate_openai || true
-    validate_anthropic || true
     validate_elevenlabs || true
     validate_pika || true
     validate_youtube || true

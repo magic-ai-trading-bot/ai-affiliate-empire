@@ -28,7 +28,6 @@ This guide covers securing API credentials across all 8 production APIs:
 | API | Sensitivity | Rotation | Storage |
 |-----|------------|----------|---------|
 | OpenAI | High | 90 days | AWS Secrets Manager |
-| Anthropic | High | 90 days | AWS Secrets Manager |
 | ElevenLabs | Medium | 90 days | AWS Secrets Manager |
 | Pika Labs | Medium | 90 days | AWS Secrets Manager |
 | YouTube | High (OAuth) | 90 days | Database |
@@ -100,7 +99,6 @@ Potential Threats:
 ```bash
 # .env (development only, NOT committed)
 OPENAI_MOCK_MODE=true
-ANTHROPIC_MOCK_MODE=true
 ELEVENLABS_MOCK_MODE=true
 PIKALABS_MOCK_MODE=true
 
@@ -200,7 +198,6 @@ aws secretsmanager create-secret \
   --description "Production API credentials for AI Affiliate Empire" \
   --secret-string '{
     "openai_api_key": "sk-proj-...",
-    "anthropic_api_key": "sk-ant-...",
     "elevenlabs_api_key": "...",
     "pikalabs_api_key": "...",
     "youtube_client_id": "...",
@@ -323,7 +320,6 @@ aws secretsmanager update-secret \
   --secret-id ai-affiliate-empire/production/api-keys \
   --secret-string '{
     "openai_api_key": "sk-proj-NEW-KEY",
-    "anthropic_api_key": "sk-ant-...",
     ...
   }' \
   --region us-east-1
@@ -379,7 +375,6 @@ aws secretsmanager rotate-secret \
 | API | Frequency | Timing | Risk if Delayed |
 |-----|-----------|--------|-----------------|
 | OpenAI | 90 days | Quarterly | High - high spend risk |
-| Anthropic | 90 days | Quarterly | High - high spend risk |
 | ElevenLabs | 90 days | Quarterly | Medium - reputational |
 | Pika Labs | 90 days | Quarterly | Medium - service interrupt |
 | YouTube | 90 days | Quarterly | Medium - OAuth flow |
@@ -509,7 +504,6 @@ fi
 
 # 3. Prompt for new credentials
 read -p "Enter new OpenAI API key: " openai_key
-read -p "Enter new Anthropic API key: " anthropic_key
 read -p "Enter new ElevenLabs API key: " elevenlabs_key
 # ... etc
 
@@ -517,7 +511,6 @@ read -p "Enter new ElevenLabs API key: " elevenlabs_key
 NEW_SECRETS=$(cat <<EOF
 {
   "openai_api_key": "$openai_key",
-  "anthropic_api_key": "$anthropic_key",
   "elevenlabs_api_key": "$elevenlabs_key"
 }
 EOF
@@ -846,7 +839,6 @@ aws secretsmanager update-secret \
 
 # 4. Test each API
 npm run test:api openai
-npm run test:api anthropic
 npm run test:api elevenlabs
 # ... etc
 

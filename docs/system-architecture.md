@@ -344,7 +344,6 @@ graph LR
         PIKA[Pika Labs API]
         ELEVEN[ElevenLabs API]
         OPENAI[OpenAI API]
-        CLAUDE[Anthropic API]
         YOUTUBE[YouTube API]
         TIKTOK[TikTok API]
         INSTAGRAM[Instagram API]
@@ -447,7 +446,6 @@ graph LR
 
 ### Variable Costs (per 1500 pieces/month)
 - OpenAI (GPT-4 Turbo): $150
-- Anthropic (Claude): $25
 - DALL-E 3: $60
 - **Total Variable**: $235
 

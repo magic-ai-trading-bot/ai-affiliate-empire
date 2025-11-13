@@ -127,7 +127,6 @@ VACUUM ANALYZE;
 
 **Target Monthly Cost**: $412
 - Fixed: $177 (Pika, ElevenLabs, Fly.io)
-- Variable: $235 (OpenAI, Anthropic, DALL-E)
 
 **Key Procedures**:
 - Daily cost monitoring
