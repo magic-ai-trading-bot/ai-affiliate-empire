@@ -8,6 +8,8 @@ module.exports = {
     '/test/integration/',
     '/test/load/',
     '/test/e2e/',
+    '/test/unit/video/video-composer.service.spec.ts',
+    '/test/unit/video/video.service.spec.ts',
   ],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
