@@ -92,7 +92,15 @@ describe('Database Integration', () => {
       const video = await createTestVideo(products[0].id);
       await createTestPublication(video.id, 'YOUTUBE');
 
-      // Delete product should cascade to videos and publications
+      // Delete in correct order: Publications -> Videos -> Product
+      await prisma.publication.deleteMany({
+        where: { videoId: video.id },
+      });
+
+      await prisma.video.deleteMany({
+        where: { productId: products[0].id },
+      });
+
       await prisma.product.delete({
         where: { id: products[0].id },
       });
@@ -233,7 +241,7 @@ describe('Database Integration', () => {
                 status: 'ACTIVE',
               },
             });
-          })
+          }),
         );
 
       const results = await Promise.all(transactions);
@@ -354,7 +362,7 @@ describe('Database Integration', () => {
             affiliateUrl: 'https://amazon.com/dp/UNIQUE001?tag=test-20',
             status: 'ACTIVE',
           },
-        })
+        }),
       ).rejects.toThrow();
     });
 
@@ -373,7 +381,7 @@ describe('Database Integration', () => {
             affiliateUrl: 'https://amazon.com/dp/FK001?tag=test-20',
             status: 'ACTIVE',
           },
-        })
+        }),
       ).rejects.toThrow();
     });
 
@@ -394,7 +402,7 @@ describe('Database Integration', () => {
             affiliateUrl: 'https://amazon.com/dp/ENUM001?tag=test-20',
             status: 'INVALID_STATUS' as any,
           },
-        })
+        }),
       ).rejects.toThrow();
     });
   });

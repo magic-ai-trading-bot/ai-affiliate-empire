@@ -90,7 +90,7 @@ export async function createTestBlog(productId: string) {
       title: 'Comprehensive Product Review',
       content: '# Product Review\n\nThis is a comprehensive review...',
       excerpt: 'This is a comprehensive review of the product',
-      slug: `product-review-${Date.now()}`,
+      slug: `product-review-${Date.now()}-${Math.random().toString(36).substring(7)}`,
       language: 'en',
       status: 'PUBLISHED',
       publishedAt: new Date(),
@@ -168,14 +168,10 @@ export async function createCompleteTestWorkflowData() {
   const products = await createTestProducts(network.id, 3);
 
   // Create videos for each product
-  const videos = await Promise.all(
-    products.map((product) => createTestVideo(product.id))
-  );
+  const videos = await Promise.all(products.map((product) => createTestVideo(product.id)));
 
   // Create blogs for each product
-  const blogs = await Promise.all(
-    products.map((product) => createTestBlog(product.id))
-  );
+  const blogs = await Promise.all(products.map((product) => createTestBlog(product.id)));
 
   // Create publications for each video
   const publications = [];
@@ -186,9 +182,7 @@ export async function createCompleteTestWorkflowData() {
   }
 
   // Create analytics for each product
-  const analytics = await Promise.all(
-    products.map((product) => createTestAnalytics(product.id))
-  );
+  const analytics = await Promise.all(products.map((product) => createTestAnalytics(product.id)));
 
   return {
     network,
