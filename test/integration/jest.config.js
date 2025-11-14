@@ -29,6 +29,13 @@ module.exports = {
     '^@common/(.*)$': '<rootDir>/src/common/$1',
     '^@temporal/(.*)$': '<rootDir>/src/temporal/$1',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(p-queue|p-timeout|eventemitter3)/)',
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/test/integration/pipelines/content-generation.integration.spec.ts',
+  ],
   setupFilesAfterEnv: ['<rootDir>/test/integration/setup.ts'],
   testTimeout: 120000, // 2 minutes for integration tests
   maxWorkers: 1, // Run integration tests sequentially
