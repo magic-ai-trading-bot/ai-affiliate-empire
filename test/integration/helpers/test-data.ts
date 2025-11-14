@@ -60,7 +60,7 @@ export async function createTestProducts(networkId: string, count: number = 5) {
 /**
  * Create test video for product
  */
-export async function createTestVideo(productId: string) {
+export async function createTestVideo(productId: string, status: string = 'PENDING') {
   return await prisma.video.create({
     data: {
       productId,
@@ -75,7 +75,7 @@ Scene 3: CTA
 "Get yours now!"`,
       duration: 60,
       language: 'en',
-      status: 'PENDING',
+      status: status as any,
     },
   });
 }
@@ -167,8 +167,8 @@ export async function createCompleteTestWorkflowData() {
   // Create products
   const products = await createTestProducts(network.id, 3);
 
-  // Create videos for each product
-  const videos = await Promise.all(products.map((product) => createTestVideo(product.id)));
+  // Create videos for each product with READY status
+  const videos = await Promise.all(products.map((product) => createTestVideo(product.id, 'READY')));
 
   // Create blogs for each product
   const blogs = await Promise.all(products.map((product) => createTestBlog(product.id)));

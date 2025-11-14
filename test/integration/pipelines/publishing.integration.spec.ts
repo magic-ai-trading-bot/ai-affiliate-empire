@@ -19,6 +19,13 @@ import { YoutubeService } from '@/modules/publisher/services/youtube.service';
 import { TiktokService } from '@/modules/publisher/services/tiktok.service';
 import { InstagramService } from '@/modules/publisher/services/instagram.service';
 import { SecretsManagerService } from '@/common/secrets/secrets-manager.service';
+import { FileDownloaderService } from '@/modules/publisher/services/file-downloader.service';
+import { VideoValidatorService } from '@/modules/publisher/services/video-validator.service';
+import { TikTokVideoValidatorService } from '@/modules/publisher/services/tiktok-video-validator.service';
+import { InstagramVideoValidatorService } from '@/modules/publisher/services/instagram-video-validator.service';
+import { RateLimiterService } from '@/modules/publisher/services/rate-limiter.service';
+import { TiktokOAuth2Service } from '@/modules/publisher/services/tiktok-oauth2.service';
+import { InstagramOAuth2Service } from '@/modules/publisher/services/instagram-oauth2.service';
 import {
   createTestAffiliateNetwork,
   createTestProducts,
@@ -60,6 +67,69 @@ describe('Publishing Pipeline Integration', () => {
           provide: SecretsManagerService,
           useValue: {
             getSecret: jest.fn().mockResolvedValue('test-api-key'),
+            getSecrets: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: FileDownloaderService,
+          useValue: {
+            downloadVideo: jest.fn().mockResolvedValue({
+              path: '/tmp/test-video.mp4',
+              size: 1024 * 1024, // 1MB
+            }),
+            cleanupFile: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: VideoValidatorService,
+          useValue: {
+            validateForPlatform: jest.fn().mockResolvedValue({
+              isValid: true,
+              errors: [],
+            }),
+          },
+        },
+        {
+          provide: TikTokVideoValidatorService,
+          useValue: {
+            validateVideo: jest.fn().mockResolvedValue({
+              isValid: true,
+              errors: [],
+            }),
+          },
+        },
+        {
+          provide: InstagramVideoValidatorService,
+          useValue: {
+            validateForInstagram: jest.fn().mockResolvedValue({
+              isValid: true,
+              errors: [],
+            }),
+          },
+        },
+        {
+          provide: RateLimiterService,
+          useValue: {
+            checkLimit: jest.fn().mockResolvedValue(true),
+            consumeToken: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: TiktokOAuth2Service,
+          useValue: {
+            ensureValidToken: jest.fn().mockResolvedValue('test-tiktok-access-token'),
+            isAuthenticated: jest.fn().mockReturnValue(true),
+            getAccessToken: jest.fn().mockReturnValue('test-tiktok-access-token'),
+          },
+        },
+        {
+          provide: InstagramOAuth2Service,
+          useValue: {
+            ensureValidToken: jest.fn().mockResolvedValue('test-instagram-access-token'),
+            isAuthenticated: jest.fn().mockReturnValue(true),
+            getAccessToken: jest.fn().mockReturnValue('test-instagram-access-token'),
+            getBusinessAccountId: jest.fn().mockResolvedValue('test-business-account-id'),
+            getRemainingDays: jest.fn().mockReturnValue(30),
           },
         },
       ],
@@ -398,7 +468,7 @@ describe('Publishing Pipeline Integration', () => {
       expect(totalAnalytics._sum.views).toBe(8850);
       expect(totalAnalytics._sum.clicks).toBe(583);
       expect(totalAnalytics._sum.conversions).toBe(45);
-      expect(totalAnalytics._sum.revenue).toBeCloseTo(449.55, 2);
+      expect(Number(totalAnalytics._sum.revenue)).toBeCloseTo(449.55, 2);
     });
   });
 
