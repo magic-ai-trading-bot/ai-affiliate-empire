@@ -190,25 +190,6 @@ describe('VideoComposerService', () => {
 
       expect(result).toBe('https://cdn.example.com/uploaded.mp4');
     });
-
-    it.skip('should log composition process', async () => {
-      // Skipped: Service uses Logger, not console.log
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      await service.compose({
-        voiceUrl: 'https://example.com/voice.mp3',
-        visualsUrl: 'https://example.com/video.mp4',
-        script: 'Test script',
-        product: mockProduct,
-      });
-
-      expect(consoleSpy).toHaveBeenCalledWith('🎞️ Composing video...');
-      expect(consoleSpy).toHaveBeenCalledWith('Voice: https://example.com/voice.mp3');
-      expect(consoleSpy).toHaveBeenCalledWith('Visuals: https://example.com/video.mp4');
-      expect(consoleSpy).toHaveBeenCalledWith('✅ Video composed (mock)');
-
-      consoleSpy.mockRestore();
-    });
   });
 
   describe('generateThumbnail', () => {
@@ -249,19 +230,6 @@ describe('VideoComposerService', () => {
 
       expect(result).toBe('https://cdn.example.com/thumbnail.jpg');
     });
-
-    it.skip('should log thumbnail generation', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      await service.generateThumbnail({
-        videoUrl: 'https://example.com/video.mp4',
-        productTitle: 'Test Product',
-      });
-
-      expect(consoleSpy).toHaveBeenCalledWith('🖼️ Generating thumbnail for: Test Product');
-
-      consoleSpy.mockRestore();
-    });
   });
 
   describe('addCaptions', () => {
@@ -301,73 +269,6 @@ describe('VideoComposerService', () => {
       );
 
       expect(result).toBe('https://cdn.example.com/uploaded.mp4');
-    });
-
-    it.skip('should log caption addition', async () => {
-      // Skipped: Logging feature not implemented yet
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      await service.addCaptions('https://example.com/video.mp4', 'Test script');
-
-      expect(consoleSpy).toHaveBeenCalledWith('📝 Adding captions to video...');
-
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe.skip('addCTA', () => {
-    it('should add CTA overlay to video', async () => {
-      const result = await service.addCTA('https://example.com/video.mp4', 'Click link in bio!');
-
-      expect(result).toBe('https://cdn.example.com/uploaded.mp4');
-    });
-
-    it('should add CTA with empty text', async () => {
-      const result = await service.addCTA('https://example.com/video.mp4', '');
-
-      expect(result).toBe('https://cdn.example.com/uploaded.mp4');
-    });
-
-    it('should add CTA with long text', async () => {
-      const longCTA = 'This is a very long CTA message that should still work properly';
-
-      const result = await service.addCTA('https://example.com/video.mp4', longCTA);
-
-      expect(result).toBe('https://cdn.example.com/uploaded.mp4');
-    });
-
-    it('should add CTA for local video path', async () => {
-      const result = await service.addCTA('/tmp/video.mp4', 'Shop now!');
-
-      expect(result).toBe('https://cdn.example.com/uploaded.mp4');
-    });
-
-    it('should add CTA with emojis', async () => {
-      const result = await service.addCTA(
-        'https://example.com/video.mp4',
-        '🔥 Limited time offer! 🎁',
-      );
-
-      expect(result).toBe('https://cdn.example.com/uploaded.mp4');
-    });
-
-    it('should add CTA with URLs', async () => {
-      const result = await service.addCTA(
-        'https://example.com/video.mp4',
-        'Visit https://example.com',
-      );
-
-      expect(result).toBe('https://cdn.example.com/uploaded.mp4');
-    });
-
-    it('should log CTA addition', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      await service.addCTA('https://example.com/video.mp4', 'Click link in bio!');
-
-      expect(consoleSpy).toHaveBeenCalledWith('🔗 Adding CTA overlay...');
-
-      consoleSpy.mockRestore();
     });
   });
 
