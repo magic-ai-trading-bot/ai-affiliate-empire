@@ -16,7 +16,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { OpenAIService } from '@/modules/content/services/openai.service';
-import { ClaudeService } from '@/modules/content/services/claude.service';
 import { ScriptGeneratorService } from '@/modules/content/services/script-generator.service';
 import { ElevenLabsService } from '@/modules/video/services/elevenlabs.service';
 import { PikaLabsService } from '@/modules/video/services/pikalabs.service';
@@ -27,14 +26,13 @@ import {
   createTestProducts,
   cleanTestData,
 } from '../helpers/test-data';
-import { mockOpenAI, mockClaude, mockElevenLabs, mockPikaLabs, resetAllMocks } from '../helpers/api-mocks';
+import { mockOpenAI, mockElevenLabs, mockPikaLabs, resetAllMocks } from '../helpers/api-mocks';
 
 const prisma = (global as any).testPrisma as PrismaClient;
 
 describe.skip('Content Generation Pipeline Integration', () => {
   let module: TestingModule;
   let openaiService: OpenAIService;
-  let claudeService: ClaudeService;
   let scriptGenerator: ScriptGeneratorService;
   let elevenLabsService: ElevenLabsService;
   let pikaLabsService: PikaLabsService;
@@ -46,7 +44,6 @@ describe.skip('Content Generation Pipeline Integration', () => {
     module = await Test.createTestingModule({
       providers: [
         OpenAIService,
-        ClaudeService,
         ScriptGeneratorService,
         ElevenLabsService,
         PikaLabsService,
@@ -225,7 +222,7 @@ describe.skip('Content Generation Pipeline Integration', () => {
           productFeatures: ['Feature 1', 'Feature 2'],
           tone: 'exciting',
           duration: 60,
-        })
+        }),
       );
 
       const scripts = await Promise.all(scriptPromises);
@@ -252,7 +249,7 @@ describe.skip('Content Generation Pipeline Integration', () => {
             language: 'en',
             status: 'PENDING',
           },
-        })
+        }),
       );
 
       const savedVideos = await Promise.all(videoPromises);
@@ -545,8 +542,8 @@ describe.skip('Content Generation Pipeline Integration', () => {
             productFeatures: [],
             tone: 'exciting',
             duration: 60,
-          })
-        )
+          }),
+        ),
       );
 
       // All scripts should be different
@@ -558,16 +555,18 @@ describe.skip('Content Generation Pipeline Integration', () => {
       const product = products[0];
 
       const scripts = await Promise.all(
-        Array(5).fill(null).map(() =>
-          scriptGenerator.generate({
-            productTitle: product.title,
-            productDescription: product.description,
-            productPrice: product.price,
-            productFeatures: [],
-            tone: 'exciting',
-            duration: 60,
-          })
-        )
+        Array(5)
+          .fill(null)
+          .map(() =>
+            scriptGenerator.generate({
+              productTitle: product.title,
+              productDescription: product.description,
+              productPrice: product.price,
+              productFeatures: [],
+              tone: 'exciting',
+              duration: 60,
+            }),
+          ),
       );
 
       // All scripts should have minimum length

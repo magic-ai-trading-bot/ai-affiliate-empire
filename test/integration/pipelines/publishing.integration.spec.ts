@@ -31,8 +31,8 @@ const prisma = (global as any).testPrisma as PrismaClient;
 
 describe('Publishing Pipeline Integration', () => {
   let module: TestingModule;
-  let youtubeService: YouTubeService;
-  let tiktokService: TikTokService;
+  let youtubeService: YoutubeService;
+  let tiktokService: TiktokService;
   let instagramService: InstagramService;
   let network: any;
   let products: any[];
@@ -40,8 +40,8 @@ describe('Publishing Pipeline Integration', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       providers: [
-        YouTubeService,
-        TikTokService,
+        YoutubeService,
+        TiktokService,
         InstagramService,
         {
           provide: ConfigService,
@@ -65,8 +65,8 @@ describe('Publishing Pipeline Integration', () => {
       ],
     }).compile();
 
-    youtubeService = module.get<YouTubeService>(YouTubeService);
-    tiktokService = module.get<TikTokService>(TikTokService);
+    youtubeService = module.get<YoutubeService>(YoutubeService);
+    tiktokService = module.get<TiktokService>(TiktokService);
     instagramService = module.get<InstagramService>(InstagramService);
 
     await youtubeService.onModuleInit();
@@ -375,7 +375,7 @@ describe('Publishing Pipeline Integration', () => {
         data: {
           productId: product.id,
           date: new Date(),
-          views: 8850,  // Total across all platforms
+          views: 8850, // Total across all platforms
           clicks: 583,
           conversions: 45,
           revenue: 449.55,
@@ -520,7 +520,7 @@ describe('Publishing Pipeline Integration', () => {
               videoUrl: 'https://example.com/video.mp4',
             },
           });
-        })
+        }),
       );
 
       const startTime = Date.now();
@@ -539,7 +539,7 @@ describe('Publishing Pipeline Integration', () => {
                 url: `https://${platform.toLowerCase()}.com/video`,
                 publishedAt: new Date(),
               },
-            })
+            }),
           );
         }
       }
